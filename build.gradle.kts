@@ -2,8 +2,9 @@ group = "org.jetbrains.research.code-summarization-dataset"
 version = "0.0"
 
 plugins {
-    kotlin("jvm") version "1.4.10"
     application
+    kotlin("jvm") version "1.4.10"
+    id("io.gitlab.arturbosch.detekt") version "1.14.2"
 }
 
 application {
@@ -11,11 +12,17 @@ application {
 }
 
 repositories {
+    jcenter()
     mavenCentral()
 }
 
 dependencies {
     testImplementation(kotlin("test-junit"))
+}
+
+detekt {
+    failFast = true // fail build on any finding
+    buildUponDefaultConfig = true // preconfigure defaults
 }
 
 tasks {
