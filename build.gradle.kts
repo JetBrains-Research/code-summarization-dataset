@@ -18,6 +18,11 @@ repositories {
 
 dependencies {
     testImplementation(kotlin("test-junit"))
+
+    // fuel
+    implementation(group = "com.github.kittinunf.fuel", name = "fuel", version = "2.3.0")
+    // json
+    implementation(group = "com.fasterxml.jackson.module", name = "jackson-module-kotlin", version = "2.11.3")
 }
 
 detekt {

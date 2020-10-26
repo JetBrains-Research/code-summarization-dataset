@@ -1,6 +1,12 @@
-fun getSum(a: Int, b: Int): Int = a + b
-
+import reposfinder.ReposFinder
+import reposfinder.utils.tokenReader
 
 fun main() {
-    print("Hello world!")
+    try {
+        val reposFinder = ReposFinder("search_results", tokenReader("path/to/token"))
+        reposFinder.search()
+        reposFinder.dumpResults()
+    } catch (e: Exception) {
+        print(e.stackTrace)
+    }
 }
