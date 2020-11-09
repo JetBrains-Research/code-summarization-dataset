@@ -14,10 +14,26 @@ application {
 repositories {
     jcenter()
     mavenCentral()
+
+    // astminer repo
+    maven(url = "https://dl.bintray.com/egor-bogomolov/astminer/")
 }
 
 dependencies {
     testImplementation(kotlin("test-junit"))
+
+    // astminer
+    implementation("io.github.vovak.astminer", "astminer", "0.6")
+    // dependency astminer
+    implementation("com.github.ajalt.clikt", "clikt", "3.0.1")
+    // fuel
+    implementation("com.github.kittinunf.fuel", "fuel", "2.3.0")
+    // json
+    implementation("com.fasterxml.jackson.module", "jackson-module-kotlin", "2.11.3")
+    // jgit
+    implementation("org.eclipse.jgit", "org.eclipse.jgit", "5.9.0.202009080501-r")
+    // json
+    implementation("com.fasterxml.jackson.core", "jackson-databind", "2.11.3")
 }
 
 detekt {

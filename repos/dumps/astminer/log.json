@@ -1,0 +1,1534 @@
+{
+  "pairs_cnt" : 102,
+  "log" : [ {
+    "new_commit" : {
+      "parents_cnt" : 0,
+      "message" : "Initial commit",
+      "date" : "2018-12-20",
+      "hash" : "cb50054904c2f63654d65bf1d1f472efdb7ed5cf"
+    },
+    "old_commit" : {
+      "parents_cnt" : 0,
+      "message" : "Initial commit",
+      "date" : "2018-12-20",
+      "hash" : "cb50054904c2f63654d65bf1d1f472efdb7ed5cf"
+    },
+    "files_cnt" : 6,
+    "processed_files" : [ "/testData/1.java", "/testData/gumTreeMethodSplitter/1.java", "/testData/gumTreeMethodSplitter/3.java", "/testData/gumTreeMethodSplitter/4.java", "/testData/gumTreeMethodSplitter/2.java", "/src/main/java/miningtool/examples/AllJavaFiles.java" ]
+  }, {
+    "new_commit" : {
+      "parents_cnt" : 1,
+      "message" : "Add test for initialization of different arrays",
+      "date" : "2019-1-14",
+      "hash" : "e6a28f2e5a776b050d4a661c2853f123c672bb75"
+    },
+    "old_commit" : {
+      "parents_cnt" : 0,
+      "message" : "Initial commit",
+      "date" : "2018-12-20",
+      "hash" : "cb50054904c2f63654d65bf1d1f472efdb7ed5cf"
+    },
+    "files_cnt" : 4,
+    "processed_files" : [ "testData/ComplexArrayInitialization.java", "testData/DoubleArrayInitialization.java", "testData/IntArrayInitialization.java", "testData/StringArrayInitialization.java" ]
+  }, {
+    "new_commit" : {
+      "parents_cnt" : 1,
+      "message" : "Failing test with array access",
+      "date" : "2019-1-14",
+      "hash" : "ea88144324577022f7c09c20fbd878a00245393b"
+    },
+    "old_commit" : {
+      "parents_cnt" : 1,
+      "message" : "Add test for initialization of different arrays",
+      "date" : "2019-1-14",
+      "hash" : "e6a28f2e5a776b050d4a661c2853f123c672bb75"
+    },
+    "files_cnt" : 5,
+    "processed_files" : [ "testData/arrayCalls/ComplexArrayInitialization.java", "testData/arrayCalls/ComplexTest.java", "testData/arrayCalls/DoubleArrayInitialization.java", "testData/arrayCalls/IntArrayInitialization.java", "testData/arrayCalls/StringArrayInitialization.java" ]
+  }, {
+    "new_commit" : {
+      "parents_cnt" : 1,
+      "message" : "Change java grammar to modern one",
+      "date" : "2019-1-14",
+      "hash" : "7b227ca6a4bb199a929a096ff1fb63373d254b1d"
+    },
+    "old_commit" : {
+      "parents_cnt" : 1,
+      "message" : "Failing test with array access",
+      "date" : "2019-1-14",
+      "hash" : "ea88144324577022f7c09c20fbd878a00245393b"
+    },
+    "files_cnt" : 0,
+    "processed_files" : [ ]
+  }, {
+    "new_commit" : {
+      "parents_cnt" : 1,
+      "message" : "fix a typo",
+      "date" : "2019-1-8",
+      "hash" : "de4bb064f2c6e79c1252cc6d4f8b8a5d9ee1d0d8"
+    },
+    "old_commit" : {
+      "parents_cnt" : 1,
+      "message" : "Change java grammar to modern one",
+      "date" : "2019-1-14",
+      "hash" : "7b227ca6a4bb199a929a096ff1fb63373d254b1d"
+    },
+    "files_cnt" : 0,
+    "processed_files" : [ ]
+  }, {
+    "new_commit" : {
+      "parents_cnt" : 2,
+      "message" : "Merge pull request #1 from vovak/reviewing",
+      "date" : "2019-1-14",
+      "hash" : "e4347dd51673ebf1d78deec91742e0d287f24f29"
+    },
+    "old_commit" : {
+      "parents_cnt" : 1,
+      "message" : "fix a typo",
+      "date" : "2019-1-8",
+      "hash" : "de4bb064f2c6e79c1252cc6d4f8b8a5d9ee1d0d8"
+    },
+    "files_cnt" : 0,
+    "processed_files" : [ ]
+  }, {
+    "new_commit" : {
+      "parents_cnt" : 1,
+      "message" : "Fix incorrect increment",
+      "date" : "2019-1-14",
+      "hash" : "282c454295185b60c0f01e42ec6071cd26a47c1e"
+    },
+    "old_commit" : {
+      "parents_cnt" : 2,
+      "message" : "Merge pull request #1 from vovak/reviewing",
+      "date" : "2019-1-14",
+      "hash" : "e4347dd51673ebf1d78deec91742e0d287f24f29"
+    },
+    "files_cnt" : 0,
+    "processed_files" : [ ]
+  }, {
+    "new_commit" : {
+      "parents_cnt" : 1,
+      "message" : "Add pretty printing for nodes",
+      "date" : "2019-1-21",
+      "hash" : "b44608e5110a4aed9456c2ea26a192c85af4da42"
+    },
+    "old_commit" : {
+      "parents_cnt" : 1,
+      "message" : "Fix incorrect increment",
+      "date" : "2019-1-14",
+      "hash" : "282c454295185b60c0f01e42ec6071cd26a47c1e"
+    },
+    "files_cnt" : 0,
+    "processed_files" : [ ]
+  }, {
+    "new_commit" : {
+      "parents_cnt" : 1,
+      "message" : "Add token printing",
+      "date" : "2019-1-21",
+      "hash" : "27c782dc7b2ea54778f4ec70bb768597120235bd"
+    },
+    "old_commit" : {
+      "parents_cnt" : 1,
+      "message" : "Add pretty printing for nodes",
+      "date" : "2019-1-21",
+      "hash" : "b44608e5110a4aed9456c2ea26a192c85af4da42"
+    },
+    "files_cnt" : 0,
+    "processed_files" : [ ]
+  }, {
+    "new_commit" : {
+      "parents_cnt" : 2,
+      "message" : "Merge pull request #3 from egor-bogomolov/setup_travis",
+      "date" : "2019-1-22",
+      "hash" : "98b1808749667d397467a5f3bd87b8e9afc03ae2"
+    },
+    "old_commit" : {
+      "parents_cnt" : 1,
+      "message" : "Add token printing",
+      "date" : "2019-1-21",
+      "hash" : "27c782dc7b2ea54778f4ec70bb768597120235bd"
+    },
+    "files_cnt" : 0,
+    "processed_files" : [ ]
+  }, {
+    "new_commit" : {
+      "parents_cnt" : 2,
+      "message" : "Merge pull request #2 from vovak/usage_example",
+      "date" : "2019-1-22",
+      "hash" : "b836f1a9d709998484b09c48497df6c5a36da13c"
+    },
+    "old_commit" : {
+      "parents_cnt" : 2,
+      "message" : "Merge pull request #3 from egor-bogomolov/setup_travis",
+      "date" : "2019-1-22",
+      "hash" : "98b1808749667d397467a5f3bd87b8e9afc03ae2"
+    },
+    "files_cnt" : 0,
+    "processed_files" : [ ]
+  }, {
+    "new_commit" : {
+      "parents_cnt" : 1,
+      "message" : "Change badge owner",
+      "date" : "2019-1-22",
+      "hash" : "c6a86d0744a486c51c5ab23cf28cbd0c1248e573"
+    },
+    "old_commit" : {
+      "parents_cnt" : 2,
+      "message" : "Merge pull request #2 from vovak/usage_example",
+      "date" : "2019-1-22",
+      "hash" : "b836f1a9d709998484b09c48497df6c5a36da13c"
+    },
+    "files_cnt" : 0,
+    "processed_files" : [ ]
+  }, {
+    "new_commit" : {
+      "parents_cnt" : 1,
+      "message" : "Change badge owner",
+      "date" : "2019-1-22",
+      "hash" : "9e1c052dca61fdb1889ea785ae24f6832ff8dc38"
+    },
+    "old_commit" : {
+      "parents_cnt" : 1,
+      "message" : "Change badge owner",
+      "date" : "2019-1-22",
+      "hash" : "c6a86d0744a486c51c5ab23cf28cbd0c1248e573"
+    },
+    "files_cnt" : 0,
+    "processed_files" : [ ]
+  }, {
+    "new_commit" : {
+      "parents_cnt" : 1,
+      "message" : "Remove c/c++",
+      "date" : "2019-1-22",
+      "hash" : "0132554b23ce17ce1edac6efdbd93670d4068edd"
+    },
+    "old_commit" : {
+      "parents_cnt" : 1,
+      "message" : "Change badge owner",
+      "date" : "2019-1-22",
+      "hash" : "9e1c052dca61fdb1889ea785ae24f6832ff8dc38"
+    },
+    "files_cnt" : 0,
+    "processed_files" : [ ]
+  }, {
+    "new_commit" : {
+      "parents_cnt" : 2,
+      "message" : "Merge remote-tracking branch 'origin/master'",
+      "date" : "2019-1-22",
+      "hash" : "ac618f30f24bf717f55bf14bbdd9603f54104d14"
+    },
+    "old_commit" : {
+      "parents_cnt" : 1,
+      "message" : "Remove c/c++",
+      "date" : "2019-1-22",
+      "hash" : "0132554b23ce17ce1edac6efdbd93670d4068edd"
+    },
+    "files_cnt" : 0,
+    "processed_files" : [ ]
+  }, {
+    "new_commit" : {
+      "parents_cnt" : 2,
+      "message" : "Merge pull request #5 from vovak/performance_test",
+      "date" : "2019-1-22",
+      "hash" : "e89b5ee13abbee1ed4053ebf83e651fffc68a171"
+    },
+    "old_commit" : {
+      "parents_cnt" : 2,
+      "message" : "Merge remote-tracking branch 'origin/master'",
+      "date" : "2019-1-22",
+      "hash" : "ac618f30f24bf717f55bf14bbdd9603f54104d14"
+    },
+    "files_cnt" : 5,
+    "processed_files" : [ "testData/examples/1.java", "testData/examples/gumTreeMethodSplitter/1.java", "testData/examples/gumTreeMethodSplitter/2.java", "testData/examples/gumTreeMethodSplitter/3.java", "testData/examples/gumTreeMethodSplitter/4.java" ]
+  }, {
+    "new_commit" : {
+      "parents_cnt" : 1,
+      "message" : "Rename CodeVectorizer",
+      "date" : "2019-1-22",
+      "hash" : "2517f5dea1cfea48821e467b2fef6e3adc5fd44b"
+    },
+    "old_commit" : {
+      "parents_cnt" : 2,
+      "message" : "Merge pull request #5 from vovak/performance_test",
+      "date" : "2019-1-22",
+      "hash" : "e89b5ee13abbee1ed4053ebf83e651fffc68a171"
+    },
+    "files_cnt" : 0,
+    "processed_files" : [ ]
+  }, {
+    "new_commit" : {
+      "parents_cnt" : 1,
+      "message" : "Remove C support",
+      "date" : "2019-1-22",
+      "hash" : "81edc8ecd89277699b93a7fe2c0e0c42e52433da"
+    },
+    "old_commit" : {
+      "parents_cnt" : 1,
+      "message" : "Rename CodeVectorizer",
+      "date" : "2019-1-22",
+      "hash" : "2517f5dea1cfea48821e467b2fef6e3adc5fd44b"
+    },
+    "files_cnt" : 0,
+    "processed_files" : [ ]
+  }, {
+    "new_commit" : {
+      "parents_cnt" : 2,
+      "message" : "Merge pull request #8 from vovak/c_joern",
+      "date" : "2019-3-4",
+      "hash" : "d99076b9885cb9615077765edc9ba14bb23bc3cb"
+    },
+    "old_commit" : {
+      "parents_cnt" : 1,
+      "message" : "Remove C support",
+      "date" : "2019-1-22",
+      "hash" : "81edc8ecd89277699b93a7fe2c0e0c42e52433da"
+    },
+    "files_cnt" : 5,
+    "processed_files" : [ "testData/gumTreeMethodSplitter/1.java", "testData/gumTreeMethodSplitter/2.java", "testData/gumTreeMethodSplitter/3.java", "testData/gumTreeMethodSplitter/4.java", "src/main/java/miningtool/examples/AllJavaFiles.java" ]
+  }, {
+    "new_commit" : {
+      "parents_cnt" : 1,
+      "message" : "Fix Travis button",
+      "date" : "2019-3-11",
+      "hash" : "b869b3bbd41269c9ff2737bd0a36537924c7b4c5"
+    },
+    "old_commit" : {
+      "parents_cnt" : 2,
+      "message" : "Merge pull request #8 from vovak/c_joern",
+      "date" : "2019-3-4",
+      "hash" : "d99076b9885cb9615077765edc9ba14bb23bc3cb"
+    },
+    "files_cnt" : 0,
+    "processed_files" : [ ]
+  }, {
+    "new_commit" : {
+      "parents_cnt" : 2,
+      "message" : "Merge pull request #9 from vovak/publishing",
+      "date" : "2019-3-21",
+      "hash" : "28fc7352ab9e7ede5541328198f692722713336c"
+    },
+    "old_commit" : {
+      "parents_cnt" : 1,
+      "message" : "Fix Travis button",
+      "date" : "2019-3-11",
+      "hash" : "b869b3bbd41269c9ff2737bd0a36537924c7b4c5"
+    },
+    "files_cnt" : 1,
+    "processed_files" : [ "src/main/java/astminer/examples/AllJavaFiles.java" ]
+  }, {
+    "new_commit" : {
+      "parents_cnt" : 2,
+      "message" : "Merge pull request #10 from vovak/ast_serializer",
+      "date" : "2019-3-21",
+      "hash" : "bc1fdfd2a6ae5cdfeb9c903d13e54c69e932cb76"
+    },
+    "old_commit" : {
+      "parents_cnt" : 2,
+      "message" : "Merge pull request #9 from vovak/publishing",
+      "date" : "2019-3-21",
+      "hash" : "28fc7352ab9e7ede5541328198f692722713336c"
+    },
+    "files_cnt" : 1,
+    "processed_files" : [ "src/main/java/astminer/examples/AllJavaFiles.java" ]
+  }, {
+    "new_commit" : {
+      "parents_cnt" : 2,
+      "message" : "Merge pull request #13 from MLonCode/readme-links",
+      "date" : "2019-3-30",
+      "hash" : "d303f59581a4b42e39938677441d4a75ad05313e"
+    },
+    "old_commit" : {
+      "parents_cnt" : 2,
+      "message" : "Merge pull request #10 from vovak/ast_serializer",
+      "date" : "2019-3-21",
+      "hash" : "bc1fdfd2a6ae5cdfeb9c903d13e54c69e932cb76"
+    },
+    "files_cnt" : 0,
+    "processed_files" : [ ]
+  }, {
+    "new_commit" : {
+      "parents_cnt" : 1,
+      "message" : "Update version to 0.2",
+      "date" : "2019-4-8",
+      "hash" : "7c94aa3cb0b47d839170579164e4e98de6ae5e00"
+    },
+    "old_commit" : {
+      "parents_cnt" : 2,
+      "message" : "Merge pull request #13 from MLonCode/readme-links",
+      "date" : "2019-3-30",
+      "hash" : "d303f59581a4b42e39938677441d4a75ad05313e"
+    },
+    "files_cnt" : 0,
+    "processed_files" : [ ]
+  }, {
+    "new_commit" : {
+      "parents_cnt" : 2,
+      "message" : "Merge remote-tracking branch 'origin/master'",
+      "date" : "2019-4-8",
+      "hash" : "a938877607cf37bc93c81c14eaf3b3f8520d79e5"
+    },
+    "old_commit" : {
+      "parents_cnt" : 1,
+      "message" : "Update version to 0.2",
+      "date" : "2019-4-8",
+      "hash" : "7c94aa3cb0b47d839170579164e4e98de6ae5e00"
+    },
+    "files_cnt" : 0,
+    "processed_files" : [ ]
+  }, {
+    "new_commit" : {
+      "parents_cnt" : 2,
+      "message" : "Merge pull request #16 from vovak/joern_wrapper",
+      "date" : "2019-4-12",
+      "hash" : "a9b8990868825b768040dc0038f2b5c322d9b0a7"
+    },
+    "old_commit" : {
+      "parents_cnt" : 2,
+      "message" : "Merge remote-tracking branch 'origin/master'",
+      "date" : "2019-4-8",
+      "hash" : "a938877607cf37bc93c81c14eaf3b3f8520d79e5"
+    },
+    "files_cnt" : 0,
+    "processed_files" : [ ]
+  }, {
+    "new_commit" : {
+      "parents_cnt" : 1,
+      "message" : "edit README",
+      "date" : "2019-4-12",
+      "hash" : "ff8f329e4aaf74d646bfdcb60e938bf3c388cb68"
+    },
+    "old_commit" : {
+      "parents_cnt" : 2,
+      "message" : "Merge pull request #16 from vovak/joern_wrapper",
+      "date" : "2019-4-12",
+      "hash" : "a9b8990868825b768040dc0038f2b5c322d9b0a7"
+    },
+    "files_cnt" : 0,
+    "processed_files" : [ ]
+  }, {
+    "new_commit" : {
+      "parents_cnt" : 2,
+      "message" : "Merge pull request #17 from vovak/fix-travis-build",
+      "date" : "2019-4-26",
+      "hash" : "aa6c7d6bce2b070e0fafde9ece8dec38f7d04c5f"
+    },
+    "old_commit" : {
+      "parents_cnt" : 1,
+      "message" : "edit README",
+      "date" : "2019-4-12",
+      "hash" : "ff8f329e4aaf74d646bfdcb60e938bf3c388cb68"
+    },
+    "files_cnt" : 0,
+    "processed_files" : [ ]
+  }, {
+    "new_commit" : {
+      "parents_cnt" : 1,
+      "message" : "fix link to the preprint",
+      "date" : "2019-4-30",
+      "hash" : "bd658623896bea0df657278c627705f3426d1c88"
+    },
+    "old_commit" : {
+      "parents_cnt" : 2,
+      "message" : "Merge pull request #17 from vovak/fix-travis-build",
+      "date" : "2019-4-26",
+      "hash" : "aa6c7d6bce2b070e0fafde9ece8dec38f7d04c5f"
+    },
+    "files_cnt" : 0,
+    "processed_files" : [ ]
+  }, {
+    "new_commit" : {
+      "parents_cnt" : 2,
+      "message" : "Merge pull request #21 from vovak/fix_dir_name_extension",
+      "date" : "2019-6-8",
+      "hash" : "ef996ec5229aeb7709f48f4b85869e2f19c94a4a"
+    },
+    "old_commit" : {
+      "parents_cnt" : 1,
+      "message" : "fix link to the preprint",
+      "date" : "2019-4-30",
+      "hash" : "bd658623896bea0df657278c627705f3426d1c88"
+    },
+    "files_cnt" : 1,
+    "processed_files" : [ "testData/examples/test_dir_name_extension.java/1.java" ]
+  }, {
+    "new_commit" : {
+      "parents_cnt" : 1,
+      "message" : "Update bibtex entry for the MSR paper",
+      "date" : "2019-7-2",
+      "hash" : "609dabfb5446747e73923d4212cb0c849ae59d86"
+    },
+    "old_commit" : {
+      "parents_cnt" : 2,
+      "message" : "Merge pull request #21 from vovak/fix_dir_name_extension",
+      "date" : "2019-6-8",
+      "hash" : "ef996ec5229aeb7709f48f4b85869e2f19c94a4a"
+    },
+    "files_cnt" : 0,
+    "processed_files" : [ ]
+  }, {
+    "new_commit" : {
+      "parents_cnt" : 1,
+      "message" : "update README",
+      "date" : "2019-7-2",
+      "hash" : "5510edc49c7d83b89401df1b887d6d75f2dec049"
+    },
+    "old_commit" : {
+      "parents_cnt" : 1,
+      "message" : "Update bibtex entry for the MSR paper",
+      "date" : "2019-7-2",
+      "hash" : "609dabfb5446747e73923d4212cb0c849ae59d86"
+    },
+    "files_cnt" : 0,
+    "processed_files" : [ ]
+  }, {
+    "new_commit" : {
+      "parents_cnt" : 2,
+      "message" : "Merge pull request #24 from elena-lyulina/master",
+      "date" : "2019-7-24",
+      "hash" : "9f7b554cea50af1bd1212bfc4992b42f1a350ac9"
+    },
+    "old_commit" : {
+      "parents_cnt" : 1,
+      "message" : "update README",
+      "date" : "2019-7-2",
+      "hash" : "5510edc49c7d83b89401df1b887d6d75f2dec049"
+    },
+    "files_cnt" : 0,
+    "processed_files" : [ ]
+  }, {
+    "new_commit" : {
+      "parents_cnt" : 1,
+      "message" : "add Gradle task to process the Python example",
+      "date" : "2019-7-30",
+      "hash" : "f4d8e555da8616f1e64373623ee1c98983577138"
+    },
+    "old_commit" : {
+      "parents_cnt" : 2,
+      "message" : "Merge pull request #24 from elena-lyulina/master",
+      "date" : "2019-7-24",
+      "hash" : "9f7b554cea50af1bd1212bfc4992b42f1a350ac9"
+    },
+    "files_cnt" : 0,
+    "processed_files" : [ ]
+  }, {
+    "new_commit" : {
+      "parents_cnt" : 1,
+      "message" : "add a circleci workflow for py_example",
+      "date" : "2019-7-30",
+      "hash" : "7fdfc8473b0da0eb69fc290435948a194036279e"
+    },
+    "old_commit" : {
+      "parents_cnt" : 1,
+      "message" : "add Gradle task to process the Python example",
+      "date" : "2019-7-30",
+      "hash" : "f4d8e555da8616f1e64373623ee1c98983577138"
+    },
+    "files_cnt" : 0,
+    "processed_files" : [ ]
+  }, {
+    "new_commit" : {
+      "parents_cnt" : 1,
+      "message" : "reintroduce the Python example gradle task",
+      "date" : "2019-7-31",
+      "hash" : "0ebbe194852e4785336e4637ec52bf342b0875b4"
+    },
+    "old_commit" : {
+      "parents_cnt" : 1,
+      "message" : "add a circleci workflow for py_example",
+      "date" : "2019-7-30",
+      "hash" : "7fdfc8473b0da0eb69fc290435948a194036279e"
+    },
+    "files_cnt" : 0,
+    "processed_files" : [ ]
+  }, {
+    "new_commit" : {
+      "parents_cnt" : 1,
+      "message" : "add steps to run python example into CI config",
+      "date" : "2019-7-31",
+      "hash" : "837ab3547490fbfc58eb7f371a9950f164a1f887"
+    },
+    "old_commit" : {
+      "parents_cnt" : 1,
+      "message" : "reintroduce the Python example gradle task",
+      "date" : "2019-7-31",
+      "hash" : "0ebbe194852e4785336e4637ec52bf342b0875b4"
+    },
+    "files_cnt" : 0,
+    "processed_files" : [ ]
+  }, {
+    "new_commit" : {
+      "parents_cnt" : 1,
+      "message" : "require docker image with python env on build",
+      "date" : "2019-7-31",
+      "hash" : "14e1476c82b6eaf36848bdf9eca627f134746f44"
+    },
+    "old_commit" : {
+      "parents_cnt" : 1,
+      "message" : "add steps to run python example into CI config",
+      "date" : "2019-7-31",
+      "hash" : "837ab3547490fbfc58eb7f371a9950f164a1f887"
+    },
+    "files_cnt" : 0,
+    "processed_files" : [ ]
+  }, {
+    "new_commit" : {
+      "parents_cnt" : 1,
+      "message" : "fix multiline command",
+      "date" : "2019-7-31",
+      "hash" : "a3b710185d38fbbedb6b6437934e00f857ebf566"
+    },
+    "old_commit" : {
+      "parents_cnt" : 1,
+      "message" : "require docker image with python env on build",
+      "date" : "2019-7-31",
+      "hash" : "14e1476c82b6eaf36848bdf9eca627f134746f44"
+    },
+    "files_cnt" : 0,
+    "processed_files" : [ ]
+  }, {
+    "new_commit" : {
+      "parents_cnt" : 1,
+      "message" : "split creating and activating the env into two commands",
+      "date" : "2019-7-31",
+      "hash" : "4f5532e3486f0ad8ebd97302ed013bd6fb23ddc5"
+    },
+    "old_commit" : {
+      "parents_cnt" : 1,
+      "message" : "fix multiline command",
+      "date" : "2019-7-31",
+      "hash" : "a3b710185d38fbbedb6b6437934e00f857ebf566"
+    },
+    "files_cnt" : 0,
+    "processed_files" : [ ]
+  }, {
+    "new_commit" : {
+      "parents_cnt" : 1,
+      "message" : "debug circleci conf",
+      "date" : "2019-7-31",
+      "hash" : "ccfb52dab09a8fecc954dde44ed0dc14d4ed6894"
+    },
+    "old_commit" : {
+      "parents_cnt" : 1,
+      "message" : "split creating and activating the env into two commands",
+      "date" : "2019-7-31",
+      "hash" : "4f5532e3486f0ad8ebd97302ed013bd6fb23ddc5"
+    },
+    "files_cnt" : 0,
+    "processed_files" : [ ]
+  }, {
+    "new_commit" : {
+      "parents_cnt" : 1,
+      "message" : "try to figure out directory structure at circleci agent",
+      "date" : "2019-7-31",
+      "hash" : "9e4f96d1f6acf865528bee022463bc98668fc234"
+    },
+    "old_commit" : {
+      "parents_cnt" : 1,
+      "message" : "debug circleci conf",
+      "date" : "2019-7-31",
+      "hash" : "ccfb52dab09a8fecc954dde44ed0dc14d4ed6894"
+    },
+    "files_cnt" : 0,
+    "processed_files" : [ ]
+  }, {
+    "new_commit" : {
+      "parents_cnt" : 1,
+      "message" : "fix syntax error in config",
+      "date" : "2019-7-31",
+      "hash" : "805d8283f24f2280b7b9c0f7e88848644c49364f"
+    },
+    "old_commit" : {
+      "parents_cnt" : 1,
+      "message" : "try to figure out directory structure at circleci agent",
+      "date" : "2019-7-31",
+      "hash" : "9e4f96d1f6acf865528bee022463bc98668fc234"
+    },
+    "files_cnt" : 0,
+    "processed_files" : [ ]
+  }, {
+    "new_commit" : {
+      "parents_cnt" : 1,
+      "message" : "try to work around the permissions issue",
+      "date" : "2019-7-31",
+      "hash" : "1735a4e717c3d485cb0a65f2bd51311d874cd557"
+    },
+    "old_commit" : {
+      "parents_cnt" : 1,
+      "message" : "fix syntax error in config",
+      "date" : "2019-7-31",
+      "hash" : "805d8283f24f2280b7b9c0f7e88848644c49364f"
+    },
+    "files_cnt" : 0,
+    "processed_files" : [ ]
+  }, {
+    "new_commit" : {
+      "parents_cnt" : 1,
+      "message" : "require jdk image",
+      "date" : "2019-7-31",
+      "hash" : "9fdb83f775f1587a58a47efae62e5a393fb2bb95"
+    },
+    "old_commit" : {
+      "parents_cnt" : 1,
+      "message" : "try to work around the permissions issue",
+      "date" : "2019-7-31",
+      "hash" : "1735a4e717c3d485cb0a65f2bd51311d874cd557"
+    },
+    "files_cnt" : 0,
+    "processed_files" : [ ]
+  }, {
+    "new_commit" : {
+      "parents_cnt" : 1,
+      "message" : "try to prepare env for the python example in a separate step",
+      "date" : "2019-7-31",
+      "hash" : "966936f63d1a23e792dccbb9d5964c59bc97c738"
+    },
+    "old_commit" : {
+      "parents_cnt" : 1,
+      "message" : "require jdk image",
+      "date" : "2019-7-31",
+      "hash" : "9fdb83f775f1587a58a47efae62e5a393fb2bb95"
+    },
+    "files_cnt" : 0,
+    "processed_files" : [ ]
+  }, {
+    "new_commit" : {
+      "parents_cnt" : 1,
+      "message" : "quickfix",
+      "date" : "2019-7-31",
+      "hash" : "677a7285158fce4169cb3f0dda2b6c7ae596fcd9"
+    },
+    "old_commit" : {
+      "parents_cnt" : 1,
+      "message" : "try to prepare env for the python example in a separate step",
+      "date" : "2019-7-31",
+      "hash" : "966936f63d1a23e792dccbb9d5964c59bc97c738"
+    },
+    "files_cnt" : 0,
+    "processed_files" : [ ]
+  }, {
+    "new_commit" : {
+      "parents_cnt" : 1,
+      "message" : "revert",
+      "date" : "2019-7-31",
+      "hash" : "e039a67b10c8611463fef6f9907747e079f9c29e"
+    },
+    "old_commit" : {
+      "parents_cnt" : 1,
+      "message" : "quickfix",
+      "date" : "2019-7-31",
+      "hash" : "677a7285158fce4169cb3f0dda2b6c7ae596fcd9"
+    },
+    "files_cnt" : 0,
+    "processed_files" : [ ]
+  }, {
+    "new_commit" : {
+      "parents_cnt" : 1,
+      "message" : "restrict JVM memory allocation to 2G",
+      "date" : "2019-7-31",
+      "hash" : "0c01f117b1abd6738b8621aa0281a886829d724e"
+    },
+    "old_commit" : {
+      "parents_cnt" : 1,
+      "message" : "revert",
+      "date" : "2019-7-31",
+      "hash" : "e039a67b10c8611463fef6f9907747e079f9c29e"
+    },
+    "files_cnt" : 0,
+    "processed_files" : [ ]
+  }, {
+    "new_commit" : {
+      "parents_cnt" : 1,
+      "message" : "try to add a bunch of Gradle config options to enable Kotlin compilation",
+      "date" : "2019-7-31",
+      "hash" : "e0088dcb5dcebdb82fd14b1c98539b0e3d73aa4a"
+    },
+    "old_commit" : {
+      "parents_cnt" : 1,
+      "message" : "restrict JVM memory allocation to 2G",
+      "date" : "2019-7-31",
+      "hash" : "0c01f117b1abd6738b8621aa0281a886829d724e"
+    },
+    "files_cnt" : 0,
+    "processed_files" : [ ]
+  }, {
+    "new_commit" : {
+      "parents_cnt" : 1,
+      "message" : "do not use config on demand in Gradle",
+      "date" : "2019-7-31",
+      "hash" : "2174e48418219a139a9d7ec45aae63b7db2a519f"
+    },
+    "old_commit" : {
+      "parents_cnt" : 1,
+      "message" : "try to add a bunch of Gradle config options to enable Kotlin compilation",
+      "date" : "2019-7-31",
+      "hash" : "e0088dcb5dcebdb82fd14b1c98539b0e3d73aa4a"
+    },
+    "files_cnt" : 0,
+    "processed_files" : [ ]
+  }, {
+    "new_commit" : {
+      "parents_cnt" : 1,
+      "message" : "do not use Gradle daemon in CI",
+      "date" : "2019-7-31",
+      "hash" : "7ac18631c4f2570171aba2b368ba95d1ebd65195"
+    },
+    "old_commit" : {
+      "parents_cnt" : 1,
+      "message" : "do not use config on demand in Gradle",
+      "date" : "2019-7-31",
+      "hash" : "2174e48418219a139a9d7ec45aae63b7db2a519f"
+    },
+    "files_cnt" : 0,
+    "processed_files" : [ ]
+  }, {
+    "new_commit" : {
+      "parents_cnt" : 1,
+      "message" : "disable gradle daemon explicitly on gradlew call",
+      "date" : "2019-7-31",
+      "hash" : "c49aa1ae3dcdd9238d8c52eadc8b657057bcd679"
+    },
+    "old_commit" : {
+      "parents_cnt" : 1,
+      "message" : "do not use Gradle daemon in CI",
+      "date" : "2019-7-31",
+      "hash" : "7ac18631c4f2570171aba2b368ba95d1ebd65195"
+    },
+    "files_cnt" : 0,
+    "processed_files" : [ ]
+  }, {
+    "new_commit" : {
+      "parents_cnt" : 1,
+      "message" : "restrict memory usage",
+      "date" : "2019-7-31",
+      "hash" : "efa82d56ab304b1247699c076431067116f91b8f"
+    },
+    "old_commit" : {
+      "parents_cnt" : 1,
+      "message" : "disable gradle daemon explicitly on gradlew call",
+      "date" : "2019-7-31",
+      "hash" : "c49aa1ae3dcdd9238d8c52eadc8b657057bcd679"
+    },
+    "files_cnt" : 0,
+    "processed_files" : [ ]
+  }, {
+    "new_commit" : {
+      "parents_cnt" : 1,
+      "message" : "remove irrelevant config options",
+      "date" : "2019-7-31",
+      "hash" : "08de26440809af1b39f35a640b0ce92d60fb2582"
+    },
+    "old_commit" : {
+      "parents_cnt" : 1,
+      "message" : "restrict memory usage",
+      "date" : "2019-7-31",
+      "hash" : "efa82d56ab304b1247699c076431067116f91b8f"
+    },
+    "files_cnt" : 0,
+    "processed_files" : [ ]
+  }, {
+    "new_commit" : {
+      "parents_cnt" : 1,
+      "message" : "try disabling the daemon via gradle.properties",
+      "date" : "2019-7-31",
+      "hash" : "046081c9c17448e1bf780fedcfd938cfe4da5509"
+    },
+    "old_commit" : {
+      "parents_cnt" : 1,
+      "message" : "remove irrelevant config options",
+      "date" : "2019-7-31",
+      "hash" : "08de26440809af1b39f35a640b0ce92d60fb2582"
+    },
+    "files_cnt" : 0,
+    "processed_files" : [ ]
+  }, {
+    "new_commit" : {
+      "parents_cnt" : 1,
+      "message" : "disable parallel build in gradle",
+      "date" : "2019-7-31",
+      "hash" : "24586db0d42f0b72e78acc3d4d3ec019d8937847"
+    },
+    "old_commit" : {
+      "parents_cnt" : 1,
+      "message" : "try disabling the daemon via gradle.properties",
+      "date" : "2019-7-31",
+      "hash" : "046081c9c17448e1bf780fedcfd938cfe4da5509"
+    },
+    "files_cnt" : 0,
+    "processed_files" : [ ]
+  }, {
+    "new_commit" : {
+      "parents_cnt" : 1,
+      "message" : "try enable kapt build cache",
+      "date" : "2019-7-31",
+      "hash" : "834bc95ac9fc155c2d78d8b49a2c21d57113eb91"
+    },
+    "old_commit" : {
+      "parents_cnt" : 1,
+      "message" : "disable parallel build in gradle",
+      "date" : "2019-7-31",
+      "hash" : "24586db0d42f0b72e78acc3d4d3ec019d8937847"
+    },
+    "files_cnt" : 0,
+    "processed_files" : [ ]
+  }, {
+    "new_commit" : {
+      "parents_cnt" : 1,
+      "message" : "disable py_example step for now",
+      "date" : "2019-7-31",
+      "hash" : "18f1c1422042038edba1faf215c6ec80614e2a6d"
+    },
+    "old_commit" : {
+      "parents_cnt" : 1,
+      "message" : "try enable kapt build cache",
+      "date" : "2019-7-31",
+      "hash" : "834bc95ac9fc155c2d78d8b49a2c21d57113eb91"
+    },
+    "files_cnt" : 0,
+    "processed_files" : [ ]
+  }, {
+    "new_commit" : {
+      "parents_cnt" : 2,
+      "message" : "Merge pull request #26 from vovak/common-file-utils",
+      "date" : "2019-8-5",
+      "hash" : "5ab8cdffd3ba908299926051c3b351996428d108"
+    },
+    "old_commit" : {
+      "parents_cnt" : 1,
+      "message" : "disable py_example step for now",
+      "date" : "2019-7-31",
+      "hash" : "18f1c1422042038edba1faf215c6ec80614e2a6d"
+    },
+    "files_cnt" : 2,
+    "processed_files" : [ "testData/common/NonParsableFile.java", "testData/common/ParsableFile.java" ]
+  }, {
+    "new_commit" : {
+      "parents_cnt" : 2,
+      "message" : "Merge pull request #23 from vovak/compare",
+      "date" : "2019-8-29",
+      "hash" : "1aa414d29c77932b3c44d420243401ba994db19a"
+    },
+    "old_commit" : {
+      "parents_cnt" : 2,
+      "message" : "Merge pull request #26 from vovak/common-file-utils",
+      "date" : "2019-8-5",
+      "hash" : "5ab8cdffd3ba908299926051c3b351996428d108"
+    },
+    "files_cnt" : 1,
+    "processed_files" : [ "testData/featureextraction/hello.java" ]
+  }, {
+    "new_commit" : {
+      "parents_cnt" : 2,
+      "message" : "Merge pull request #28 from vovak/parseProject",
+      "date" : "2019-9-4",
+      "hash" : "d126f34203d932b1483f3567398223c8d41b829b"
+    },
+    "old_commit" : {
+      "parents_cnt" : 2,
+      "message" : "Merge pull request #23 from vovak/compare",
+      "date" : "2019-8-29",
+      "hash" : "1aa414d29c77932b3c44d420243401ba994db19a"
+    },
+    "files_cnt" : 0,
+    "processed_files" : [ ]
+  }, {
+    "new_commit" : {
+      "parents_cnt" : 2,
+      "message" : "Merge pull request #27 from vovak/joern",
+      "date" : "2019-9-6",
+      "hash" : "3718f5d41693ff83ccf7f0f5f43071d175aee8c0"
+    },
+    "old_commit" : {
+      "parents_cnt" : 2,
+      "message" : "Merge pull request #28 from vovak/parseProject",
+      "date" : "2019-9-4",
+      "hash" : "d126f34203d932b1483f3567398223c8d41b829b"
+    },
+    "files_cnt" : 0,
+    "processed_files" : [ ]
+  }, {
+    "new_commit" : {
+      "parents_cnt" : 1,
+      "message" : "Update version",
+      "date" : "2019-9-6",
+      "hash" : "6daa628a6788fdecf7eae424e3afb95bf6a86576"
+    },
+    "old_commit" : {
+      "parents_cnt" : 2,
+      "message" : "Merge pull request #27 from vovak/joern",
+      "date" : "2019-9-6",
+      "hash" : "3718f5d41693ff83ccf7f0f5f43071d175aee8c0"
+    },
+    "files_cnt" : 0,
+    "processed_files" : [ ]
+  }, {
+    "new_commit" : {
+      "parents_cnt" : 1,
+      "message" : "Add labels and fix description for bintray",
+      "date" : "2019-9-7",
+      "hash" : "c5b6d1507eff0258b747ac65a67ae0f9be84fa87"
+    },
+    "old_commit" : {
+      "parents_cnt" : 1,
+      "message" : "Update version",
+      "date" : "2019-9-6",
+      "hash" : "6daa628a6788fdecf7eae424e3afb95bf6a86576"
+    },
+    "files_cnt" : 0,
+    "processed_files" : [ ]
+  }, {
+    "new_commit" : {
+      "parents_cnt" : 1,
+      "message" : "Change bintray repository name",
+      "date" : "2019-9-7",
+      "hash" : "c318683810fee4655a72d7ee01da2b5775c263e8"
+    },
+    "old_commit" : {
+      "parents_cnt" : 1,
+      "message" : "Add labels and fix description for bintray",
+      "date" : "2019-9-7",
+      "hash" : "c5b6d1507eff0258b747ac65a67ae0f9be84fa87"
+    },
+    "files_cnt" : 0,
+    "processed_files" : [ ]
+  }, {
+    "new_commit" : {
+      "parents_cnt" : 1,
+      "message" : "Add version badge",
+      "date" : "2019-9-7",
+      "hash" : "c6a0d29ee384afb10f31a564c60ee6a3bbcdb1b4"
+    },
+    "old_commit" : {
+      "parents_cnt" : 1,
+      "message" : "Change bintray repository name",
+      "date" : "2019-9-7",
+      "hash" : "c318683810fee4655a72d7ee01da2b5775c263e8"
+    },
+    "files_cnt" : 0,
+    "processed_files" : [ ]
+  }, {
+    "new_commit" : {
+      "parents_cnt" : 1,
+      "message" : "Remove badge temporarily",
+      "date" : "2019-9-8",
+      "hash" : "e60d09438284c99232d6912784b066833b7185c4"
+    },
+    "old_commit" : {
+      "parents_cnt" : 1,
+      "message" : "Add version badge",
+      "date" : "2019-9-7",
+      "hash" : "c6a0d29ee384afb10f31a564c60ee6a3bbcdb1b4"
+    },
+    "files_cnt" : 0,
+    "processed_files" : [ ]
+  }, {
+    "new_commit" : {
+      "parents_cnt" : 2,
+      "message" : "Merge pull request #29 from vovak/project-parsing",
+      "date" : "2019-9-10",
+      "hash" : "f0449b7c6fd7e746c153f212960731b1381db37f"
+    },
+    "old_commit" : {
+      "parents_cnt" : 1,
+      "message" : "Remove badge temporarily",
+      "date" : "2019-9-8",
+      "hash" : "e60d09438284c99232d6912784b066833b7185c4"
+    },
+    "files_cnt" : 0,
+    "processed_files" : [ ]
+  }, {
+    "new_commit" : {
+      "parents_cnt" : 2,
+      "message" : "Merge pull request #30 from vovak/usage-example",
+      "date" : "2019-9-16",
+      "hash" : "cf8d5d3eea5c3033c100c744787ad8158caf8860"
+    },
+    "old_commit" : {
+      "parents_cnt" : 2,
+      "message" : "Merge pull request #29 from vovak/project-parsing",
+      "date" : "2019-9-10",
+      "hash" : "f0449b7c6fd7e746c153f212960731b1381db37f"
+    },
+    "files_cnt" : 14,
+    "processed_files" : [ "astminer-cli/data/testData/arrayCalls/ComplexArrayInitialization.java", "astminer-cli/data/testData/arrayCalls/ComplexTest.java", "astminer-cli/data/testData/arrayCalls/DoubleArrayInitialization.java", "astminer-cli/data/testData/arrayCalls/IntArrayInitialization.java", "astminer-cli/data/testData/arrayCalls/StringArrayInitialization.java", "astminer-cli/data/testData/common/NonParsableFile.java", "astminer-cli/data/testData/common/ParsableFile.java", "astminer-cli/data/testData/examples/1.java", "astminer-cli/data/testData/examples/test_dir_name_extension.java/1.java", "astminer-cli/data/testData/featureextraction/hello.java", "astminer-cli/data/testData/gumTreeMethodSplitter/1.java", "astminer-cli/data/testData/gumTreeMethodSplitter/2.java", "astminer-cli/data/testData/gumTreeMethodSplitter/3.java", "astminer-cli/data/testData/gumTreeMethodSplitter/4.java" ]
+  }, {
+    "new_commit" : {
+      "parents_cnt" : 2,
+      "message" : "Merge pull request #31 from vovak/code2vec-output",
+      "date" : "2019-9-19",
+      "hash" : "cf7623f5de30e953e084152f63314084c281df25"
+    },
+    "old_commit" : {
+      "parents_cnt" : 2,
+      "message" : "Merge pull request #30 from vovak/usage-example",
+      "date" : "2019-9-16",
+      "hash" : "cf8d5d3eea5c3033c100c744787ad8158caf8860"
+    },
+    "files_cnt" : 3,
+    "processed_files" : [ "testData/code2vecPathMining/1.java", "testData/methodSplitting/testMethodSplitting.java", "src/main/java/astminer/examples/AllJavaFiles.java" ]
+  }, {
+    "new_commit" : {
+      "parents_cnt" : 2,
+      "message" : "Merge pull request #32 from vovak/code2vec-cli",
+      "date" : "2019-9-20",
+      "hash" : "a9ed2a2dc49cb0f9d11baf403d76d6a78449cf58"
+    },
+    "old_commit" : {
+      "parents_cnt" : 2,
+      "message" : "Merge pull request #31 from vovak/code2vec-output",
+      "date" : "2019-9-19",
+      "hash" : "cf7623f5de30e953e084152f63314084c281df25"
+    },
+    "files_cnt" : 0,
+    "processed_files" : [ ]
+  }, {
+    "new_commit" : {
+      "parents_cnt" : 2,
+      "message" : "Merge pull request #34 from vovak/batch-saving",
+      "date" : "2019-10-4",
+      "hash" : "473599dd17d4a4a489121b7e45900a8a467e5329"
+    },
+    "old_commit" : {
+      "parents_cnt" : 2,
+      "message" : "Merge pull request #32 from vovak/code2vec-cli",
+      "date" : "2019-9-20",
+      "hash" : "a9ed2a2dc49cb0f9d11baf403d76d6a78449cf58"
+    },
+    "files_cnt" : 1,
+    "processed_files" : [ "src/main/java/astminer/examples/AllJavaFiles.java" ]
+  }, {
+    "new_commit" : {
+      "parents_cnt" : 2,
+      "message" : "Merge pull request #35 from vovak/update-readme",
+      "date" : "2019-10-4",
+      "hash" : "36d74dddb29b3eb514e800429a8459dc070f4dd0"
+    },
+    "old_commit" : {
+      "parents_cnt" : 2,
+      "message" : "Merge pull request #34 from vovak/batch-saving",
+      "date" : "2019-10-4",
+      "hash" : "473599dd17d4a4a489121b7e45900a8a467e5329"
+    },
+    "files_cnt" : 0,
+    "processed_files" : [ ]
+  }, {
+    "new_commit" : {
+      "parents_cnt" : 1,
+      "message" : "Update README.md",
+      "date" : "2019-10-4",
+      "hash" : "f260bc8883d01b11098b80c08e8985c6f057bc6e"
+    },
+    "old_commit" : {
+      "parents_cnt" : 2,
+      "message" : "Merge pull request #35 from vovak/update-readme",
+      "date" : "2019-10-4",
+      "hash" : "36d74dddb29b3eb514e800429a8459dc070f4dd0"
+    },
+    "files_cnt" : 0,
+    "processed_files" : [ ]
+  }, {
+    "new_commit" : {
+      "parents_cnt" : 1,
+      "message" : "edit readme",
+      "date" : "2019-10-7",
+      "hash" : "db806f8d9f2c996a365f5366ba7513cb4a2af8df"
+    },
+    "old_commit" : {
+      "parents_cnt" : 1,
+      "message" : "Update README.md",
+      "date" : "2019-10-4",
+      "hash" : "f260bc8883d01b11098b80c08e8985c6f057bc6e"
+    },
+    "files_cnt" : 0,
+    "processed_files" : [ ]
+  }, {
+    "new_commit" : {
+      "parents_cnt" : 1,
+      "message" : "Update README.md",
+      "date" : "2019-10-7",
+      "hash" : "ade2f07a8bf1eaf42a69d2e1deead047b5e30a12"
+    },
+    "old_commit" : {
+      "parents_cnt" : 1,
+      "message" : "edit readme",
+      "date" : "2019-10-7",
+      "hash" : "db806f8d9f2c996a365f5366ba7513cb4a2af8df"
+    },
+    "files_cnt" : 0,
+    "processed_files" : [ ]
+  }, {
+    "new_commit" : {
+      "parents_cnt" : 2,
+      "message" : "Merge pull request #37 from vovak/v0.4",
+      "date" : "2019-10-7",
+      "hash" : "b1c735e194ee80f50f8661ef65b4621e4f4787c6"
+    },
+    "old_commit" : {
+      "parents_cnt" : 1,
+      "message" : "Update README.md",
+      "date" : "2019-10-7",
+      "hash" : "ade2f07a8bf1eaf42a69d2e1deead047b5e30a12"
+    },
+    "files_cnt" : 0,
+    "processed_files" : [ ]
+  }, {
+    "new_commit" : {
+      "parents_cnt" : 2,
+      "message" : "Merge pull request #36 from vovak/compress-tree-fix",
+      "date" : "2019-10-7",
+      "hash" : "c6c8da2f17d5789a186fefd1366a82c6afe4d529"
+    },
+    "old_commit" : {
+      "parents_cnt" : 2,
+      "message" : "Merge pull request #37 from vovak/v0.4",
+      "date" : "2019-10-7",
+      "hash" : "b1c735e194ee80f50f8661ef65b4621e4f4787c6"
+    },
+    "files_cnt" : 0,
+    "processed_files" : [ ]
+  }, {
+    "new_commit" : {
+      "parents_cnt" : 2,
+      "message" : "Merge pull request #38 from vovak/tree-splitter-renaming",
+      "date" : "2019-10-10",
+      "hash" : "d8db32bb70a720b1cbca25ff86441f1504899014"
+    },
+    "old_commit" : {
+      "parents_cnt" : 2,
+      "message" : "Merge pull request #36 from vovak/compress-tree-fix",
+      "date" : "2019-10-7",
+      "hash" : "c6c8da2f17d5789a186fefd1366a82c6afe4d529"
+    },
+    "files_cnt" : 0,
+    "processed_files" : [ ]
+  }, {
+    "new_commit" : {
+      "parents_cnt" : 2,
+      "message" : "Merge pull request #41 from vovak/dot_storage_support",
+      "date" : "2019-10-16",
+      "hash" : "145099775e81cd795ddf17e3596a7a13e36ab876"
+    },
+    "old_commit" : {
+      "parents_cnt" : 2,
+      "message" : "Merge pull request #38 from vovak/tree-splitter-renaming",
+      "date" : "2019-10-10",
+      "hash" : "d8db32bb70a720b1cbca25ff86441f1504899014"
+    },
+    "files_cnt" : 0,
+    "processed_files" : [ ]
+  }, {
+    "new_commit" : {
+      "parents_cnt" : 2,
+      "message" : "Merge branch 'dot_storage_support'",
+      "date" : "2019-10-16",
+      "hash" : "bb717e34f27eb379864f7f0d639be1a44b7036c6"
+    },
+    "old_commit" : {
+      "parents_cnt" : 2,
+      "message" : "Merge pull request #41 from vovak/dot_storage_support",
+      "date" : "2019-10-16",
+      "hash" : "145099775e81cd795ddf17e3596a7a13e36ab876"
+    },
+    "files_cnt" : 0,
+    "processed_files" : [ ]
+  }, {
+    "new_commit" : {
+      "parents_cnt" : 2,
+      "message" : "Merge pull request #39 from vovak/js",
+      "date" : "2019-10-16",
+      "hash" : "ec8d7fe22f78f07e2a278c9af12b0a5253435abe"
+    },
+    "old_commit" : {
+      "parents_cnt" : 2,
+      "message" : "Merge branch 'dot_storage_support'",
+      "date" : "2019-10-16",
+      "hash" : "bb717e34f27eb379864f7f0d639be1a44b7036c6"
+    },
+    "files_cnt" : 2,
+    "processed_files" : [ "src/main/java/me/vovak/antlr/parser/JavaScriptBaseLexer.java", "src/main/java/me/vovak/antlr/parser/JavaScriptBaseParser.java" ]
+  }, {
+    "new_commit" : {
+      "parents_cnt" : 2,
+      "message" : "Merge pull request #44 from vovak/bug/fix_graph_naming",
+      "date" : "2019-10-23",
+      "hash" : "6a40fd03b2c5d786634faa5b590f8c02969838b0"
+    },
+    "old_commit" : {
+      "parents_cnt" : 2,
+      "message" : "Merge pull request #39 from vovak/js",
+      "date" : "2019-10-16",
+      "hash" : "ec8d7fe22f78f07e2a278c9af12b0a5253435abe"
+    },
+    "files_cnt" : 0,
+    "processed_files" : [ ]
+  }, {
+    "new_commit" : {
+      "parents_cnt" : 2,
+      "message" : "Merge pull request #43 from vovak/integrate_method_splitter_into_cli",
+      "date" : "2019-10-23",
+      "hash" : "dc64600ddac7052c3a16b0a4bc17f611255f19b1"
+    },
+    "old_commit" : {
+      "parents_cnt" : 2,
+      "message" : "Merge pull request #44 from vovak/bug/fix_graph_naming",
+      "date" : "2019-10-23",
+      "hash" : "6a40fd03b2c5d786634faa5b590f8c02969838b0"
+    },
+    "files_cnt" : 0,
+    "processed_files" : [ ]
+  }, {
+    "new_commit" : {
+      "parents_cnt" : 2,
+      "message" : "Merge pull request #45 from vovak/bug/save_ast_as_directed_graph",
+      "date" : "2019-11-4",
+      "hash" : "bc87d2d533344ade6d46148334b7f4afe6e383f2"
+    },
+    "old_commit" : {
+      "parents_cnt" : 2,
+      "message" : "Merge pull request #43 from vovak/integrate_method_splitter_into_cli",
+      "date" : "2019-10-23",
+      "hash" : "dc64600ddac7052c3a16b0a4bc17f611255f19b1"
+    },
+    "files_cnt" : 0,
+    "processed_files" : [ ]
+  }, {
+    "new_commit" : {
+      "parents_cnt" : 1,
+      "message" : "remove obsolete todo",
+      "date" : "2019-11-14",
+      "hash" : "cd966764554e1aa318b20102bc970ee8254df520"
+    },
+    "old_commit" : {
+      "parents_cnt" : 2,
+      "message" : "Merge pull request #45 from vovak/bug/save_ast_as_directed_graph",
+      "date" : "2019-11-4",
+      "hash" : "bc87d2d533344ade6d46148334b7f4afe6e383f2"
+    },
+    "files_cnt" : 0,
+    "processed_files" : [ ]
+  }, {
+    "new_commit" : {
+      "parents_cnt" : 2,
+      "message" : "Merge pull request #46 from vovak/feature/split_token_to_subtokens",
+      "date" : "2019-11-14",
+      "hash" : "430bbc2cb30396dbd856a268917753ad739c20cf"
+    },
+    "old_commit" : {
+      "parents_cnt" : 1,
+      "message" : "remove obsolete todo",
+      "date" : "2019-11-14",
+      "hash" : "cd966764554e1aa318b20102bc970ee8254df520"
+    },
+    "files_cnt" : 0,
+    "processed_files" : [ ]
+  }, {
+    "new_commit" : {
+      "parents_cnt" : 2,
+      "message" : "Merge pull request #49 from vovak/bugfix/normalize_splitted_tokens",
+      "date" : "2019-11-19",
+      "hash" : "8c1cccee5b8bd6c94f2d365aefaceee516f43411"
+    },
+    "old_commit" : {
+      "parents_cnt" : 2,
+      "message" : "Merge pull request #46 from vovak/feature/split_token_to_subtokens",
+      "date" : "2019-11-14",
+      "hash" : "430bbc2cb30396dbd856a268917753ad739c20cf"
+    },
+    "files_cnt" : 0,
+    "processed_files" : [ ]
+  }, {
+    "new_commit" : {
+      "parents_cnt" : 1,
+      "message" : "bump Kotlin version",
+      "date" : "2019-11-19",
+      "hash" : "43f138266997618263805d61054c3348d1344469"
+    },
+    "old_commit" : {
+      "parents_cnt" : 2,
+      "message" : "Merge pull request #49 from vovak/bugfix/normalize_splitted_tokens",
+      "date" : "2019-11-19",
+      "hash" : "8c1cccee5b8bd6c94f2d365aefaceee516f43411"
+    },
+    "files_cnt" : 0,
+    "processed_files" : [ ]
+  }, {
+    "new_commit" : {
+      "parents_cnt" : 2,
+      "message" : "Merge pull request #51 from vovak/release-0.5",
+      "date" : "2019-11-21",
+      "hash" : "66729bed25856751892b6ca19d0faa24685af8cd"
+    },
+    "old_commit" : {
+      "parents_cnt" : 1,
+      "message" : "bump Kotlin version",
+      "date" : "2019-11-19",
+      "hash" : "43f138266997618263805d61054c3348d1344469"
+    },
+    "files_cnt" : 0,
+    "processed_files" : [ ]
+  }, {
+    "new_commit" : {
+      "parents_cnt" : 2,
+      "message" : "Merge pull request #52 from vovak/release-cli-0.3",
+      "date" : "2019-11-21",
+      "hash" : "a0261c0dbd6b485599c31c42de4e87337b47272b"
+    },
+    "old_commit" : {
+      "parents_cnt" : 2,
+      "message" : "Merge pull request #51 from vovak/release-0.5",
+      "date" : "2019-11-21",
+      "hash" : "66729bed25856751892b6ca19d0faa24685af8cd"
+    },
+    "files_cnt" : 0,
+    "processed_files" : [ ]
+  }, {
+    "new_commit" : {
+      "parents_cnt" : 2,
+      "message" : "Merge pull request #54 from JetBrains-Research/integration_tests",
+      "date" : "2019-11-26",
+      "hash" : "6cd7fd97b8dec37b5ee73ed9b3980444a2360fa5"
+    },
+    "old_commit" : {
+      "parents_cnt" : 2,
+      "message" : "Merge pull request #52 from vovak/release-cli-0.3",
+      "date" : "2019-11-21",
+      "hash" : "a0261c0dbd6b485599c31c42de4e87337b47272b"
+    },
+    "files_cnt" : 14,
+    "processed_files" : [ "astminer-cli/src/test/resources/testData/arrayCalls/ComplexArrayInitialization.java", "astminer-cli/src/test/resources/testData/arrayCalls/ComplexTest.java", "astminer-cli/src/test/resources/testData/arrayCalls/DoubleArrayInitialization.java", "astminer-cli/src/test/resources/testData/arrayCalls/IntArrayInitialization.java", "astminer-cli/src/test/resources/testData/arrayCalls/StringArrayInitialization.java", "astminer-cli/src/test/resources/testData/common/NonParsableFile.java", "astminer-cli/src/test/resources/testData/common/ParsableFile.java", "astminer-cli/src/test/resources/testData/examples/1.java", "astminer-cli/src/test/resources/testData/examples/test_dir_name_extension.java/1.java", "astminer-cli/src/test/resources/testData/featureextraction/hello.java", "astminer-cli/src/test/resources/testData/gumTreeMethodSplitter/1.java", "astminer-cli/src/test/resources/testData/gumTreeMethodSplitter/2.java", "astminer-cli/src/test/resources/testData/gumTreeMethodSplitter/3.java", "astminer-cli/src/test/resources/testData/gumTreeMethodSplitter/4.java" ]
+  }, {
+    "new_commit" : {
+      "parents_cnt" : 1,
+      "message" : "fix CI status badge",
+      "date" : "2019-11-26",
+      "hash" : "f18960cca2b3cee26775fcbcd55499686e7569b7"
+    },
+    "old_commit" : {
+      "parents_cnt" : 2,
+      "message" : "Merge pull request #54 from JetBrains-Research/integration_tests",
+      "date" : "2019-11-26",
+      "hash" : "6cd7fd97b8dec37b5ee73ed9b3980444a2360fa5"
+    },
+    "files_cnt" : 0,
+    "processed_files" : [ ]
+  }, {
+    "new_commit" : {
+      "parents_cnt" : 1,
+      "message" : "update version in import snippets in the readme",
+      "date" : "2019-11-28",
+      "hash" : "1741793c690d4febb35b523015526f7710762cbc"
+    },
+    "old_commit" : {
+      "parents_cnt" : 1,
+      "message" : "fix CI status badge",
+      "date" : "2019-11-26",
+      "hash" : "f18960cca2b3cee26775fcbcd55499686e7569b7"
+    },
+    "files_cnt" : 0,
+    "processed_files" : [ ]
+  }, {
+    "new_commit" : {
+      "parents_cnt" : 1,
+      "message" : "Add JetBrains Research badge",
+      "date" : "2019-12-3",
+      "hash" : "7f2e0fa914cf269e2b44d6ff89acc3702597714e"
+    },
+    "old_commit" : {
+      "parents_cnt" : 1,
+      "message" : "update version in import snippets in the readme",
+      "date" : "2019-11-28",
+      "hash" : "1741793c690d4febb35b523015526f7710762cbc"
+    },
+    "files_cnt" : 0,
+    "processed_files" : [ ]
+  }, {
+    "new_commit" : {
+      "parents_cnt" : 2,
+      "message" : "Merge pull request #58 from JetBrains-Research/update_gumtree",
+      "date" : "2019-12-5",
+      "hash" : "84edf6cb3d255212bd7f219e66c7635626848013"
+    },
+    "old_commit" : {
+      "parents_cnt" : 1,
+      "message" : "Add JetBrains Research badge",
+      "date" : "2019-12-3",
+      "hash" : "7f2e0fa914cf269e2b44d6ff89acc3702597714e"
+    },
+    "files_cnt" : 1,
+    "processed_files" : [ "testData/gumTreeMethodSplitter/4.java" ]
+  }, {
+    "new_commit" : {
+      "parents_cnt" : 1,
+      "message" : "Update README.md",
+      "date" : "2019-12-8",
+      "hash" : "ae1b18cf1b7a064f67f2734f3495035f8dc1e1f6"
+    },
+    "old_commit" : {
+      "parents_cnt" : 2,
+      "message" : "Merge pull request #58 from JetBrains-Research/update_gumtree",
+      "date" : "2019-12-5",
+      "hash" : "84edf6cb3d255212bd7f219e66c7635626848013"
+    },
+    "files_cnt" : 0,
+    "processed_files" : [ ]
+  }, {
+    "new_commit" : {
+      "parents_cnt" : 2,
+      "message" : "Merge pull request #61 from JetBrains-Research/parametrize_path_storages",
+      "date" : "2019-12-9",
+      "hash" : "8e87b705c909f5102ccdf5cf3ba6f00f3630adfe"
+    },
+    "old_commit" : {
+      "parents_cnt" : 1,
+      "message" : "Update README.md",
+      "date" : "2019-12-8",
+      "hash" : "ae1b18cf1b7a064f67f2734f3495035f8dc1e1f6"
+    },
+    "files_cnt" : 1,
+    "processed_files" : [ "src/main/java/astminer/examples/AllJavaFiles.java" ]
+  }, {
+    "new_commit" : {
+      "parents_cnt" : 1,
+      "message" : "Update java example",
+      "date" : "2019-12-9",
+      "hash" : "56e053a03b75b269044b8d862dc14f0e93886074"
+    },
+    "old_commit" : {
+      "parents_cnt" : 2,
+      "message" : "Merge pull request #61 from JetBrains-Research/parametrize_path_storages",
+      "date" : "2019-12-9",
+      "hash" : "8e87b705c909f5102ccdf5cf3ba6f00f3630adfe"
+    },
+    "files_cnt" : 0,
+    "processed_files" : [ ]
+  }, {
+    "new_commit" : {
+      "parents_cnt" : 1,
+      "message" : "Update kotlin version and exclude it from shadowing",
+      "date" : "2019-12-18",
+      "hash" : "b4676f7fb5fc2b5939a3b63d4ad6804bd9e50ec7"
+    },
+    "old_commit" : {
+      "parents_cnt" : 1,
+      "message" : "Update java example",
+      "date" : "2019-12-9",
+      "hash" : "56e053a03b75b269044b8d862dc14f0e93886074"
+    },
+    "files_cnt" : 0,
+    "processed_files" : [ ]
+  }, {
+    "new_commit" : {
+      "parents_cnt" : 2,
+      "message" : "Merge pull request #109 from JetBrains-Research/master-dev",
+      "date" : "2020-10-12",
+      "hash" : "478901869c60f788b2b256fc410b73323edce4cc"
+    },
+    "old_commit" : {
+      "parents_cnt" : 1,
+      "message" : "Update kotlin version and exclude it from shadowing",
+      "date" : "2019-12-18",
+      "hash" : "b4676f7fb5fc2b5939a3b63d4ad6804bd9e50ec7"
+    },
+    "files_cnt" : 18,
+    "processed_files" : [ "src/jmh/resources/LongJavaFile.java", "src/test/resources/arrayCalls/ComplexArrayInitialization.java", "src/test/resources/arrayCalls/ComplexTest.java", "src/test/resources/arrayCalls/DoubleArrayInitialization.java", "src/test/resources/arrayCalls/IntArrayInitialization.java", "src/test/resources/arrayCalls/StringArrayInitialization.java", "src/test/resources/code2vecPathMining/1.java", "src/test/resources/common/NonParsableFile.java", "src/test/resources/common/ParsableFile.java", "src/test/resources/examples/1.java", "src/test/resources/examples/test_dir_name_extension.java/1.java", "src/test/resources/featureextraction/hello.java", "src/test/resources/gumTreeMethodSplitter/1.java", "src/test/resources/gumTreeMethodSplitter/2.java", "src/test/resources/gumTreeMethodSplitter/3.java", "src/test/resources/gumTreeMethodSplitter/4.java", "src/test/resources/methodSplitting/testMethodSplitting.java", "src/main/java/astminer/examples/AllJavaFiles.java" ]
+  } ]
+}
