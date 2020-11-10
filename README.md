@@ -13,7 +13,23 @@ git clone https://github.com/JetBrains-Research/code-summarization-dataset.git
 
 TODO
 
-- Run the tool
+In **main.kt**:
+- provide path to .json file with list of patches to cloned git repositories
+
+  ```val PATH_TO_ALL_REPOS_LIST = "repos/repos.json"```
+  
+- provide path to results dump folder:
+
+  ```val DUMP_FOLDER = "repos/dumps"```
+
+
+Run the tool
 ```
 ./gradlew run
 ```
+
+Two files appear in the dump folder for each repository:
+
+  - ```methods.jsonl``` -- line-delimited json methods summary
+  - ```log.jsonl``` -- all traversed commits
+
