@@ -2,6 +2,7 @@ package reposanalyzer.utils
 
 import reposanalyzer.config.Language
 import java.io.File
+import java.util.Calendar
 
 fun readFileToString(filePath: String): String {
     val file = File(filePath)
@@ -9,6 +10,18 @@ fun readFileToString(filePath: String): String {
         return ""
     }
     return file.readText()
+}
+
+fun dotGitFilter(patches: List<String>): Pair<List<String>, List<String>> {
+    val exists = mutableListOf<String>()
+    val notExists = mutableListOf<String>()
+    for (path in patches) {
+        when (File(path + File.separator + ".git").exists()) {
+            true -> exists.add(path)
+            false -> notExists.add(path)
+        }
+    }
+    return Pair(exists, notExists)
 }
 
 fun getNotHiddenNotDirectoryFiles(dirPath: String): List<File> {
@@ -23,40 +36,28 @@ fun getNotHiddenNotDirectoryFiles(filesPatches: List<String>): List<File> {
     }
 }
 
-fun getFilesByLanguage(files: List<File>, languages: List<Language>): Map<Language, List<File>> {
-    val filesByLang = mutableMapOf<Language, MutableList<File>>()
-    languages.forEach { lang ->
-        filesByLang[lang] = mutableListOf()
-    }
-    files.forEach { file ->
-        inner@for (lang in languages) {
-            if (isFileFromLanguage(file, lang)) {
-                filesByLang[lang]?.add(file)
-                break@inner
-            }
-        }
-    }
-    return filesByLang
+fun removePrefixPath(prefix: String, files: List<File>): List<String> {
+    return files.map { it.absolutePath.removePrefix(prefix) }
 }
 
-fun isFileFromLanguage(file: File, language: Language): Boolean {
-    return language.extensions.any { ext ->
-        file.absolutePath.endsWith(ext)
+fun removePrefixPath(prefix: String, filesByLang: Map<Language, List<File>>): Map<Language, List<String>> {
+    val newMap = mutableMapOf<Language, List<String>>()
+    filesByLang.forEach { (lang, files) ->
+        newMap[lang] = removePrefixPath(prefix, files)
+    }
+    return newMap
+}
+
+fun absolutePatches(mainPath: String, filesPatches: List<String>): List<String> {
+    return filesPatches.map { filePath ->
+        mainPath + File.separator + filePath
     }
 }
 
-fun getProjectDir(): String {
-    return System.getProperty("user.dir")
-}
-
-fun dotGitFilter(patches: List<String>): Pair<List<String>, List<String>> {
-    val exists = mutableListOf<String>()
-    val notExists = mutableListOf<String>()
-    for (path in patches) {
-        when (File(path + File.separator + ".git").exists()) {
-            true -> exists.add(path)
-            false -> notExists.add(path)
-        }
-    }
-    return Pair(exists, notExists)
+fun Calendar.getDateByMilliseconds(time: Long): String {
+    this.timeInMillis = time
+    val year = this.get(Calendar.YEAR)
+    val month = this.get(Calendar.MONTH) + 1
+    val day = this.get(Calendar.DAY_OF_MONTH)
+    return "$year-$month-$day"
 }

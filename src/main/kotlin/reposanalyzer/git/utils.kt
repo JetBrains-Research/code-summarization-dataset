@@ -5,23 +5,29 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import org.eclipse.jgit.revwalk.RevCommit
+import reposanalyzer.utils.getDateByMilliseconds
 import java.util.Calendar
 
-fun RevCommit.toJSON(objectMapper: ObjectMapper? = null): JsonNode {
+fun RevCommit.getCommitInfo(): CommitInfo {
+    return CommitInfo(
+        this.parentCount,
+        this.shortMessage,
+        this.authorIdent.getWhen().time, // milliseconds
+        this.name // hash
+    )
+}
+
+fun RevCommit.toJSON(objectMapper: ObjectMapper? = null, outerCalendar: Calendar? = null): JsonNode {
     val mapper = objectMapper ?: jacksonObjectMapper()
         .enable(SerializationFeature.INDENT_OUTPUT)
+    val calendar = outerCalendar ?: Calendar.getInstance()
 
     val jsonNode = mapper.createObjectNode()
-
-    val calendar = Calendar.getInstance()
-    calendar.timeInMillis = this.authorIdent.getWhen().time
-    val year = calendar.get(Calendar.YEAR)
-    val month = calendar.get(Calendar.MONTH) + 1
-    val day = calendar.get(Calendar.DAY_OF_MONTH)
+    val date = calendar.getDateByMilliseconds(this.authorIdent.getWhen().time)
 
     jsonNode.set<JsonNode>("parents_cnt", mapper.valueToTree(this.parentCount))
     jsonNode.set<JsonNode>("message", mapper.valueToTree(this.shortMessage))
-    jsonNode.set<JsonNode>("date", mapper.valueToTree("$year-$month-$day"))
+    jsonNode.set<JsonNode>("date", mapper.valueToTree(date))
     jsonNode.set<JsonNode>("hash", mapper.valueToTree(this.name))
     return jsonNode
 }

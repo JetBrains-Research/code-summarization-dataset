@@ -1,16 +1,23 @@
 package reposanalyzer.config
 
-enum class Language(val extensions: List<String>) {
+enum class Language(
+    val label: String,
+    val extensions: List<String>
+) {
     JAVA(
+        "Java",
         listOf(".java")
     ),
     KOTLIN(
+        "Kotlin",
         listOf(".kt", ".kts")
     ),
     CSHARP(
+        "C#",
         listOf(".cs")
     ),
     PYTHON(
+        "Python",
         listOf(".py")
     )
 }

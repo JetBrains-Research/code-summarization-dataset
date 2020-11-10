@@ -4,12 +4,15 @@ import astminer.common.getNormalizedToken
 import astminer.common.model.Node
 import astminer.common.preOrder
 import astminer.common.storage.RankedIncrementalIdStorage
-import astminer.parse.java.GumTreeJavaNode
 import reposanalyzer.config.Language
-import sun.reflect.generics.reflectiveObjects.NotImplementedException
+import reposanalyzer.parsing.getChildByTypeLabel
+import reposanalyzer.parsing.getNodeLabel
+import reposanalyzer.parsing.getNodeLength
+import reposanalyzer.parsing.getNodeStart
+import reposanalyzer.methods.normalizeAstLabel
 
 class MethodSummarizer(
-    private val hideNames: Boolean,
+    private val hideNames: Boolean = true,
     private val hiddenMethodName: String = "METHOD_NAME"
 ) {
     private object TypeLabels {
@@ -20,17 +23,17 @@ class MethodSummarizer(
     fun <T : Node> summarize(
         root: T,
         label: String,
-        filePath: String,
         fileContent: String,
+        filePath: String,
         language: Language
     ): MethodSummary {
-        val parents = getParents(root)
+        val parents = root.getParents()
         val normalizedLabel = normalizeAstLabel(label)
         val normalizedFullName = buildNormalizedFullName(label, parents)
-        val body = extractBody(label, root, fileContent, language)
-        val doc = extractDoc(root, fileContent, language)
-        val comment = extractComment(root, fileContent, language)
-        val ast = extractAST(root, normalizedLabel)
+        val doc = root.extractDoc(fileContent, language)
+        val comment = root.extractComment(fileContent, language)
+        val body = root.extractBody(label, fileContent, language)
+        val ast = root.extractAST(normalizedLabel)
         return MethodSummary(
             name = normalizedLabel,
             fullName = normalizedFullName,
@@ -44,73 +47,66 @@ class MethodSummarizer(
     }
 
     fun <T : Node> getMethodFullName(root: T, label: String): String {
-        val parents = getParents(root)
+        val parents = root.getParents()
         return buildNormalizedFullName(label, parents)
     }
 
-    private fun extractBody(label: String, root: Node, fileContent: String, language: Language): String? {
-        var pos = getNodeStart(root)
-        var length = getNodeLength(root)
+    private fun <T : Node> T.extractBody(label: String, fileContent: String, language: Language): String? {
+        var pos = this.getNodeStart()
+        var length = this.getNodeLength()
         when (language) {
-            Language.JAVA -> getJavadocChild(root)?.let { child ->
-                val docLength = getNodeLength(child)
+            Language.JAVA -> this.getChildByTypeLabel(TypeLabels.JAVA_DOC)?.let { child ->
+                val docLength = child.getNodeLength()
                 pos += docLength
                 length -= docLength
             }
-            else -> {} // TODO
+            else -> throw NotImplementedError() // TODO
         }
-        val body = extractContent(fileContent, pos, length)
-        // replace first label occurrence " label" to " METHOD_NAME"
+        var body = extractContent(fileContent, pos, length)
+        // replace first label occurrence " $label" to " METHOD_NAME"
         if (hideNames && body != null) {
-            return body.replaceFirst(" $label", " $hiddenMethodName")
+            body = body.replaceFirst(" $label", " $hiddenMethodName")
         }
         return body
     }
 
-    private fun extractDoc(root: Node, fileContent: String, language: Language): String? {
+    private fun <T : Node> T.extractDoc(fileContent: String, language: Language): String? {
         var docPos = 0
         var docLength = 0
         when (language) {
-            Language.JAVA -> getJavadocChild(root)?.let { child ->
-                docPos = getNodeStart(child)
-                docLength = getNodeLength(child)
+            Language.JAVA -> this.getChildByTypeLabel(TypeLabels.JAVA_DOC)?.let { child ->
+                docPos = child.getNodeStart()
+                docLength = child.getNodeLength()
             }
-            else -> {} // TODO
+            else -> throw NotImplementedError() // TODO
         }
         return extractContent(fileContent, docPos, docLength)
     }
 
-    private fun extractComment(root: Node, fileContent: String, language: Language): String? {
-        val pos = getNodeStart(root)
+    private fun <T : Node> T.extractComment(fileContent: String, language: Language): String? {
+        val pos = this.getNodeStart()
+        var comment: String? = null
         when (language) {
             Language.JAVA -> {
                 val fileBeforeMethod = fileContent.substring(0, pos).trimIndent().trimEnd()
-                if (!fileBeforeMethod.endsWith("*/")) {
-                    return null
-                }
-                val posJavaDoc = fileBeforeMethod.lastIndexOf("/**")
-                val posComment = fileBeforeMethod.lastIndexOf("/*")
-                if (posJavaDoc < 0 && posComment > 0) { // it isn't javadoc, just comment
-                    return fileBeforeMethod.substring(posComment)
+                if (fileBeforeMethod.endsWith("*/")) {
+                    val posJavaDoc = fileBeforeMethod.lastIndexOf("/**")
+                    val posComment = fileBeforeMethod.lastIndexOf("/*")
+                    if (posJavaDoc < 0 && posComment > 0) { // it isn't javadoc, just comment
+                        comment = fileBeforeMethod.substring(posComment)
+                    }
                 }
             }
-            else -> {} // TODO
+            else -> throw NotImplementedError() // TODO
         }
-        return null
+        return comment
     }
 
-    private fun extractContent(fileContent: String, pos: Int, length: Int): String? {
-        if (length != 0 && pos + length < fileContent.length) {
-            return fileContent.substring(pos, pos + length).trimStart().trimEnd()
-        }
-        return null
-    }
-
-    private fun extractAST(root: Node, normalizedLabel: String): MethodAST {
+    private fun <T : Node> T.extractAST(normalizedLabel: String): MethodAST {
         val graph = mutableMapOf<Long, List<Long>>()
-        val nodesMap = getASTGraph(root, graph)
+        val nodesMap = this.getAST(graph)
         val description = mutableListOf<MethodToken>()
-        for (node in root.preOrder()) {
+        for (node in this.preOrder()) { // from astminer sources
             val id = nodesMap.getId(node) - 1
             val token = node.getNormalizedToken()
             val type = node.getTypeLabel()
@@ -120,7 +116,7 @@ class MethodSummarizer(
         val sortedDescription = description.sortedBy { it.id }
         if (hideNames) {
             for (token in sortedDescription) {
-                if (token.type == TypeLabels.SIMPLE_NAME) {
+                if (token.type == TypeLabels.SIMPLE_NAME) { // first SimpleName token is method name
                     token.name = hiddenMethodName
                     break
                 }
@@ -129,9 +125,9 @@ class MethodSummarizer(
         return MethodAST(normalizedLabel, graph, sortedDescription)
     }
 
-    private fun getASTGraph(root: Node, graph: MutableMap<Long, List<Long>>): RankedIncrementalIdStorage<Node> {
+    private fun <T : Node> T.getAST(graph: MutableMap<Long, List<Long>>): RankedIncrementalIdStorage<Node> {
         val nodesMap = RankedIncrementalIdStorage<Node>()
-        for (node in root.preOrder()) {
+        for (node in this.preOrder()) { // from astminer sources
             val id = nodesMap.record(node) - 1
             val childrenIds = node.getChildren().map { nodesMap.record(it) - 1 }
             graph[id] = childrenIds
@@ -139,66 +135,17 @@ class MethodSummarizer(
         return nodesMap
     }
 
-    private fun buildNormalizedFullName(label: String, parents: List<Pair<String, String>>? = null): String {
-        val normalizedLabel = normalizeAstLabel(label)
-        if (parents == null || parents.isEmpty()) {
-            return normalizedLabel
-        }
-        return parents.joinToString(separator = ".", postfix = ".") { (label, _) ->
-            normalizeAstLabel(label)
-        } + normalizedLabel
-    }
-
-    private fun normalizeAstLabel(label: String): String =
-        label.replace("[^A-z^0-9^_]".toRegex(), "_")
-
-    private fun <T : Node> getParents(methodRoot: T): List<Pair<String, String>> {
+    private fun <T : Node> T.getParents(): List<Pair<String, String>> {
         val parents = mutableListOf<Pair<String, String>>()
-        var currParent = methodRoot.getParent()
+        var currParent = this.getParent()
         while (currParent != null) {
-            currParent.getChildren().forEach { child ->
-                if (child.getTypeLabel() == TypeLabels.SIMPLE_NAME) {
-                    getNodeLabel(child).let { childLabel ->
-                        parents.add(Pair(childLabel, currParent!!.getTypeLabel()))
-                    }
-                    return@forEach
-                }
+            val child = currParent.getChildByTypeLabel(TypeLabels.SIMPLE_NAME)
+            if (child != null) {
+                val childLabel = child.getNodeLabel()
+                parents.add(Pair(childLabel, currParent.getTypeLabel()))
             }
             currParent = currParent.getParent()
         }
         return parents
-    }
-
-    private fun <T : Node> getJavadocChild(root: T): Node? {
-        for (child in root.getChildren()) {
-            if (child.getTypeLabel() == TypeLabels.JAVA_DOC) {
-                return child
-            }
-        }
-        return null
-    }
-
-    // generic for other GumTreeNodes languages
-    private fun <T : Node> getNodeLabel(node: T): String {
-        return when (node) {
-            is GumTreeJavaNode -> node.wrappedNode.label
-            else -> throw NotImplementedException()
-        }
-    }
-
-    // generic for other GumTreeNodes languages
-    private fun <T : Node> getNodeStart(node: T): Int {
-        return when (node) {
-            is GumTreeJavaNode -> node.wrappedNode.pos
-            else -> throw NotImplementedException()
-        }
-    }
-
-    // generic for other GumTreeNodes languages
-    private fun <T : Node> getNodeLength(node: T): Int {
-        return when (node) {
-            is GumTreeJavaNode -> node.wrappedNode.length
-            else -> throw NotImplementedException()
-        }
     }
 }

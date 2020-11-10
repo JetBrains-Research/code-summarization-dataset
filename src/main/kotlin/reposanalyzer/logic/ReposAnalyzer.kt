@@ -1,40 +1,28 @@
 package reposanalyzer.logic
 
-import reposanalyzer.config.Granularity
-import reposanalyzer.config.Language
-import reposanalyzer.config.Task
+import astminer.cli.ConstructorFilterPredicate
+import astminer.cli.MethodFilterPredicate
+import reposanalyzer.config.Config
 import reposanalyzer.utils.dotGitFilter
 import java.io.File
 
-class ReposAnalyzer(
-    reposPatches: List<String>,
-    dumpFolder: String,
-    languages: List<Language>,
-    task: Task = Task.NAME,
-    granularity: Granularity = Granularity.METHOD,
-    hideMethodsNames: Boolean = true,
-    silent: Boolean = false
-) {
+class ReposAnalyzer(config: Config) {
     private val workers = mutableListOf<RepoSummarizer>()
     private var goodPatches: List<String>
     private var badPatches: List<String>
 
     init {
-        File(dumpFolder).mkdirs()
-        val (good, bad) = dotGitFilter(reposPatches)
+        File(config.dumpFolder).mkdirs()
+        val (good, bad) = dotGitFilter(config.reposPatches)
         goodPatches = good
         badPatches = bad
-        goodPatches.forEach { path ->
-            val dumpPath = dumpFolder + File.separator + path.substringAfterLast(File.separator)
-            val summarizer = RepoSummarizer(
-                path,
-                dumpPath,
-                languages,
-                task,
-                granularity,
-                hideMethodsNames,
-                silent
-            )
+        goodPatches.forEach { repoPath ->
+            val repoDumpFolder = config.dumpFolder + File.separator + repoPath.substringAfterLast(File.separator)
+            val filterPredicates = mutableListOf<MethodFilterPredicate>()
+            if (config.excludeConstructors) {
+                filterPredicates.add(ConstructorFilterPredicate())
+            }
+            val summarizer = RepoSummarizer(repoPath, repoDumpFolder, config, filterPredicates)
             workers.add(summarizer)
         }
     }
@@ -49,5 +37,9 @@ class ReposAnalyzer(
         workers.forEach {
             it.run()
         }
+    }
+
+    fun addRepo(path: String) {
+        TODO()
     }
 }

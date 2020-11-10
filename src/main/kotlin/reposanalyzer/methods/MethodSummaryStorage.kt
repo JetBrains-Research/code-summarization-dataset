@@ -4,15 +4,33 @@ import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import java.io.File
+import java.io.FileOutputStream
 
 /*
- *   uniqueness checks through pair: [method normalized full name, filepath to file with method]
+ *  Summary storage with line-delimited ('\n') JSON dumps:
+ *      1. after dumpThreshold
+ *      2. by explicit dumpData method call
+ *
+ *  Uniqueness checks through pair:
+ *      [method normalized full name, filepath to file with method]
+ *
+ *  Visited methods storage (visited) does not clear at dumps
  */
-class MethodSummaryStorage {
+class MethodSummaryStorage(
+    private val dumpFilePath: String,
+    private val dumpThreshold: Int = 1000
+) {
     private data class Identity(val methodNormalizedFullName: String, val filePath: String)
 
-    private val visited = mutableSetOf<Identity>()
     private val data = mutableSetOf<MethodSummary>()
+    private val visited = mutableSetOf<Identity>()
+    private val dumpFile: File = File(dumpFilePath)
+    private val objectMapper = jacksonObjectMapper()
+
+    init {
+        dumpFile.createNewFile()
+    }
 
     val size: Int
         get() = data.size
@@ -23,7 +41,20 @@ class MethodSummaryStorage {
             data.add(summary)
             return true
         }
+        if (size > dumpThreshold) {
+            dumpData()
+        }
         return false
+    }
+
+    fun dumpData() {
+        FileOutputStream(dumpFile, true).bufferedWriter().use { writer ->
+            toJSON(objectMapper).forEach { jsonNode ->
+                val string = jsonNode.toString()
+                writer.appendLine(string)
+            }
+        }
+        data.clear() // clear data after dump WITHOUT cleaning visited list
     }
 
     fun toJSON(objectMapper: ObjectMapper? = null): List<JsonNode> {
