@@ -38,8 +38,4 @@ class ReposAnalyzer(config: Config) {
             it.run()
         }
     }
-
-    fun addRepo(path: String) {
-        TODO()
-    }
 }

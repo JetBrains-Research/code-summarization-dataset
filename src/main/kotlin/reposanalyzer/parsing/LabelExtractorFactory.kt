@@ -7,6 +7,7 @@ import reposanalyzer.config.Granularity
 import reposanalyzer.config.Task
 
 class LabelExtractorFactory {
+
     fun getLabelExtractor(
         task: Task,
         granularity: Granularity,
@@ -15,9 +16,9 @@ class LabelExtractorFactory {
         return when (task) {
             Task.NAME -> when (granularity) {
                 Granularity.METHOD -> MethodNameExtractor(filterPredicates = filterPredicates)
-                else -> throw NotImplementedError() // TODO
+                // TODO
             }
-            else -> throw NotImplementedError() // TODO
+            // TODO
         }
     }
 }
