@@ -18,6 +18,7 @@ class ReposAnalyzer(config: Config) {
         badPatches = bad
         goodPatches.forEach { repoPath ->
             val repoDumpFolder = config.dumpFolder + File.separator + repoPath.substringAfterLast(File.separator)
+            File(repoDumpFolder).mkdirs()
             val filterPredicates = mutableListOf<MethodFilterPredicate>()
             if (config.excludeConstructors) {
                 filterPredicates.add(ConstructorFilterPredicate())
