@@ -2,23 +2,36 @@ package reposfinder.requests
 
 import com.github.kittinunf.fuel.Fuel
 import com.github.kittinunf.fuel.core.Headers
+import com.github.kittinunf.fuel.core.Response
 import com.github.kittinunf.fuel.core.ResponseResultOf
 
-fun postRequest(url: String, token: String?, bodyJSON: String?): ResponseResultOf<ByteArray> {
-    val request = Fuel.post(url)
+private object HttpStatus {
+    const val OK = 200
+}
+
+fun getRequest(url: String, token: String? = null): ResponseResultOf<ByteArray> {
+    val request = Fuel.get(url)
     token?.let {
-        request.header(Headers.AUTHORIZATION, "token $token")
-    }
-    bodyJSON?.let {
-        request.body(bodyJSON)
+        request.header(Headers.AUTHORIZATION, "token $it")
     }
     return request.response()
 }
 
-fun getRequest(url: String, token: String?): ResponseResultOf<ByteArray> {
-    val request = Fuel.get(url)
+fun postRequest(url: String, jsonBody: String? = null, token: String? = null): ResponseResultOf<ByteArray> {
+    val request = Fuel.post(url)
     token?.let {
-        request.header(Headers.AUTHORIZATION, "token $token")
+        request.header(Headers.AUTHORIZATION, "token $it")
+    }
+    jsonBody?.let {
+        request.body(it)
     }
     return request.response()
+}
+
+fun Response.getBody(): String {
+    return this.body().asString(this.headers[Headers.CONTENT_TYPE].lastOrNull())
+}
+
+fun Response.isOK(): Boolean {
+    return this.statusCode == HttpStatus.OK
 }

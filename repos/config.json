@@ -1,0 +1,15 @@
+{
+    "languages": ["Java", "Kotlin"],
+    "stars_count": [">=", 10],
+    "commits_count": [0, 100000],
+    "contributors_count": [">=", 10],
+    "anon_contributors": [true],
+    "watchers_count": [],
+    "forks_count": [10, 100000],
+    "open_issues_count": [0, 100000],
+    "subscribers_count": [],
+    "size_KB": ["<=", 10000000],
+    "created_at": [">=","2010-01-01"],
+    "updated_at": [],
+    "pushed_at": []
+}

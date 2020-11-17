@@ -1,0 +1,113 @@
+package reposfinder.logic
+
+import com.fasterxml.jackson.databind.JsonNode
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.databind.SerializationFeature
+import com.fasterxml.jackson.databind.node.ObjectNode
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import reposfinder.api.APIExtractor
+import reposfinder.api.GitHubAPI
+import reposfinder.api.GraphQLQueries
+import reposfinder.filtering.FilterResult
+import reposfinder.requests.getBody
+import reposfinder.requests.getRequest
+import reposfinder.requests.isOK
+import reposfinder.requests.postRequest
+
+class Repository(
+    val owner: String,
+    val name: String,
+    var info: JsonNode,
+    var filterResults: MutableList<FilterResult> = mutableListOf()
+) {
+    private companion object {
+        const val CONTRIBUTORS_CNT = "contributors_count"
+        const val COMMITS_CNT = "commits_count"
+        const val OWNER = "owner"
+        const val NAME = "name"
+    }
+
+    fun loadCore(objectMapper: ObjectMapper, token: String? = null): Boolean {
+        val (_, response, _) = getRequest(
+            url = GitHubAPI.URL.core(owner, name),
+            token = token
+        )
+        if (!response.isOK()) {
+            println(
+                "RESPONSE ERROR (API v3) -- [owner: $owner, name: $name]\n" +
+                    "${response.getBody()}\n"
+            )
+            return false
+        }
+        info = objectMapper.readTree(response.getBody())
+        return true
+    }
+
+    fun loadGraphQL(requestType: GraphQLQueries, objectMapper: ObjectMapper, token: String? = null): Boolean {
+        val query = when (requestType) {
+            GraphQLQueries.COMMITS_COUNT -> requestType.getGraphQLBody(
+                requestType.query(owner, name, requestType.target),
+                objectMapper
+            )
+        }
+        val (_, response, _) = postRequest(
+            url = GitHubAPI.GRAPHQL.url,
+            jsonBody = query,
+            token = token
+        )
+        if (!response.isOK()) {
+            println(
+                "RESPONSE ERROR (GraphQL) -- [owner: $owner, name: $name]\n" +
+                    "${response.getBody()}\n"
+            )
+            return false
+        }
+        val responseNode = objectMapper.readTree(response.getBody())
+        when (requestType) {
+            GraphQLQueries.COMMITS_COUNT -> {
+                val count = APIExtractor.getCommitsCount(response = responseNode)
+                (info as ObjectNode).put(COMMITS_CNT, count)
+            }
+        }
+        return true
+    }
+
+    fun loadContributors(isAnon: Boolean, token: String? = null): Boolean {
+        val (_, response, _) = getRequest(
+            url = GitHubAPI.URL.contributors(owner, name, isAnon = isAnon),
+            token = token
+        )
+        if (!response.isOK()) {
+            println(
+                "RESPONSE ERROR (Contributors pagination hack API v3) -- [owner: $owner, name: $name]\n" +
+                    "${response.getBody()}\n"
+            )
+            return false
+        }
+        val count = APIExtractor.getContributorsCount(response = response)
+        (info as ObjectNode).put(CONTRIBUTORS_CNT, count)
+        return true
+    }
+
+    fun getDescription(): Map<String, String> = mapOf(Pair(OWNER, owner), Pair(NAME, name))
+
+    fun toJSONExplain(objectMapper: ObjectMapper? = null): JsonNode {
+        val mapper = objectMapper ?: jacksonObjectMapper()
+            .enable(SerializationFeature.INDENT_OUTPUT)
+        val node = mapper.createObjectNode()
+        node.put(NAME, name)
+        node.put(OWNER, owner)
+        for (result in filterResults) {
+            node.set<JsonNode>(result.field.configName, result.explain(objectMapper))
+        }
+        return node
+    }
+
+    fun toJSON(objectMapper: ObjectMapper? = null, uselessFieldsPrefixes: List<String> = listOf()): JsonNode {
+        val mapper = objectMapper ?: jacksonObjectMapper()
+            .enable(SerializationFeature.INDENT_OUTPUT)
+        info = APIExtractor.removeUselessFields(info, uselessFieldsPrefixes)
+        (info as ObjectNode).set<JsonNode>("explain", toJSONExplain(mapper))
+        return info
+    }
+}

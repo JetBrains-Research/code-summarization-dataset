@@ -1,12 +1,22 @@
-import reposfinder.ReposFinder
-import reposfinder.utils.tokenReader
+import reposfinder.config.SearchConfig
+import reposfinder.config.WorkConfig
+import reposfinder.logic.ReposFinder
+import reposfinder.utils.readList
+import reposfinder.utils.readToken
+
+private const val DUMP_DIR = "repos/results"
+private const val URLS_PATH = "repos/urls.json"
+private const val CONFIG_PATH = "repos/config.json"
+private const val TOKEN_PATH = "repos/token.txt"
 
 fun main() {
-    try {
-        val reposFinder = ReposFinder("search_results", tokenReader("path/to/token"))
-        reposFinder.search()
-        reposFinder.dumpResults()
-    } catch (e: Exception) {
-        print(e.stackTrace)
-    }
+    val finder = ReposFinder(
+        URLS_PATH.readList(),
+        WorkConfig(
+            dumpDir = DUMP_DIR,
+            token = TOKEN_PATH.readToken()
+        ),
+        SearchConfig(configPath = CONFIG_PATH)
+    )
+    finder.run()
 }
