@@ -2,45 +2,47 @@ package reposfinder.logic
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import reposfinder.api.GraphQLQueries
-import reposfinder.config.SearchConfig
-import reposfinder.config.WorkConfig
+import reposfinder.config.Config
 import reposfinder.filtering.Filter
+import reposfinder.utils.Logger
 import java.io.File
+import java.lang.Integer.max
+import java.util.Date
 
 /*
  *  Input URLs format (exactly two slashes):
  *  [...]/{OWNER}/{REPONAME}
  */
-class ReposFinder(
-    private val urls: List<String>,
-    private val workConfig: WorkConfig,
-    private val searchConfig: SearchConfig,
-) : Runnable {
-
+class ReposFinder(private val config: Config, val isDebug: Boolean = false) : Runnable {
+    private companion object {
+        const val TOKEN_SHOW_LENGTH = 20
+    }
     enum class Status {
         READY,
         WORKING,
         LIMIT_WAITING,
+        LIMIT_UPDATE_ERROR,
+        BAD_TOKEN_LIMITS,
         INTERRUPTED,
         ERROR,
         DONE
     }
 
-    private var status = Status.READY
+    @Volatile private var status = Status.READY
+
+    private val limits: RateLimits
+    private val logger: Logger
+
+    private val dumpDir = File(config.dumpDir)
+    private val reposStorage: ReposStorage
+
     private val jsonMapper = jacksonObjectMapper()
-    private val dumpDir = File(workConfig.dumpDir)
-
-    private val limits = RateLimits(
-        isCore = searchConfig.isCore,
-        isGraphQL = searchConfig.isGraphQL,
-        token = workConfig.token // !!!
-    )
-
-    private val reposStorage = ReposStorage(urls, workConfig.dumpDir, workConfig.dumpEveryNRepos)
 
     init {
         dumpDir.mkdirs()
-        println("token: ${workConfig.token}")
+        logger = Logger(config.logPath, isDebug)
+        reposStorage = ReposStorage(config.urls, config.dumpDir, config.dumpEveryNRepos, logger = logger)
+        limits = RateLimits(config.isCore, config.isGraphQL, config.token, logger = logger)
     }
 
     override fun run() {
@@ -48,23 +50,44 @@ class ReposFinder(
             return
         }
         status = Status.WORKING
-        limits.update()
-        searchRepos()
-        reposStorage.dump()
-        status = Status.DONE
+        status = try {
+            logStartSummary()
+            limits.update()
+            logLimits()
+            searchRepos()
+            reposStorage.dump()
+            Status.DONE
+        } catch (e: Exception) {
+            logger.add("============== ERROR WHILE SEARCH RUNNING ==============")
+            logger.add(e.stackTraceToString())
+            logger.add("========================================================")
+            Status.ERROR
+        } finally {
+            logEndSummary()
+            logger.dump()
+        }
+    }
+
+    fun interrupt() {
+        status = Status.INTERRUPTED
     }
 
     private fun searchRepos() {
-        println("Core: ${limits.core}")
-        println("GraphQL: ${limits.graphQL}")
+        if (limits.isNoLimits()) {
+            status = Status.BAD_TOKEN_LIMITS
+            logger.add("ZERO LIMITS ERROR (maybe bad token)")
+            return
+        }
         for (repo in reposStorage.allRepos) {
-            println("processing: /${repo.owner}/${repo.name}")
             waitingControl(limits.check())
+            if (status != Status.WORKING) {
+                logger.add("SEARCH WAS INTERRUPTED WITH STATUS $status")
+                break
+            }
+            logger.add("> processing: /${repo.owner}/${repo.name}")
 
-            repo.loadCore()
-            val isCoreGood = repo.isGood(searchConfig.coreFilters)
-            repo.loadGraphQL()
-            val isGraphQLGood = repo.isGood(searchConfig.graphQLFilters)
+            val isCoreGood = repo.loadCore() && repo.isGood(config.coreFilters)
+            val isGraphQLGood = repo.loadGraphQL() && repo.isGood(config.graphQLFilters)
 
             if (isCoreGood && isGraphQLGood) {
                 reposStorage.addGood(repo)
@@ -74,29 +97,33 @@ class ReposFinder(
         }
     }
 
-    private fun Repository.loadCore() {
-        if (searchConfig.isCore) {
-            if (!searchConfig.isOnlyContributors) {
-                this.loadCore(jsonMapper, workConfig.token)
-                limits.registerCore()
-                Thread.sleep(workConfig.waitsBetweenRequests)
+    private fun Repository.loadCore(): Boolean {
+        var isGood = true
+        if (config.isCore) {
+            if (!config.isOnlyContributors) {
+                isGood = this.loadCore(jsonMapper, config.token) && isGood
+                limits.core.register()
+                Thread.sleep(config.waitTimeBetweenRequests)
             }
-            if (searchConfig.isContributors) {
-                this.loadContributors(searchConfig.isAnonContributors, workConfig.token)
-                limits.registerCore()
-                Thread.sleep(workConfig.waitsBetweenRequests)
+            if (config.isContributors) {
+                isGood = this.loadContributors(config.isAnonContributors, config.token) && isGood
+                limits.core.register()
+                Thread.sleep(config.waitTimeBetweenRequests)
             }
         }
+        return isGood
     }
 
-    private fun Repository.loadGraphQL() {
-        if (searchConfig.isGraphQL) {
-            if (searchConfig.isCommitsCount) {
-                this.loadGraphQL(GraphQLQueries.COMMITS_COUNT, jsonMapper, workConfig.token)
-                limits.registerGraphQL()
-                Thread.sleep(workConfig.waitsBetweenRequests)
+    private fun Repository.loadGraphQL(): Boolean {
+        var isGood = true
+        if (config.isGraphQL) {
+            if (config.isCommitsCount) {
+                isGood = this.loadGraphQL(GraphQLQueries.COMMITS_COUNT, jsonMapper, config.token) && isGood
+                limits.graphQL.register()
+                Thread.sleep(config.waitTimeBetweenRequests)
             }
         }
+        return isGood
     }
 
     private fun Repository.isGood(filters: List<Filter>): Boolean {
@@ -107,22 +134,54 @@ class ReposFinder(
         return result
     }
 
-    fun interrupt() {
-        status = Status.INTERRUPTED
-    }
-
     private fun waitingControl(resetTime: Long) {
-        if (resetTime == 0L) {
+        if (resetTime == RateLimits.NO_TIME) {
             return
+        } else if (resetTime == RateLimits.BAD_TIME) {
+            status = Status.LIMIT_UPDATE_ERROR
+            logger.add("> impossible update API limits")
+            logLimits()
         }
         status = Status.LIMIT_WAITING
-        // while not reset time or not interrupted
-        while (System.currentTimeMillis() <= resetTime && status != Status.INTERRUPTED) {
-            // sleep in milliseconds
-            Thread.sleep(workConfig.sleepRange)
+        logger.add("> per hour requests limits reached")
+        logLimits()
+        logger.add("> waiting until " + Date(resetTime))
+        // until not reset time or not interrupted
+        while (System.currentTimeMillis() <= resetTime && status == Status.LIMIT_WAITING) {
+            Thread.sleep(config.sleepRange) // sleep in milliseconds
         }
         if (status == Status.LIMIT_WAITING) {
+            limits.update()
             status = Status.WORKING
         }
+    }
+
+    private fun logStartSummary() {
+        logger.add("> search started at " + Date(System.currentTimeMillis()))
+        logger.add(
+            "> token: ${config.token.substring(0, TOKEN_SHOW_LENGTH)}" +
+                "*".repeat(max(0, config.token.length - TOKEN_SHOW_LENGTH))
+        )
+        logger.add("> filters count: ${config.coreFilters.size + config.graphQLFilters.size}")
+        logger.add("> urls count [good: ${reposStorage.goodUrls.size}, bad: ${reposStorage.badUrls.size}]")
+        val reposPerHour = config.reposPerHour()
+        val totalHours = reposStorage.goodUrls.size.toFloat() / reposPerHour.toFloat()
+        logger.add(
+            "> estimated time [repos per hour: $reposPerHour, " +
+                "total hours: $totalHours] but not more than 2500 per hour (physical limits)"
+        )
+    }
+
+    private fun logEndSummary() {
+        logger.add(
+            "> result repos [good: ${reposStorage.goodRepos.size + reposStorage.goodBuffer.size}, " +
+                "bad: ${reposStorage.badRepos.size + reposStorage.badBuffer.size}]"
+        )
+        logLimits()
+    }
+
+    private fun logLimits() {
+        logger.add("> Core API limits: ${limits.core}")
+        logger.add("> GraphQL API limits: ${limits.graphQL}")
     }
 }

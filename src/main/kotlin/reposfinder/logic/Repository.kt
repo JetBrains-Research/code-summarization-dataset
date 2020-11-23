@@ -13,12 +13,14 @@ import reposfinder.requests.getBody
 import reposfinder.requests.getRequest
 import reposfinder.requests.isOK
 import reposfinder.requests.postRequest
+import reposfinder.utils.Logger
 
 class Repository(
     val owner: String,
     val name: String,
     var info: JsonNode,
-    var filterResults: MutableList<FilterResult> = mutableListOf()
+    var filterResults: MutableList<FilterResult> = mutableListOf(),
+    val logger: Logger? = null
 ) {
     private companion object {
         const val CONTRIBUTORS_CNT = "contributors_count"
@@ -33,10 +35,8 @@ class Repository(
             token = token
         )
         if (!response.isOK()) {
-            println(
-                "RESPONSE ERROR (API v3) -- [owner: $owner, name: $name]\n" +
-                    "${response.getBody()}\n"
-            )
+            logger?.add("BAD RESPONSE (API v3) for [owner: $owner, name: $name]")
+            logger?.add(response.getBody())
             return false
         }
         info = objectMapper.readTree(response.getBody())
@@ -56,10 +56,8 @@ class Repository(
             token = token
         )
         if (!response.isOK()) {
-            println(
-                "RESPONSE ERROR (GraphQL) -- [owner: $owner, name: $name]\n" +
-                    "${response.getBody()}\n"
-            )
+            logger?.add("BAD RESPONSE (GraphQL) for [owner: $owner, name: $name]")
+            logger?.add(response.getBody())
             return false
         }
         val responseNode = objectMapper.readTree(response.getBody())
@@ -78,10 +76,8 @@ class Repository(
             token = token
         )
         if (!response.isOK()) {
-            println(
-                "RESPONSE ERROR (Contributors pagination hack API v3) -- [owner: $owner, name: $name]\n" +
-                    "${response.getBody()}\n"
-            )
+            logger?.add("BAD RESPONSE (Contributors pagination hack - API v3) for [owner: $owner, name: $name]")
+            logger?.add(response.getBody())
             return false
         }
         val count = APIExtractor.getContributorsCount(response = response)
