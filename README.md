@@ -12,35 +12,22 @@ git clone https://github.com/JetBrains-Research/code-summarization-dataset.git
 - Set up config
 
 #### In **main.kt**
-- provide patches to:
+Provide patch to .json config file
 
-    - text file with your GitHub token:
-    
-        ```val TOKEN_PATH = "repos/token.txt"```
-
-    - .json config file:
-    
-        ```val CONFIG_PATH = "repos/config.json"```
-
-    - .json file with list of repositories URLs in format ```[...]/{OWNER}/{NAME}``` (exactly 2 slashes ```[...]/JetBrains/Kotlin```)  
-    
-        ```val URLS_PATH = "repos/urls.json"```
-  
-    - provide path to results dump directory:
-    
-      ```val DUMP_DIR = "repos/results"```
-
-#### Config 
+#### Config
 
 Config is .json file:
 ```
 {
-    "languages": ["Java", "Kotlin"],    // list of languages
-    "stars_count": [">=", 10],          // relations with integers
-    "commits_count": [0, 100000],       // integer ranges
+    "token_path" : "repos/token.txt",     // path to GitHub token
+    "dump_dir_path" : "repos/results",    // dump directory path
+    "repos_urls_path": "repos/urls.json", // path to repos URLs
+    "languages": ["Java", "Kotlin"],      // list of languages
+    "stars_count": [">=", 10],            // relations with integers
+    "commits_count": [0, 100000],         // integer ranges
     "contributors_count": [">=", 10],
-    "anon_contributors": [true],        // flag
-    "watchers_count": [],               // empty list == no filter
+    "anon_contributors": [true],          // flag
+    "watchers_count": [],                 // empty list == no filter
     "forks_count": [10, 100000],
     "open_issues_count": [0, 100000],
     "subscribers_count": [],
@@ -58,7 +45,7 @@ Rules:
 - all integer filters support ranges in brackets **[min incl., max incl.]**
 - all date filters support relation (>, <, <=, >=, =) in quotes **[">=", "YYYY-MM-DD"]**
 - all date filters support ranges in brackets **[min incl., max incl.]**
-- all date and integer filter support implicit EQ (=) relation **[N]** == **["=", N]** 
+- all date and integer filter support implicit EQ (=) relation **[N]** == **["=", N]**
 
 Examples:
 - ```"languages": ["Kotlin", "C++", "Haskell"] --> repository main language is Kotlin OR C++ OR Haskell```
@@ -79,7 +66,7 @@ In ```DUMP_DIR``` appear 4 files and 2 folders:
   - folders ```good(bad)``` each with inner folder ```explain```  
   - files ```good(bad)_input_urls.jsonl``` -- good (bad) input urls
   - files ```good(bad)_repos.jsonl``` -- all good (bad) traversed repos
-  
+
 ```good(bad)``` folders contain repositories summary for each repository
 
 ```good(bad)/explain``` contain explanation about results of applied filters (from ```config``` file) to each repository
@@ -88,20 +75,20 @@ In ```DUMP_DIR``` appear 4 files and 2 folders:
 
 **commits_count** - 1 [GraphQL](https://developer.github.com/v4/explorer/) query:
 ```
-    query { 
-      repository(owner: "JetBrains-Research", name: "code-summarization-dataset") { 
+    query {
+      repository(owner: "JetBrains-Research", name: "code-summarization-dataset") {
         defaultBranchRef {
-          target { 
-            ... on Commit { 
-              history (first: 1) { 
-                totalCount 
-                pageInfo 
-                { endCursor } 
-              } 
-            } 
+          target {
+            ... on Commit {
+              history (first: 1) {
+                totalCount
+                pageInfo
+                { endCursor }
+              }
+            }
           }
-        } 
-      } 
+        }
+      }
     }
 ```
 
