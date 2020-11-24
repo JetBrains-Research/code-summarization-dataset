@@ -19,5 +19,9 @@ enum class Language(
     PYTHON(
         "Python",
         listOf(".py")
+    ),
+    CPP(
+        "C++",
+        listOf(".cpp", ".c", ".hpp", ".h")
     )
 }

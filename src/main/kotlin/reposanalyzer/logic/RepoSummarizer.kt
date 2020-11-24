@@ -1,8 +1,6 @@
 package reposanalyzer.logic
 
-import astminer.cli.MethodFilterPredicate
 import astminer.cli.normalizeParseResult
-import astminer.common.model.Node
 import astminer.common.preOrder
 import org.eclipse.jgit.api.Git
 import org.eclipse.jgit.diff.DiffEntry
@@ -15,109 +13,148 @@ import reposanalyzer.git.checkoutCommit
 import reposanalyzer.git.checkoutHashOrName
 import reposanalyzer.git.getCommitsDiff
 import reposanalyzer.git.getFirstParentHistory
+import reposanalyzer.git.getMergeCommitsHistory
 import reposanalyzer.git.openRepositoryByDotGitDir
 import reposanalyzer.git.renameCopyDetection
-import reposanalyzer.methods.MethodSummarizer
 import reposanalyzer.methods.MethodSummaryStorage
+import reposanalyzer.methods.summarizers.MethodSummarizersFactory
 import reposanalyzer.parsing.GumTreeParserFactory
 import reposanalyzer.parsing.LabelExtractorFactory
-import reposanalyzer.utils.absolutePatches
+import reposanalyzer.utils.WorkLogger
+import reposanalyzer.utils.getAbsolutePatches
 import reposanalyzer.utils.getNotHiddenNotDirectoryFiles
 import reposanalyzer.utils.readFileToString
 import reposanalyzer.utils.removePrefixPath
 import java.io.File
+import java.util.*
 
 class RepoSummarizer(
-    private val repoPath: String,
-    private val dumpFolder: String,
-    private val config: Config,
-    private val filterPredicates: List<MethodFilterPredicate> = listOf()
+    private val repoInfo: RepoInfo,
+    private val dumpPath: String,
+    private val config: Config
 ) : Runnable {
 
-    enum class State {
+    private companion object {
+        const val METHODS_SUMMARY_FILE = "methods.jsonl"
+        const val COMMITS_LOG = "commits_log.jsonl"
+        const val WORK_LOG = "work_log.txt"
+    }
+
+    enum class Status {
         NOT_INITIALIZED,
         LOADED,
         DONE,
         EMPTY_HISTORY,
         INIT_ERROR,
-        INIT_BAD_DEF_BRANCH_ERROR
+        INIT_BAD_DEF_BRANCH_ERROR,
+        WORK_ERROR
     }
 
-    private var state = State.NOT_INITIALIZED
+    private var status = Status.NOT_INITIALIZED
 
-    private val supportedExtensions = config.languages.flatMap { it.extensions }
-
-    private val labelExtractorFactory = LabelExtractorFactory()
     private val parserFactory = GumTreeParserFactory()
-    private val methodSummarizer = MethodSummarizer(config.hideMethodsNames)
+    private val labelExtractorFactory = LabelExtractorFactory()
+    private val methodSummarizerFactory = MethodSummarizersFactory()
 
-    private val methodsSummaryPath = dumpFolder + File.separator + "methods.jsonl"
-    private val logPath = dumpFolder + File.separator + "log.jsonl"
-
-    private val summaryStorage = MethodSummaryStorage(methodsSummaryPath, config.summaryDumpThreshold)
-    private val logStorage = LogStorage(logPath, config.logDumpThreshold)
-
-    private val commitsLog = mutableListOf<RevCommit>()
-
-    private var defaultBranchHead: Ref? = null
     private var currCommit: RevCommit? = null
     private var prevCommit: RevCommit? = null
+    private var defaultBranchHead: Ref? = null
+    private val commitsHistory = mutableListOf<RevCommit>()
+
+    private lateinit var summaryStorage: MethodSummaryStorage
+    private lateinit var commitsLogger: CommitsLogger
+    private lateinit var workLogger: WorkLogger
 
     private lateinit var repository: Repository
     private lateinit var git: Git
 
+    private fun initStorageAndLogs() {
+        File(dumpPath).mkdirs()
+        val workLogPath = dumpPath + File.separator + WORK_LOG
+        val commitsLogPath = dumpPath + File.separator + COMMITS_LOG
+        val methodsSummaryPath = dumpPath + File.separator + METHODS_SUMMARY_FILE
+        workLogger = WorkLogger(workLogPath, config.isDebug)
+        commitsLogger = CommitsLogger(commitsLogPath, config.logDumpThreshold)
+        summaryStorage = MethodSummaryStorage(methodsSummaryPath, config.summaryDumpThreshold, workLogger)
+    }
+
     fun init() {
-        if (state != State.NOT_INITIALIZED) {
+        if (status != Status.NOT_INITIALIZED) {
             return
         }
-        File(dumpFolder).mkdirs()
-        val repo = openRepositoryByDotGitDir(repoPath + File.separator + ".git")
-        state = when (repo) {
-            null -> State.INIT_ERROR
-            else -> {
-                repository = repo
-                git = Git(repository)
-                defaultBranchHead = repository.findRef(repository.fullBranch)
-                when (defaultBranchHead) {
-                    null -> State.INIT_BAD_DEF_BRANCH_ERROR
-                    else -> {
-                        loadHistory()
-                        if (commitsLog.isEmpty()) {
-                            State.EMPTY_HISTORY
-                        } else {
-                            State.LOADED
-                        }
+        try {
+            initStorageAndLogs()
+            repository = repoInfo.dotGitPath.openRepositoryByDotGitDir()
+            git = Git(repository)
+            defaultBranchHead = repository.findRef(repository.fullBranch)
+            status = when (defaultBranchHead) {
+                null -> Status.INIT_BAD_DEF_BRANCH_ERROR
+                else -> {
+                    loadHistory()
+                    workLogger.add("> init: default repo branch: ${defaultBranchHead?.name}")
+                    workLogger.add("> init: commits count: ${commitsHistory.size}")
+                    if (commitsHistory.isEmpty()) {
+                        Status.EMPTY_HISTORY
+                    } else {
+                        Status.LOADED
                     }
                 }
             }
+            when (status) {
+                Status.INIT_BAD_DEF_BRANCH_ERROR -> workLogger.add("> BAD DEFAULT BRANCH FOR $repoInfo")
+                Status.EMPTY_HISTORY -> workLogger.add("> init: no history for $repoInfo")
+                Status.LOADED -> workLogger.add("> init: successful loaded for $repoInfo")
+                else -> {} // ignore
+            }
+        } catch (e: Exception) {
+            workLogger.add("========= WORKER INIT ERROR FOR $repoInfo =========")
+            workLogger.add(e.stackTraceToString())
+            status = Status.INIT_ERROR
+        } finally {
+            workLogger.dump()
         }
     }
 
     override fun run() {
-        when (state) {
-            State.NOT_INITIALIZED -> throw UninitializedPropertyAccessException()
-            State.LOADED -> {
-                processCommits()
-                dumpData()
-                git.checkoutHashOrName(defaultBranchHead?.name) // back to normal head
-                state = State.DONE
+        if (status != Status.LOADED) {
+            workLogger.add("> SUMMARIZER IS NOT LOADED")
+            return
+        }
+        status = try {
+            workLogger.add("> search started at ${Date(System.currentTimeMillis())}")
+            processCommits()
+            git.checkoutHashOrName(defaultBranchHead?.name) // back to normal head
+            workLogger.add("> back to start HEAD: ${defaultBranchHead?.name}")
+            workLogger.add("> search ended at ${Date(System.currentTimeMillis())}")
+            Status.DONE
+        } catch (e: Exception) {
+            workLogger.add("========= WORKER RUNNING ERROR FOR $repoInfo =========")
+            workLogger.add(e.stackTraceToString())
+            Status.WORK_ERROR
+        } finally {
+            try {
+                dump()
+            } catch (e: Exception) {
+                // ignore
             }
-            else -> {} // TODO
         }
     }
 
     private fun processCommits() {
-        currCommit = commitsLog.firstOrNull() ?: return // log must be not empty by init state
-        currCommit?.processCommit(currCommit, repoPath) // process first commit
-        for (i in 1 until commitsLog.size) { // process others commits
+        currCommit = commitsHistory.firstOrNull() ?: return // log must be not empty by init state
+        currCommit?.processCommit(currCommit, repoInfo.path, filesPatches = listOf()) // process first commit
+        for (i in 1 until commitsHistory.size) { // process others commits
             prevCommit = currCommit
-            currCommit = commitsLog[i]
+            currCommit = commitsHistory[i]
             val diff = git.getCommitsDiff(repository.newObjectReader(), currCommit, prevCommit)
-            val supportedFiles = getSupportedFiles(processDiff(diff), supportedExtensions)
-            val filesPatches = absolutePatches(repoPath, supportedFiles) // files with supported extension
-            when (filesPatches.isEmpty()) {
-                true -> logStorage.add(currCommit, prevCommit, mapOf())
-                else -> currCommit?.processCommit(prevCommit, filesPatches = filesPatches)
+            val processedDiff = diff.processDiff()
+            val supportedFiles = processedDiff.getSupportedFiles(config.supportedExtensions)
+            val filesPatches = supportedFiles.getAbsolutePatches(repoInfo.path) // files with supported extension
+            workLogger.add("> files diff [${prevCommit?.name?.substring(0, 7)}, ${currCommit?.name?.substring(0, 7)}, total: ${diff.size}, supported: ${filesPatches.size}]")
+            if (filesPatches.isEmpty()) {
+                commitsLogger.add(currCommit, prevCommit, mapOf()) // no files to parse => no checkout
+            } else {
+                currCommit?.processCommit(prevCommit, filesPatches = filesPatches)
             }
         }
     }
@@ -125,45 +162,41 @@ class RepoSummarizer(
     private fun RevCommit.processCommit(
         prevCommit: RevCommit? = null,
         dirPath: String? = null,
-        filesPatches: List<String>? = null
+        filesPatches: List<String> = listOf()
     ) {
-        git.checkoutCommit(this)
-        var files = listOf<File>()
-        if (dirPath != null) {
-            files = getNotHiddenNotDirectoryFiles(repoPath)
-        } else if (filesPatches != null) {
-            files = getNotHiddenNotDirectoryFiles(filesPatches)
+        workLogger.add("> checkout on [${this.name.substring(0, 7)}, ${this.shortMessage}]")
+        git.checkoutCommit(this) // checkout
+        val files = if (dirPath != null) {
+            getNotHiddenNotDirectoryFiles(repoInfo.path)
+        } else {
+            getNotHiddenNotDirectoryFiles(filesPatches)
         }
-        val filesByLang = getFilesByLanguage(files, config.languages)
-        parseFilesByLanguage(filesByLang)
-        logStorage.add(
+        val filesByLang = files.getFilesByLanguage(config.languages)
+        filesByLang.parseFilesByLanguage()
+        commitsLogger.add(
             this, prevCommit,
-            removePrefixPath(repoPath + File.separator, filesByLang)
+            filesByLang.removePrefixPath(repoInfo.path + File.separator)
         )
     }
 
-    private fun parseFilesByLanguage(filesByLang: Map<Language, List<File>>) {
-        filesByLang.forEach { (lang, files) ->
-            if (files.isNotEmpty()) {
-                parseFiles(lang, files)
-            }
-        }
-    }
+    private fun Map<Language, List<File>>.parseFilesByLanguage() =
+        this.forEach { (lang, files) -> if (files.isNotEmpty()) { files.parseFiles(lang) } }
 
-    private fun parseFiles(language: Language, files: List<File>) {
+    private fun List<File>.parseFiles(language: Language) {
         val parser = parserFactory.getParser(language)
         val labelExtractor = labelExtractorFactory.getLabelExtractor(
-            config.task, config.granularity, filterPredicates
+            config.task, config.granularity, config.filterPredicates
         )
-
-        parser.parseFiles(files) { parseResult ->
-            val fileContent = readFileToString(parseResult.filePath)
-            val relativePath = parseResult.filePath.removePrefix(repoPath)
+        val summarizer = methodSummarizerFactory.getMethodSummarizer(language)
+        parser.parseFiles(this) { parseResult ->
+            val fileContent = parseResult.filePath.readFileToString()
+            val relativePath = parseResult.filePath.removePrefix(repoInfo.path + File.separator)
 
             normalizeParseResult(parseResult, true)
             val labeledParseResults = labelExtractor.toLabeledData(parseResult)
             labeledParseResults.forEach { (root, label) ->
-                if (!isMethodNew(root, label, parseResult.filePath)) {
+                val methodFullName = summarizer.getMethodFullName(root, label)
+                if (summaryStorage.contains(methodFullName, parseResult.filePath)) {
                     return@forEach
                 }
                 root.preOrder().forEach { node ->
@@ -171,12 +204,11 @@ class RepoSummarizer(
                         node.removeChildrenOfType(it)
                     }
                 }
-                val methodSummary = methodSummarizer.summarize(
+                val methodSummary = summarizer.summarize(
                     root,
                     label,
                     fileContent,
-                    relativePath,
-                    language
+                    relativePath
                 )
                 methodSummary.commit = currCommit
                 summaryStorage.add(methodSummary)
@@ -184,16 +216,17 @@ class RepoSummarizer(
         }
     }
 
-    private fun dumpData() {
-        summaryStorage.dumpData()
-        logStorage.dumpData()
+    private fun dump() {
+        summaryStorage.dump()
+        commitsLogger.dump()
+        workLogger.dump()
     }
 
-    private fun processDiff(diff: List<DiffEntry>): List<String> {
+    private fun List<DiffEntry>.processDiff(): List<String> {
         val filePatches = mutableListOf<String>()
         val addEntries = mutableListOf<DiffEntry>()
         val modifyEntries = mutableListOf<DiffEntry>()
-        for (entry in diff) {
+        for (entry in this) {
             when (entry.changeType) {
                 DiffEntry.ChangeType.ADD -> addEntries.add(entry)
                 DiffEntry.ChangeType.MODIFY -> modifyEntries.add(entry)
@@ -220,14 +253,14 @@ class RepoSummarizer(
     }
 
     private fun loadHistory() {
-        defaultBranchHead?.let { head ->
-            commitsLog.addAll(repository.getFirstParentHistory(head.objectId))
+        when (config.commitsType) {
+            Config.CommitsType.ONLY_MERGES -> defaultBranchHead?.let { head ->
+                commitsHistory.addAll(repository.getMergeCommitsHistory(head.objectId))
+            }
+            Config.CommitsType.FIRST_PARENTS_INCLUDE_MERGES -> defaultBranchHead?.let { head ->
+                commitsHistory.addAll(repository.getFirstParentHistory(head.objectId))
+            }
         }
-        commitsLog.reverse() // reverse history == from oldest commit to newest
-    }
-
-    private fun <T : Node> isMethodNew(root: T, label: String, filePath: String): Boolean {
-        val fullName = methodSummarizer.getMethodFullName(root, label)
-        return summaryStorage.notContains(fullName, filePath)
+        commitsHistory.reverse() // reverse history == from oldest commit to newest
     }
 }

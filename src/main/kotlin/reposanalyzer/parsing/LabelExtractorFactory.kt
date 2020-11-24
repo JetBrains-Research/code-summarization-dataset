@@ -7,7 +7,6 @@ import reposanalyzer.config.Granularity
 import reposanalyzer.config.Task
 
 class LabelExtractorFactory {
-
     fun getLabelExtractor(
         task: Task,
         granularity: Granularity,

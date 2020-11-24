@@ -21,12 +21,12 @@ fun loadReposPatches(path: String): List<String> {
     return patches.toList()
 }
 
-fun getFilesByLanguage(files: List<File>, languages: List<Language>): Map<Language, List<File>> {
+fun List<File>.getFilesByLanguage(languages: List<Language>): Map<Language, List<File>> {
     val filesByLang = mutableMapOf<Language, MutableList<File>>()
     languages.forEach { lang ->
         filesByLang[lang] = mutableListOf()
     }
-    files.forEach { file ->
+    this.forEach { file ->
         inner@for (lang in languages) {
             if (isFileFromLanguage(file, lang)) {
                 filesByLang[lang]?.add(file)
@@ -43,10 +43,5 @@ fun isFileFromLanguage(file: File, language: Language): Boolean {
     }
 }
 
-fun getSupportedFiles(filePatches: List<String>, supportedExtensions: List<String>): List<String> {
-    return filePatches.filter { path ->
-        supportedExtensions.any { ext ->
-            path.endsWith(ext)
-        }
-    }
-}
+fun List<String>.getSupportedFiles(supportedExtensions: List<String>): List<String> =
+    this.filter { path -> supportedExtensions.any { ext -> path.endsWith(ext) } }

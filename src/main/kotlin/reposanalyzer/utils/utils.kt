@@ -4,8 +4,8 @@ import reposanalyzer.config.Language
 import java.io.File
 import java.util.Calendar
 
-fun readFileToString(filePath: String): String {
-    val file = File(filePath)
+fun String.readFileToString(): String {
+    val file = File(this)
     if (!file.exists()) {
         return ""
     }
@@ -15,43 +15,36 @@ fun readFileToString(filePath: String): String {
 fun dotGitFilter(patches: List<String>): Pair<List<String>, List<String>> {
     val exists = mutableListOf<String>()
     val notExists = mutableListOf<String>()
-    for (path in patches) {
-        when (File(path + File.separator + ".git").exists()) {
-            true -> exists.add(path)
-            false -> notExists.add(path)
+    patches.forEach { path ->
+        if (path.isDotGitPresent()) {
+            exists.add(path)
+        } else {
+            notExists.add(path)
         }
     }
     return Pair(exists, notExists)
 }
 
-fun getNotHiddenNotDirectoryFiles(dirPath: String): List<File> {
-    return File(dirPath).walkTopDown().filter {
-        !it.isHidden && !it.isDirectory
-    }.toList()
-}
+fun String.isDotGitPresent() = File(this + File.separator + ".git").exists()
 
-fun getNotHiddenNotDirectoryFiles(filesPatches: List<String>): List<File> {
-    return filesPatches.map { File(it) }.filter {
-        !it.isHidden && !it.isDirectory
-    }
-}
+fun getNotHiddenNotDirectoryFiles(dirPath: String): List<File> =
+    File(dirPath).walkTopDown().filter { !it.isHidden && !it.isDirectory }.toList()
 
-fun removePrefixPath(prefix: String, files: List<File>): List<String> {
-    return files.map { it.absolutePath.removePrefix(prefix) }
-}
+fun getNotHiddenNotDirectoryFiles(filesPatches: List<String>): List<File> =
+    filesPatches.map { File(it) }.filter { !it.isHidden && !it.isDirectory }.toList()
 
-fun removePrefixPath(prefix: String, filesByLang: Map<Language, List<File>>): Map<Language, List<String>> {
+fun List<String>.getAbsolutePatches(mainPath: String): List<String> =
+    this.map { filePath -> mainPath + File.separator + filePath }
+
+fun removePrefixPath(prefix: String, files: List<File>): List<String> =
+    files.map { it.absolutePath.removePrefix(prefix) }
+
+fun Map<Language, List<File>>.removePrefixPath(prefix: String): Map<Language, List<String>> {
     val newMap = mutableMapOf<Language, List<String>>()
-    filesByLang.forEach { (lang, files) ->
+    this.forEach { (lang, files) ->
         newMap[lang] = removePrefixPath(prefix, files)
     }
     return newMap
-}
-
-fun absolutePatches(mainPath: String, filesPatches: List<String>): List<String> {
-    return filesPatches.map { filePath ->
-        mainPath + File.separator + filePath
-    }
 }
 
 fun Calendar.getDateByMilliseconds(time: Long): String {

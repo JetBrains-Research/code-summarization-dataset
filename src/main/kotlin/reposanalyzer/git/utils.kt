@@ -2,7 +2,6 @@ package reposanalyzer.git
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import org.eclipse.jgit.revwalk.RevCommit
 import reposanalyzer.utils.getDateByMilliseconds
@@ -19,7 +18,6 @@ fun RevCommit.getCommitInfo(): CommitInfo {
 
 fun RevCommit.toJSON(objectMapper: ObjectMapper? = null, outerCalendar: Calendar? = null): JsonNode {
     val mapper = objectMapper ?: jacksonObjectMapper()
-        .enable(SerializationFeature.INDENT_OUTPUT)
     val calendar = outerCalendar ?: Calendar.getInstance()
 
     val jsonNode = mapper.createObjectNode()

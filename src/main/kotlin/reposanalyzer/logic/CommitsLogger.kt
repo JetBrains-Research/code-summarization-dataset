@@ -15,7 +15,7 @@ import java.util.Calendar
  *      1. after dumpThreshold
  *      2. by explicit dumpData method call
  */
-class LogStorage(
+class CommitsLogger(
     private val dumpFilePath: String,
     private val dumpThreshold: Int = 500
 ) {
@@ -35,12 +35,12 @@ class LogStorage(
         val newInfo = newCommit.getCommitInfo()
         val oldInfo = oldCommit.getCommitInfo()
         log[Pair(newInfo, oldInfo)] = filesByLang
-        if (log.size > dumpThreshold) {
-            dumpData()
+        if (log.size >= dumpThreshold) {
+            dump()
         }
     }
 
-    fun dumpData() {
+    fun dump() {
         FileOutputStream(dumpFile, true).bufferedWriter().use { out ->
             toJSON().forEach { jsonNode ->
                 out.appendLine(jsonNode.toString())

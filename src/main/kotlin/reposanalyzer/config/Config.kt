@@ -1,16 +1,33 @@
 package reposanalyzer.config
 
-data class Config(
-    val reposPatches: List<String>,
+import astminer.cli.ConstructorFilterPredicate
+import astminer.cli.MethodFilterPredicate
+
+class Config(
     val dumpFolder: String,
     val languages: List<Language>,
-    val silent: Boolean = true, // TODO
-    val hideMethodsNames: Boolean = true,
     val task: Task = Task.NAME,
-    val granularity: Granularity = Granularity.METHOD,
+    val hideMethodsNames: Boolean = true,
+    val commitsType: CommitsType = CommitsType.FIRST_PARENTS_INCLUDE_MERGES,
     val excludeNodes: List<String> = listOf(),
-    val excludeConstructors: Boolean = true,
+    val granularity: Granularity = Granularity.METHOD,
     val copyDetection: Boolean = false,
-    val summaryDumpThreshold: Int = 500,
-    val logDumpThreshold: Int = 1000
-)
+    val excludeConstructors: Boolean = true,
+    val logDumpThreshold: Int = 200,
+    val summaryDumpThreshold: Int = 200,
+    val isDebug: Boolean = true
+) {
+    enum class CommitsType {
+        ONLY_MERGES,
+        FIRST_PARENTS_INCLUDE_MERGES
+    }
+
+    val filterPredicates = mutableListOf<MethodFilterPredicate>()
+    val supportedExtensions = languages.flatMap { it.extensions }
+
+    init {
+        if (hideMethodsNames) {
+            filterPredicates.add(ConstructorFilterPredicate())
+        }
+    }
+}

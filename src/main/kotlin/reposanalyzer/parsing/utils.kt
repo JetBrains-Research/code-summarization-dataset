@@ -3,15 +3,6 @@ package reposanalyzer.parsing
 import astminer.common.model.Node
 import astminer.parse.java.GumTreeJavaNode
 
-fun <T : Node> T.getChildByTypeLabel(typeLabel: String): Node? {
-    for (child in this.getChildren()) {
-        if (child.getTypeLabel() == typeLabel) {
-            return child
-        }
-    }
-    return null
-}
-
 /*
  * generic for other GumTreeNodes languages
  */
@@ -22,9 +13,6 @@ fun <T : Node> T.getNodeLabel(): String {
     }
 }
 
-/*
- * generic for other GumTreeNodes languages
- */
 fun <T : Node> T.getNodeStart(): Int {
     return when (this) {
         is GumTreeJavaNode -> this.wrappedNode.pos
@@ -32,9 +20,6 @@ fun <T : Node> T.getNodeStart(): Int {
     }
 }
 
-/*
- * generic for other GumTreeNodes languages
- */
 fun <T : Node> T.getNodeLength(): Int {
     return when (this) {
         is GumTreeJavaNode -> this.wrappedNode.length

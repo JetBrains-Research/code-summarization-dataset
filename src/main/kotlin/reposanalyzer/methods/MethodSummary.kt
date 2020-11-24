@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import org.eclipse.jgit.revwalk.RevCommit
+import reposanalyzer.config.Language
 import reposanalyzer.git.toJSON
 
 /*
@@ -14,6 +15,7 @@ data class MethodSummary(
     var name: String,
     var fullName: String,
     var filePath: String,
+    var language: Language,
     var doc: String? = null,
     var comment: String? = null,
     var body: String? = null,
@@ -29,6 +31,7 @@ data class MethodSummary(
         val jsonNode = mapper.createObjectNode()
         jsonNode.set<JsonNode>("name", mapper.valueToTree(name))
         jsonNode.set<JsonNode>("full_name", mapper.valueToTree(fullName))
+        jsonNode.set<JsonNode>("language", mapper.valueToTree(language.label))
         jsonNode.set<JsonNode>("file", mapper.valueToTree(filePath))
         jsonNode.set<JsonNode>("doc", mapper.valueToTree(doc))
         jsonNode.set<JsonNode>("comment", mapper.valueToTree(comment))
