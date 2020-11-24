@@ -38,6 +38,8 @@ class RepoSummarizer(
         const val METHODS_SUMMARY_FILE = "methods.jsonl"
         const val COMMITS_LOG = "commits_log.jsonl"
         const val WORK_LOG = "work_log.txt"
+
+        const val FIRST_HASH = 7
     }
 
     enum class Status {
@@ -150,7 +152,11 @@ class RepoSummarizer(
             val processedDiff = diff.processDiff()
             val supportedFiles = processedDiff.getSupportedFiles(config.supportedExtensions)
             val filesPatches = supportedFiles.getAbsolutePatches(repoInfo.path) // files with supported extension
-            workLogger.add("> files diff [${prevCommit?.name?.substring(0, 7)}, ${currCommit?.name?.substring(0, 7)}, total: ${diff.size}, supported: ${filesPatches.size}]")
+            workLogger.add(
+                "> files diff [${prevCommit?.name?.substring(0, FIRST_HASH)}, " +
+                    "${currCommit?.name?.substring(0, FIRST_HASH)}, " +
+                    "total: ${diff.size}, supported: ${filesPatches.size}]"
+            )
             if (filesPatches.isEmpty()) {
                 commitsLogger.add(currCommit, prevCommit, mapOf()) // no files to parse => no checkout
             } else {
@@ -164,7 +170,7 @@ class RepoSummarizer(
         dirPath: String? = null,
         filesPatches: List<String> = listOf()
     ) {
-        workLogger.add("> checkout on [${this.name.substring(0, 7)}, ${this.shortMessage}]")
+        workLogger.add("> checkout on [${this.name.substring(0, FIRST_HASH)}, ${this.shortMessage}]")
         git.checkoutCommit(this) // checkout
         val files = if (dirPath != null) {
             getNotHiddenNotDirectoryFiles(repoInfo.path)
