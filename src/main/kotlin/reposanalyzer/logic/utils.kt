@@ -1,0 +1,47 @@
+package reposanalyzer.logic
+
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import com.fasterxml.jackson.module.kotlin.readValue
+import reposanalyzer.config.Language
+import java.io.File
+
+fun loadReposPatches(path: String): List<String> {
+    if (!File(path).exists()) {
+        println("Path doesn't exist: $path")
+        return listOf()
+    }
+    val patches = mutableSetOf<String>()
+    val objectMapper = jacksonObjectMapper()
+    for (repoPath in objectMapper.readValue<List<String>>(File(path))) {
+        when (File(repoPath).exists()) {
+            true -> patches.add(repoPath)
+            false -> println("Repository path incorrect: $repoPath")
+        }
+    }
+    return patches.toList()
+}
+
+fun List<File>.getFilesByLanguage(languages: List<Language>): Map<Language, List<File>> {
+    val filesByLang = mutableMapOf<Language, MutableList<File>>()
+    languages.forEach { lang ->
+        filesByLang[lang] = mutableListOf()
+    }
+    this.forEach { file ->
+        inner@for (lang in languages) {
+            if (isFileFromLanguage(file, lang)) {
+                filesByLang[lang]?.add(file)
+                break@inner
+            }
+        }
+    }
+    return filesByLang
+}
+
+fun isFileFromLanguage(file: File, language: Language): Boolean {
+    return language.extensions.any { ext ->
+        file.absolutePath.endsWith(ext)
+    }
+}
+
+fun List<String>.getSupportedFiles(supportedExtensions: List<String>): List<String> =
+    this.filter { path -> supportedExtensions.any { ext -> path.endsWith(ext) } }
