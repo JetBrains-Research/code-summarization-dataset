@@ -6,6 +6,7 @@ import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import reposfinder.utils.Logger
 import java.io.File
 import java.io.FileOutputStream
+import java.util.concurrent.ConcurrentLinkedQueue
 
 class ReposStorage(
     private val urls: List<String>,

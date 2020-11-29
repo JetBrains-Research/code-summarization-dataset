@@ -5,7 +5,10 @@ import java.io.FileOutputStream
 import java.util.LinkedList
 import java.util.Queue
 
-class Logger(val pathToLogFile: String, val isDebug: Boolean = false) {
+class Logger(
+    private val pathToLogFile: String,
+    private val isDebug: Boolean = false
+) {
     companion object {
         const val DUMP_EVERY_N_MESSAGES = 10
     }

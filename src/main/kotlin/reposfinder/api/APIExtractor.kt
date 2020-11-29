@@ -15,8 +15,7 @@ object APIExtractor {
     }
 
     fun getContributorsCount(response: Response): Int {
-        // no next pages => only one contributor
-        if (!response.headers.containsKey("Link")) {
+        if (!response.headers.containsKey("Link")) { // no next pages => only one contributor
             return 1
         }
         val link = response.headers["Link"].toList()[0].split(",")

@@ -13,15 +13,18 @@ import java.util.Date
  *  Input URLs format (exactly two slashes):
  *  [...]/{OWNER}/{REPONAME}
  */
-class ReposFinder(private val config: Config, val isDebug: Boolean = false) : Runnable {
+class ReposFinder(
+    private val config: Config
+) : Runnable {
     private companion object {
         const val TOKEN_SHOW_LENGTH = 20
     }
+
     enum class Status {
         READY,
         WORKING,
-        LIMIT_WAITING,
-        LIMIT_UPDATE_ERROR,
+        LIMITS_WAITING,
+        LIMITS_UPDATE_ERROR,
         BAD_TOKEN_LIMITS,
         INTERRUPTED,
         ERROR,
@@ -34,13 +37,13 @@ class ReposFinder(private val config: Config, val isDebug: Boolean = false) : Ru
     private val logger: Logger
 
     private val dumpDir = File(config.dumpDir)
-    private val reposStorage: ReposStorage
+    val reposStorage: ReposStorage
 
     private val jsonMapper = jacksonObjectMapper()
 
     init {
         dumpDir.mkdirs()
-        logger = Logger(config.logPath, isDebug)
+        logger = Logger(config.logPath, isDebug = config.isDebug)
         reposStorage = ReposStorage(config.urls, config.dumpDir, config.dumpEveryNRepos, logger = logger)
         limits = RateLimits(config.isCore, config.isGraphQL, config.token, logger = logger)
     }
@@ -60,7 +63,6 @@ class ReposFinder(private val config: Config, val isDebug: Boolean = false) : Ru
         } catch (e: Exception) {
             logger.add("============== ERROR WHILE SEARCH RUNNING ==============")
             logger.add(e.stackTraceToString())
-            logger.add("========================================================")
             Status.ERROR
         } finally {
             logEndSummary()
@@ -103,12 +105,12 @@ class ReposFinder(private val config: Config, val isDebug: Boolean = false) : Ru
             if (!config.isOnlyContributors) {
                 isGood = this.loadCore(jsonMapper, config.token) && isGood
                 limits.core.register()
-                Thread.sleep(config.waitTimeBetweenRequests)
+                Thread.sleep(config.sleepTimeBetweenRequests)
             }
             if (config.isContributors) {
                 isGood = this.loadContributors(config.isAnonContributors, config.token) && isGood
                 limits.core.register()
-                Thread.sleep(config.waitTimeBetweenRequests)
+                Thread.sleep(config.sleepTimeBetweenRequests)
             }
         }
         return isGood
@@ -120,7 +122,7 @@ class ReposFinder(private val config: Config, val isDebug: Boolean = false) : Ru
             if (config.isCommitsCount) {
                 isGood = this.loadGraphQL(GraphQLQueries.COMMITS_COUNT, jsonMapper, config.token) && isGood
                 limits.graphQL.register()
-                Thread.sleep(config.waitTimeBetweenRequests)
+                Thread.sleep(config.sleepTimeBetweenRequests)
             }
         }
         return isGood
@@ -128,7 +130,7 @@ class ReposFinder(private val config: Config, val isDebug: Boolean = false) : Ru
 
     private fun Repository.isGood(filters: List<Filter>): Boolean {
         var result = true
-        for (filter in filters) {
+        filters.forEach { filter ->
             result = filter.isGood(this) && result
         }
         return result
@@ -138,19 +140,19 @@ class ReposFinder(private val config: Config, val isDebug: Boolean = false) : Ru
         if (resetTime == RateLimits.NO_TIME) {
             return
         } else if (resetTime == RateLimits.BAD_TIME) {
-            status = Status.LIMIT_UPDATE_ERROR
+            status = Status.LIMITS_UPDATE_ERROR
             logger.add("> impossible update API limits")
             logLimits()
         }
-        status = Status.LIMIT_WAITING
+        status = Status.LIMITS_WAITING
         logger.add("> per hour requests limits reached")
         logLimits()
         logger.add("> waiting until " + Date(resetTime))
         // until not reset time or not interrupted
-        while (System.currentTimeMillis() <= resetTime && status == Status.LIMIT_WAITING) {
+        while (System.currentTimeMillis() <= resetTime && status == Status.LIMITS_WAITING) {
             Thread.sleep(config.sleepRange) // sleep in milliseconds
         }
-        if (status == Status.LIMIT_WAITING) {
+        if (status == Status.LIMITS_WAITING) {
             limits.update()
             status = Status.WORKING
         }

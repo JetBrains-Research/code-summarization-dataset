@@ -12,8 +12,9 @@ import reposfinder.logic.Repository
 import java.io.File
 
 class Config(
-    configPath: String,
-    val waitTimeBetweenRequests: Long = DEFAULT_WAIT_TIME,
+    val configPath: String,
+    val isDebug: Boolean = false,
+    val sleepTimeBetweenRequests: Long = DEFAULT_WAIT_TIME,
     val dumpEveryNRepos: Int = DEFAULT_DUMP_THRESHOLD
 ) {
     private companion object {
@@ -62,13 +63,13 @@ class Config(
     fun reposPerHour(): Long {
         var pausePerRepo = 0L
         if (isCore) {
-            pausePerRepo += this.waitTimeBetweenRequests
+            pausePerRepo += this.sleepTimeBetweenRequests
         }
         if (isGraphQL) {
-            pausePerRepo += this.waitTimeBetweenRequests
+            pausePerRepo += this.sleepTimeBetweenRequests
         }
         if (isContributors) {
-            pausePerRepo += this.waitTimeBetweenRequests
+            pausePerRepo += this.sleepTimeBetweenRequests
         }
         return MILLIS_IN_HOUR / pausePerRepo
     }
