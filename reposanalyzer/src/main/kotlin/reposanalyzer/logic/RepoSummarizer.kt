@@ -7,7 +7,7 @@ import org.eclipse.jgit.diff.DiffEntry
 import org.eclipse.jgit.lib.Ref
 import org.eclipse.jgit.lib.Repository
 import org.eclipse.jgit.revwalk.RevCommit
-import reposanalyzer.config.Config
+import reposanalyzer.config.SearchConfig
 import reposanalyzer.config.Language
 import reposanalyzer.git.checkoutCommit
 import reposanalyzer.git.checkoutHashOrName
@@ -31,7 +31,7 @@ import java.util.*
 class RepoSummarizer(
     private val repoInfo: RepoInfo,
     private val dumpPath: String,
-    private val config: Config
+    private val config: SearchConfig
 ) : Runnable {
 
     private companion object {
@@ -260,10 +260,10 @@ class RepoSummarizer(
 
     private fun loadHistory() {
         when (config.commitsType) {
-            Config.CommitsType.ONLY_MERGES -> defaultBranchHead?.let { head ->
+            SearchConfig.CommitsType.ONLY_MERGES -> defaultBranchHead?.let { head ->
                 commitsHistory.addAll(repository.getMergeCommitsHistory(head.objectId))
             }
-            Config.CommitsType.FIRST_PARENTS_INCLUDE_MERGES -> defaultBranchHead?.let { head ->
+            SearchConfig.CommitsType.FIRST_PARENTS_INCLUDE_MERGES -> defaultBranchHead?.let { head ->
                 commitsHistory.addAll(repository.getFirstParentHistory(head.objectId))
             }
         }

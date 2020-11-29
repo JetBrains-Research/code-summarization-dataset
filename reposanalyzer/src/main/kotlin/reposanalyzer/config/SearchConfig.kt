@@ -3,7 +3,7 @@ package reposanalyzer.config
 import astminer.cli.ConstructorFilterPredicate
 import astminer.cli.MethodFilterPredicate
 
-class Config(
+class SearchConfig(
     val dumpFolder: String,
     val languages: List<Language>,
     val task: Task = Task.NAME,

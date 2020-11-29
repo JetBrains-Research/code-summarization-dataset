@@ -1,13 +1,13 @@
 package reposanalyzer.logic
 
-import reposanalyzer.config.Config
+import reposanalyzer.config.SearchConfig
 import reposanalyzer.utils.WorkLogger
 import reposanalyzer.utils.isDotGitPresent
 import java.io.File
 import java.util.Date
 import java.util.concurrent.ConcurrentLinkedQueue
 
-class ReposAnalyzer(val config: Config) : Runnable {
+class ReposAnalyzer(val config: SearchConfig) : Runnable {
     private companion object {
         const val LOG_FILE_NAME = "main_log.txt"
     }

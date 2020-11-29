@@ -11,7 +11,7 @@ import reposfinder.filtering.utils.parseFilter
 import reposfinder.logic.Repository
 import java.io.File
 
-class Config(
+class AnalysisConfig(
     val configPath: String,
     val isDebug: Boolean = false,
     val sleepTimeBetweenRequests: Long = DEFAULT_WAIT_TIME,

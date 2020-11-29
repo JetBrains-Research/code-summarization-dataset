@@ -2,7 +2,7 @@ package reposfinder.logic
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import reposfinder.api.GraphQLQueries
-import reposfinder.config.Config
+import reposfinder.config.AnalysisConfig
 import reposfinder.filtering.Filter
 import reposfinder.utils.Logger
 import java.io.File
@@ -14,7 +14,7 @@ import java.util.Date
  *  [...]/{OWNER}/{REPONAME}
  */
 class ReposFinder(
-    private val config: Config
+    private val config: AnalysisConfig
 ) : Runnable {
     private companion object {
         const val TOKEN_SHOW_LENGTH = 20
