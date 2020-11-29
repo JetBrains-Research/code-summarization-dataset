@@ -18,7 +18,7 @@ interface MethodSummarizer {
     }
 
     val language: Language
-    var hideName: Boolean
+    var hideMethodName: Boolean
     var hiddenMethodName: String
 
     fun <T : Node> summarize(root: T, label: String, fileContent: String, filePath: String): MethodSummary
@@ -37,14 +37,6 @@ interface MethodSummarizer {
             description.add(MethodToken(id, token, type))
         }
         val sortedDescription = description.sortedBy { it.id }
-        if (hideName) {
-            for (token in sortedDescription) {
-                if (token.type == AstMinerTypeLabels.SIMPLE_NAME) { // first SimpleName token is method name
-                    token.name = hiddenMethodName
-                    break
-                }
-            }
-        }
         return MethodAST(normalizedLabel, graph, sortedDescription)
     }
 

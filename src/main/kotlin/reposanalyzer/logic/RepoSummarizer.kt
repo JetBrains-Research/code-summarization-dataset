@@ -191,9 +191,9 @@ class RepoSummarizer(
     private fun List<File>.parseFiles(language: Language) {
         val parser = parserFactory.getParser(language)
         val labelExtractor = labelExtractorFactory.getLabelExtractor(
-            config.task, config.granularity, config.filterPredicates
+            config.task, config.granularity, config.hideMethodName, config.filterPredicates
         )
-        val summarizer = methodSummarizerFactory.getMethodSummarizer(language)
+        val summarizer = methodSummarizerFactory.getMethodSummarizer(language, config.hideMethodName)
         parser.parseFiles(this) { parseResult ->
             val fileContent = parseResult.filePath.readFileToString()
             val relativePath = parseResult.filePath.removePrefix(repoInfo.path + File.separator)

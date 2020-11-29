@@ -13,7 +13,7 @@ import reposanalyzer.parsing.getNodeStart
 class JavaMethodSummarizer : MethodSummarizer {
 
     override val language = Language.JAVA
-    override var hideName: Boolean = true
+    override var hideMethodName: Boolean = true
     override var hiddenMethodName: String = MethodSummarizer.DEFAULT_HIDDEN_NAME
 
     override fun <T : Node> summarize(
@@ -51,7 +51,7 @@ class JavaMethodSummarizer : MethodSummarizer {
             length -= docLength
         }
         var body = extractContent(fileContent, pos, length)
-        if (hideName && body != null) { // replace first label occurrence " $label" to " METHOD_NAME"
+        if (hideMethodName && body != null) { // replace first label occurrence " $label" to " METHOD_NAME"
             body = body.replaceFirst(" $label", " $hiddenMethodName")
         }
         return body

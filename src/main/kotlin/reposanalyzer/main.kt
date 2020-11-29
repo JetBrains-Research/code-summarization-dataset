@@ -13,11 +13,11 @@ fun main() {
     val config = Config(
         dumpFolder = DUMP_FOLDER,
         task = Task.NAME,
-        commitsType = Config.CommitsType.ONLY_MERGES,
+        commitsType = Config.CommitsType.FIRST_PARENTS_INCLUDE_MERGES,
         granularity = Granularity.METHOD,
         languages = listOf(Language.JAVA),
         excludeConstructors = true,
-        hideMethodsNames = true
+        hideMethodName = true
     )
     val reposPatches = loadReposPatches(PATH_TO_ALL_REPOS_LIST)
     val reposAnalyzer = ReposAnalyzer(config = config)

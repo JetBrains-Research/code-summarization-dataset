@@ -10,11 +10,15 @@ class LabelExtractorFactory {
     fun getLabelExtractor(
         task: Task,
         granularity: Granularity,
+        hideMethodName: Boolean,
         filterPredicates: List<MethodFilterPredicate>
     ): LabelExtractor {
         return when (task) {
             Task.NAME -> when (granularity) {
-                Granularity.METHOD -> MethodNameExtractor(filterPredicates = filterPredicates)
+                Granularity.METHOD -> MethodNameExtractor(
+                    hideMethodNames = hideMethodName,
+                    filterPredicates = filterPredicates
+                )
                 // TODO
             }
             // TODO

@@ -7,7 +7,7 @@ class Config(
     val dumpFolder: String,
     val languages: List<Language>,
     val task: Task = Task.NAME,
-    val hideMethodsNames: Boolean = true,
+    val hideMethodName: Boolean = true,
     val commitsType: CommitsType = CommitsType.FIRST_PARENTS_INCLUDE_MERGES,
     val excludeNodes: List<String> = listOf(),
     val granularity: Granularity = Granularity.METHOD,
@@ -26,7 +26,7 @@ class Config(
     val supportedExtensions = languages.flatMap { it.extensions }
 
     init {
-        if (hideMethodsNames) {
+        if (excludeConstructors) {
             filterPredicates.add(ConstructorFilterPredicate())
         }
     }
