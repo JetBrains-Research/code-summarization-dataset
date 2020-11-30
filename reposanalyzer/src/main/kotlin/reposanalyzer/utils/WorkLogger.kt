@@ -10,7 +10,7 @@ class WorkLogger(
     private val isDebug: Boolean = false
 ) {
     companion object {
-        const val DUMP_EVERY_N_MESSAGES = 10
+        const val DUMP_EVERY_N_MESSAGES = 5
     }
 
     private val logFile: File = File(pathToLogFile)

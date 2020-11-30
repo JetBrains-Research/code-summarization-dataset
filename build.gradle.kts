@@ -17,6 +17,9 @@ subprojects {
     repositories {
         jcenter()
         mavenCentral()
+
+        // astminer repo
+        maven(url = "https://dl.bintray.com/egor-bogomolov/astminer/")
     }
 
     dependencies {
@@ -25,6 +28,10 @@ subprojects {
         implementation("org.jetbrains.kotlin", "kotlin-reflect", "1.4.10")
         // json
         implementation("com.fasterxml.jackson.module", "jackson-module-kotlin", "2.11.3")
+        // astminer
+        implementation("io.github.vovak.astminer", "astminer", "0.6")
+        // dependency astminer
+        implementation("com.github.ajalt.clikt", "clikt", "3.0.1")
     }
 }
 
@@ -42,6 +49,12 @@ repositories {
 
 dependencies {
     testImplementation(kotlin("test-junit"))
+    // reflect
+    implementation("org.jetbrains.kotlin", "kotlin-reflect", "1.4.10")
+    // astminer
+    implementation("io.github.vovak.astminer", "astminer", "0.6")
+    // dependency astminer
+    implementation("com.github.ajalt.clikt", "clikt", "3.0.1")
 }
 
 detekt {

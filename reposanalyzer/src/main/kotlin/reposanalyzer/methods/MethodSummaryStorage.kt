@@ -60,6 +60,11 @@ class MethodSummaryStorage(
         data.clear() // clear data after dump WITHOUT cleaning visited list
     }
 
+    fun clear() {
+        data.clear()
+        visited.clear()
+    }
+
     fun toJSON(objectMapper: ObjectMapper? = null): List<JsonNode> {
         val mapper = objectMapper ?: jacksonObjectMapper()
         return data.map { it.toJSON(mapper) }.toList()

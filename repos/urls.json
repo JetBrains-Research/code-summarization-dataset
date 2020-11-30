@@ -1,12 +1,1 @@
-[
-  "just bad url",
-  "123//",
-  "//BAD____url",
-  "BAD/url",
-  "BAD/url/",
-  "git://github.com/00ec454/Ask",
-  "git://github.com/00ec454/pop",
-  "git://github.com/01org/IntelSEAPI",
-  "git://github.com/JetBrains/Kotlin",
-  "git://github.com/MinecraftForge/MinecraftForge"
-]
+[]

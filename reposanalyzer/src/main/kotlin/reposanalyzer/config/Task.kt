@@ -1,5 +1,5 @@
 package reposanalyzer.config
 
-enum class Task {
-    NAME
+enum class Task(val label: String){
+    NAME("name")
 }

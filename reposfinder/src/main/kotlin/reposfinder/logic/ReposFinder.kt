@@ -2,7 +2,7 @@ package reposfinder.logic
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import reposfinder.api.GraphQLQueries
-import reposfinder.config.AnalysisConfig
+import reposfinder.config.SearchConfig
 import reposfinder.filtering.Filter
 import reposfinder.utils.Logger
 import java.io.File
@@ -14,7 +14,7 @@ import java.util.Date
  *  [...]/{OWNER}/{REPONAME}
  */
 class ReposFinder(
-    private val config: AnalysisConfig
+    private val config: SearchConfig
 ) : Runnable {
     private companion object {
         const val TOKEN_SHOW_LENGTH = 20
@@ -31,20 +31,20 @@ class ReposFinder(
         DONE
     }
 
-    @Volatile private var status = Status.READY
+    private val jsonMapper = jacksonObjectMapper()
 
     private val limits: RateLimits
     private val logger: Logger
-
     private val dumpDir = File(config.dumpDir)
-    val reposStorage: ReposStorage
 
-    private val jsonMapper = jacksonObjectMapper()
+    @Volatile var status = Status.READY
+
+    val reposStorage: ReposStorage
 
     init {
         dumpDir.mkdirs()
         logger = Logger(config.logPath, isDebug = config.isDebug)
-        reposStorage = ReposStorage(config.urls, config.dumpDir, config.dumpEveryNRepos, logger = logger)
+        reposStorage = ReposStorage(config.urls, config.dumpDir, config.reposDumpThreshold, logger = logger)
         limits = RateLimits(config.isCore, config.isGraphQL, config.token, logger = logger)
     }
 

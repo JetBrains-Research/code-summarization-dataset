@@ -52,6 +52,8 @@ class ReposStorage(
 
     val allRepos = mutableListOf<Repository>()
 
+    val goodReposQueue = ConcurrentLinkedQueue<Repository>()
+
     init {
         goodSummaryDir.mkdirs()
         badSummaryDir.mkdirs()
@@ -87,9 +89,17 @@ class ReposStorage(
         goodBuffer.dumpReposSummary(goodSummaryDir)
         badBuffer.dumpReposLinks(badReposFile)
         badBuffer.dumpReposSummary(badSummaryDir)
+        goodBuffer.dumpToQueue()
+    }
+
+    private fun List<Repository>.dumpToQueue() {
+        this.forEach { repo ->
+            goodReposQueue.add(repo)
+        }
     }
 
     private fun dumpGoodAfterThreshold() {
+        goodBuffer.dumpToQueue()
         goodBuffer.dumpReposLinks(goodReposFile)
         goodBuffer.dumpReposSummary(goodSummaryDir)
         goodRepos.addAll(goodBuffer)
@@ -98,6 +108,7 @@ class ReposStorage(
     }
 
     private fun dumpBadAfterThreshold() {
+        goodBuffer.dumpToQueue()
         badBuffer.dumpReposLinks(badReposFile)
         badBuffer.dumpReposSummary(badSummaryDir)
         badRepos.addAll(badBuffer)

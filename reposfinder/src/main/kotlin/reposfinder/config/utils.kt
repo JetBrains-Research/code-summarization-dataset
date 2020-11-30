@@ -15,7 +15,7 @@ fun String.readToken(): String {
     if (token.isEmpty()) {
         throw NoTokenException("file with token is empty")
     }
-    return token
+    return token.trimEnd()
 }
 
 fun String.readUrls(): List<String> {

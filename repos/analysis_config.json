@@ -1,0 +1,16 @@
+{
+  "dump_dir_path" : "repos/dumps",
+  "languages": ["Java"],
+  "commits_type": "merges",
+  "task": "name",
+  "granularity": "method",
+  "hide_methods_names": true,
+  "exclude_constructors": true,
+  "exclude_nodes": [],
+  "log_dump_threshold": 200,
+  "summary_dump_threshold": 200,
+  "remove_repo_after_analysis": true,
+  "gzip_files": true,
+  "remove_after_gzip": true,
+  "copy_detection": false
+}

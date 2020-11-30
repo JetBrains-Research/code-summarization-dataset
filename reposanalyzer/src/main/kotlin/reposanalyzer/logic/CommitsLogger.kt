@@ -46,7 +46,11 @@ class CommitsLogger(
                 out.appendLine(jsonNode.toString())
             }
         }
-        log.clear() // clear log after dump
+        clear()
+    }
+
+    fun clear() {
+        log.clear()
     }
 
     private fun toJSON(): List<JsonNode> {
