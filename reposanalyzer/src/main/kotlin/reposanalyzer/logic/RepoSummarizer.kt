@@ -10,7 +10,13 @@ import org.eclipse.jgit.revwalk.RevCommit
 import reposanalyzer.config.AnalysisConfig
 import reposanalyzer.config.CommitsType
 import reposanalyzer.config.Language
-import reposanalyzer.git.*
+import reposanalyzer.git.checkoutCommit
+import reposanalyzer.git.checkoutHashOrName
+import reposanalyzer.git.getCommitsDiff
+import reposanalyzer.git.getDiffFiles
+import reposanalyzer.git.getFirstParentHistory
+import reposanalyzer.git.getMergeCommitsHistory
+import reposanalyzer.git.openRepositoryByDotGitDir
 import reposanalyzer.methods.MethodSummaryStorage
 import reposanalyzer.methods.summarizers.MethodSummarizersFactory
 import reposanalyzer.parsing.GumTreeParserFactory
@@ -23,7 +29,7 @@ import reposanalyzer.utils.removePrefixPath
 import reposanalyzer.zipper.Zipper
 import java.io.File
 import java.io.IOException
-import java.util.*
+import java.util.Date
 
 class RepoSummarizer(
     private val repoInfo: RepoInfo,
@@ -259,12 +265,16 @@ class RepoSummarizer(
             if (config.removeRepoAfterAnalysis) {
                 try {
                     FileUtils.deleteDirectory(File(repoInfo.path))
-                } catch (e: IOException) {}
+                } catch (e: IOException) {
+                    // ignore
+                }
             }
             if (config.zipFiles) {
                 try {
                     compressFolder(File(dumpPath), config.removeAfterZip)
-                } catch (e: IOException) {}
+                } catch (e: IOException) {
+                    // ignore
+                }
             }
         }
     }
