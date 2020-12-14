@@ -6,3 +6,7 @@ dependencies {
     // gzip
     implementation("org.apache.commons", "commons-compress", "1.20")
 }
+
+application {
+    mainClassName = "MainKt"
+}

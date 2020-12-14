@@ -7,8 +7,7 @@ import java.io.File
 
 fun loadReposPatches(path: String): List<String> {
     if (!File(path).exists()) {
-        println("Path doesn't exist: $path")
-        return listOf()
+        throw IllegalArgumentException("Path to repos dirs doesn't exist: $path")
     }
     val patches = mutableSetOf<String>()
     val objectMapper = jacksonObjectMapper()

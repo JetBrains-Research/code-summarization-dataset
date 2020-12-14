@@ -87,6 +87,8 @@ class Repository(
 
     fun getDescription(): Map<String, String> = mapOf(Pair(OWNER, owner), Pair(NAME, name))
 
+    fun createSummaryName() = "${this.owner}__${this.name}.json"
+
     fun toJSONExplain(objectMapper: ObjectMapper? = null): JsonNode {
         val mapper = objectMapper ?: jacksonObjectMapper()
             .enable(SerializationFeature.INDENT_OUTPUT)

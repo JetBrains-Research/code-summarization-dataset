@@ -1,11 +1,3 @@
-import reposfinder.config.SearchConfig
-import reposfinder.logic.ReposFinder
+import reposfinder.utils.FinderParser
 
-fun main() {
-    println("input path to .json config file: ")
-    val configPath = readLine() ?: return
-
-    val searchConfig = SearchConfig(configPath = configPath, isDebug = true)
-    val reposFinder = ReposFinder(config = searchConfig)
-    reposFinder.run()
-}
+fun main(args: Array<String>) = FinderParser().main(args)

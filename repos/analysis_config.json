@@ -1,5 +1,6 @@
 {
-  "dump_dir_path" : "repos/dumps",
+  "repos_dirs_list_path": "../repos/repos.json",
+  "dump_dir_path" : "../repos/dumps",
   "languages": ["Java"],
   "commits_type": "merges",
   "task": "name",
@@ -9,8 +10,8 @@
   "exclude_nodes": [],
   "log_dump_threshold": 200,
   "summary_dump_threshold": 200,
-  "remove_repo_after_analysis": true,
+  "remove_repo_after_analysis": false,
   "gzip_files": true,
-  "remove_after_gzip": true,
+  "remove_after_gzip": false,
   "copy_detection": false
 }

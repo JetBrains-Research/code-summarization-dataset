@@ -13,6 +13,7 @@ class AnalysisConfig(
     val isDebug: Boolean = false
 ) {
     private companion object {
+        const val REPOS_DIRS_PATH = "repos_dirs_list_path"
         const val DUMP_DIR_PATH = "dump_dir_path"
         const val LANGUAGES = "languages"
         const val HIDE_METHODS_NAME = "hide_methods_names"
@@ -32,15 +33,17 @@ class AnalysisConfig(
         const val DEFAULT_METHOD_DUMP_THRESHOLD = 200
     }
 
+    private val pathFields = listOf(REPOS_DIRS_PATH, DUMP_DIR_PATH)
     private val listFields = listOf(LANGUAGES)
     private val intFields = listOf(LOG_DUMP_THRESHOLD, METHODS_DUMP_THRESHOLD)
-    private val stringFields = listOf(DUMP_DIR_PATH, COMMITS_TYPE, TASK, GRANULARITY)
+    private val stringFields = listOf(COMMITS_TYPE, TASK, GRANULARITY)
     private val boolFields = listOf(
         HIDE_METHODS_NAME, EXCLUDE_CONSTRUCTORS, REMOVE_AFTER,
         IS_ZIP, REMOVE_AFTER_ZIP, COPY_DETECTION
     )
 
-    var dumpFolder: String = ""
+    lateinit var reposUrlsPath: String
+    lateinit var dumpFolder: String
     val languages: MutableList<Language> = mutableListOf()
     var hideMethodName: Boolean = false
     var excludeConstructors: Boolean = false
@@ -68,6 +71,7 @@ class AnalysisConfig(
     }
 
     private fun JsonNode.processAllFields() {
+        this.processPathFields()
         this.processListFields()
         this.processIntFields()
         this.processStringFields()
@@ -103,11 +107,18 @@ class AnalysisConfig(
             }
         }
 
+    private fun JsonNode.processPathFields() =
+        pathFields.forEach { field ->
+            when (field) {
+                REPOS_DIRS_PATH -> reposUrlsPath = this.get(field).asText()
+                DUMP_DIR_PATH -> dumpFolder = this.get(field).asText()
+            }
+        }
+
     private fun JsonNode.processStringFields() =
         stringFields.forEach { field ->
             val value = this.get(field).asText()
             when (field) {
-                DUMP_DIR_PATH -> dumpFolder = value
                 COMMITS_TYPE -> commitsType = when (value) {
                     CommitsType.ONLY_MERGES.label -> CommitsType.ONLY_MERGES
                     CommitsType.FIRST_PARENTS_INCLUDE_MERGES.label -> CommitsType.FIRST_PARENTS_INCLUDE_MERGES
@@ -121,7 +132,8 @@ class AnalysisConfig(
                     Task.NAME.label -> Task.NAME
                     else -> throw AnalysisConfigException("bad value: `$value` for config field `$field`")
                 }
-                EXCLUDE_NODES -> {} // TODO
+                EXCLUDE_NODES -> {
+                } // TODO
             }
         }
 
@@ -150,6 +162,7 @@ class AnalysisConfig(
 
     private fun JsonNode.checkFields() {
         val badFields = mutableListOf<String>()
+        badFields.addAll(pathFields.filter { !this.has(it) })
         badFields.addAll(listFields.filter { !this.has(it) })
         badFields.addAll(stringFields.filter { !this.has(it) })
         badFields.addAll(boolFields.filter { !this.has(it) })

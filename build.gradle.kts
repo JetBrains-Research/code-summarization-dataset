@@ -14,6 +14,20 @@ subprojects {
         plugin("io.gitlab.arturbosch.detekt")
     }
 
+    detekt {
+        failFast = true // fail build on any finding
+        config = files("../detekt.yml")
+    }
+
+    tasks {
+        compileKotlin {
+            kotlinOptions.jvmTarget = "1.8"
+        }
+        compileTestKotlin {
+            kotlinOptions.jvmTarget = "1.8"
+        }
+    }
+
     repositories {
         jcenter()
         mavenCentral()
@@ -30,7 +44,7 @@ subprojects {
         implementation("com.fasterxml.jackson.module", "jackson-module-kotlin", "2.11.3")
         // astminer
         implementation("io.github.vovak.astminer", "astminer", "0.6")
-        // dependency astminer
+        // arguments parser
         implementation("com.github.ajalt.clikt", "clikt", "3.0.1")
     }
 }
@@ -59,7 +73,7 @@ dependencies {
 
 detekt {
     failFast = true // fail build on any finding
-    buildUponDefaultConfig = true // preconfigure defaults
+    config = files("detekt.yml")
 }
 
 tasks {

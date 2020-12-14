@@ -92,11 +92,10 @@ class ReposStorage(
         goodBuffer.dumpToQueue()
     }
 
-    private fun List<Repository>.dumpToQueue() {
+    private fun List<Repository>.dumpToQueue() =
         this.forEach { repo ->
             goodReposQueue.add(repo)
         }
-    }
 
     private fun dumpGoodAfterThreshold() {
         goodBuffer.dumpToQueue()
@@ -116,7 +115,7 @@ class ReposStorage(
         badBuffer.clear()
     }
 
-    private fun initRepositories() {
+    private fun initRepositories() =
         urls.forEach { url ->
             val spl = url.split(REPO_DELIMITER)
             if (spl.size >= SPLIT_SIZE) {
@@ -133,24 +132,21 @@ class ReposStorage(
                 badUrls.add(url)
             }
         }
-    }
 
-    private fun List<Repository>.dumpReposLinks(file: File) {
+    private fun List<Repository>.dumpReposLinks(file: File) =
         FileOutputStream(file, true).bufferedWriter().use { out ->
             this.forEach { repo ->
                 val node = objectMapper.valueToTree<JsonNode>(repo.getDescription())
                 out.appendLine(node.toString())
             }
         }
-    }
 
-    private fun List<String>.dumpUrls(file: File) {
+    private fun List<String>.dumpUrls(file: File) =
         FileOutputStream(file, true).bufferedWriter().use { out ->
             this.forEach {
                 out.appendLine(it)
             }
         }
-    }
 
     private fun List<Repository>.dumpReposSummary(dir: File, clearInfo: Boolean = true) {
         objectMapper.enable(SerializationFeature.INDENT_OUTPUT)
@@ -173,6 +169,4 @@ class ReposStorage(
         }
         objectMapper.disable(SerializationFeature.INDENT_OUTPUT)
     }
-
-    private fun Repository.createSummaryName() = "${this.owner}__${this.name}.json"
 }
