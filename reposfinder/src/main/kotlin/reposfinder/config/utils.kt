@@ -2,8 +2,8 @@ package reposfinder.config
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
-import reposfinder.exceptions.NoTokenException
-import reposfinder.exceptions.NoUrlsException
+import reposfinder.utils.NoTokenException
+import reposfinder.utils.NoUrlsException
 import java.io.File
 
 fun String.readToken(): String {

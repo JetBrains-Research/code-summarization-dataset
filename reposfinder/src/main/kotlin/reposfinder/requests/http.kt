@@ -28,10 +28,6 @@ fun postRequest(url: String, jsonBody: String? = null, token: String? = null): R
     return request.response()
 }
 
-fun Response.getBody(): String {
-    return this.body().asString(this.headers[Headers.CONTENT_TYPE].lastOrNull())
-}
+fun Response.getBody(): String = this.body().asString(this.headers[Headers.CONTENT_TYPE].lastOrNull())
 
-fun Response.isOK(): Boolean {
-    return this.statusCode == HttpStatus.OK
-}
+fun Response.isOK(): Boolean = this.statusCode == HttpStatus.OK

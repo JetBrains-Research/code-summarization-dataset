@@ -1,6 +1,6 @@
 {
   "repos_dirs_list_path": "../repos/repos.json",
-  "dump_dir_path" : "../repos/dumps",
+  "dump_dir_path" : "../repos/analysis_results",
   "languages": ["Java"],
   "commits_type": "merges",
   "task": "name",
@@ -15,3 +15,4 @@
   "remove_after_gzip": false,
   "copy_detection": false
 }
+

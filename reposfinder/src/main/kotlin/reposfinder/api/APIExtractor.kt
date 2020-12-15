@@ -5,14 +5,12 @@ import com.fasterxml.jackson.databind.node.ObjectNode
 import com.github.kittinunf.fuel.core.Response
 
 object APIExtractor {
-    fun getCommitsCount(response: JsonNode): Int {
-        return response.get("data")
-            ?.get("repository")
-            ?.get("defaultBranchRef")
-            ?.get("target")
-            ?.get("history")
-            ?.get("totalCount")?.asInt() ?: 0
-    }
+    fun getCommitsCount(response: JsonNode): Int = response.get("data")
+        ?.get("repository")
+        ?.get("defaultBranchRef")
+        ?.get("target")
+        ?.get("history")
+        ?.get("totalCount")?.asInt() ?: 0
 
     fun getContributorsCount(response: Response): Int {
         if (!response.headers.containsKey("Link")) { // no next pages => only one contributor

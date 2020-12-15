@@ -20,8 +20,8 @@ interface Filter {
 
 class IntValueFilter(
     override val field: Field,
-    private val relation: Relation,
-    private val value: Long
+    val relation: Relation,
+    val value: Long
 ) : Filter {
 
     override var type = FilterType.CORE
@@ -44,8 +44,8 @@ class IntValueFilter(
 
 class DateValueFilter(
     override val field: Field,
-    private val relation: Relation,
-    private val date: LocalDate
+    val relation: Relation,
+    val date: LocalDate
 ) : Filter {
 
     override var type = FilterType.CORE
@@ -69,8 +69,8 @@ class DateValueFilter(
 
 class StringValueFilter(
     override val field: Field,
-    private val values: List<String>,
-    private val relation: Relation = Relation.EQ
+    val values: List<String>,
+    val relation: Relation = Relation.EQ
 ) : Filter {
 
     override var type = FilterType.CORE
@@ -93,17 +93,30 @@ class StringValueFilter(
 
 class BoolValueFilter(
     override val field: Field,
-    private val value: Boolean
+    val value: Boolean
 ) : Filter {
 
     override var type: FilterType = FilterType.CORE
 
-    override fun isGood(repo: Repository): Boolean = value
+    override fun isGood(repo: Repository): Boolean {
+        val repoValue = repo.info.get(field.gitHubName)?.asBoolean() ?: return false
+        val result = value == repoValue
+        repo.filterResults.add(
+            FilterResult(
+                field = field,
+                repoValue = repoValue.toString(),
+                filterValueMin = value.toString(),
+                relation = Relation.EQ,
+                result = result
+            )
+        )
+        return result
+    }
 }
 
 class IntRangeFilter(
     override val field: Field,
-    private val range: LongRange
+    val range: LongRange
 ) : Filter {
 
     override var type = FilterType.CORE
@@ -126,7 +139,7 @@ class IntRangeFilter(
 
 class DateRangeFilter(
     override val field: Field,
-    private val dateRange: Pair<LocalDate, LocalDate>
+    val dateRange: Pair<LocalDate, LocalDate>
 ) : Filter {
 
     override var type = FilterType.CORE

@@ -5,7 +5,7 @@ import astminer.cli.MethodFilterPredicate
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
-import reposanalyzer.exceptions.AnalysisConfigException
+import reposanalyzer.utils.AnalysisConfigException
 import java.io.File
 
 class AnalysisConfig(
@@ -44,17 +44,19 @@ class AnalysisConfig(
 
     lateinit var reposUrlsPath: String
     lateinit var dumpFolder: String
+
     val languages: MutableList<Language> = mutableListOf()
+    val excludeNodes: List<String> = listOf()
+
+    var logDumpThreshold: Int = DEFAULT_LOG_DUMP_THRESHOLD
+    var summaryDumpThreshold: Int = DEFAULT_METHOD_DUMP_THRESHOLD
+    var task: Task = Task.NAME
+    var granularity: Granularity = Granularity.METHOD
+    var commitsType: CommitsType = CommitsType.FIRST_PARENTS_INCLUDE_MERGES
+    var copyDetection: Boolean = false
     var hideMethodName: Boolean = false
     var excludeConstructors: Boolean = false
     var removeRepoAfterAnalysis: Boolean = false
-    var commitsType: CommitsType = CommitsType.FIRST_PARENTS_INCLUDE_MERGES
-    var task: Task = Task.NAME
-    var granularity: Granularity = Granularity.METHOD
-    val excludeNodes: List<String> = listOf()
-    var logDumpThreshold: Int = DEFAULT_LOG_DUMP_THRESHOLD
-    var summaryDumpThreshold: Int = DEFAULT_METHOD_DUMP_THRESHOLD
-    var copyDetection: Boolean = false
     var zipFiles: Boolean = false
     var removeAfterZip: Boolean = false
 
@@ -88,77 +90,72 @@ class AnalysisConfig(
         supportedExtensions.addAll(languages.flatMap { it.extensions })
     }
 
-    private fun JsonNode.processListFields() =
-        listFields.forEach { field ->
-            when (field) {
-                LANGUAGES -> this.get(field).processLanguages()
-            }
+    private fun JsonNode.processListFields() = listFields.forEach { field ->
+        when (field) {
+            LANGUAGES -> this.get(field).processLanguages()
+            EXCLUDE_NODES -> this.get(field).processExcludeNodes() // TODO
         }
+    }
 
-    private fun JsonNode.processIntFields() =
-        intFields.forEach { field ->
-            val value = this.get(field).asInt()
-            if (value <= 0) {
-                throw AnalysisConfigException("impossible threshold value `$value` for field $field")
-            }
-            when (field) {
-                LOG_DUMP_THRESHOLD -> logDumpThreshold = value
-                METHODS_DUMP_THRESHOLD -> summaryDumpThreshold = value
-            }
+    private fun JsonNode.processIntFields() = intFields.forEach { field ->
+        val value = this.get(field).asInt()
+        if (value <= 0) {
+            throw AnalysisConfigException("impossible threshold value `$value` for field $field")
         }
+        when (field) {
+            LOG_DUMP_THRESHOLD -> logDumpThreshold = value
+            METHODS_DUMP_THRESHOLD -> summaryDumpThreshold = value
+        }
+    }
 
-    private fun JsonNode.processPathFields() =
-        pathFields.forEach { field ->
-            when (field) {
-                REPOS_DIRS_PATH -> reposUrlsPath = this.get(field).asText()
-                DUMP_DIR_PATH -> dumpFolder = this.get(field).asText()
-            }
+    private fun JsonNode.processPathFields() = pathFields.forEach { field ->
+        when (field) {
+            REPOS_DIRS_PATH -> reposUrlsPath = this.get(field).asText()
+            DUMP_DIR_PATH -> dumpFolder = this.get(field).asText()
         }
+    }
 
-    private fun JsonNode.processStringFields() =
-        stringFields.forEach { field ->
-            val value = this.get(field).asText()
-            when (field) {
-                COMMITS_TYPE -> commitsType = when (value) {
-                    CommitsType.ONLY_MERGES.label -> CommitsType.ONLY_MERGES
-                    CommitsType.FIRST_PARENTS_INCLUDE_MERGES.label -> CommitsType.FIRST_PARENTS_INCLUDE_MERGES
-                    else -> throw AnalysisConfigException("bad value: `$value` for config field `$field`")
-                }
-                GRANULARITY -> granularity = when (value) {
-                    Granularity.METHOD.label -> Granularity.METHOD
-                    else -> throw AnalysisConfigException("bad value: `$value` for config field `$field`")
-                }
-                TASK -> task = when (value) {
-                    Task.NAME.label -> Task.NAME
-                    else -> throw AnalysisConfigException("bad value: `$value` for config field `$field`")
-                }
-                EXCLUDE_NODES -> {
-                } // TODO
+    private fun JsonNode.processStringFields() = stringFields.forEach { field ->
+        val value = this.get(field).asText()
+        when (field) {
+            COMMITS_TYPE -> commitsType = when (value) {
+                CommitsType.ONLY_MERGES.label -> CommitsType.ONLY_MERGES
+                CommitsType.FIRST_PARENTS_INCLUDE_MERGES.label -> CommitsType.FIRST_PARENTS_INCLUDE_MERGES
+                else -> throw AnalysisConfigException("bad value: `$value` for config field `$field`")
+            }
+            GRANULARITY -> granularity = when (value) {
+                Granularity.METHOD.label -> Granularity.METHOD
+                else -> throw AnalysisConfigException("bad value: `$value` for config field `$field`")
+            }
+            TASK -> task = when (value) {
+                Task.NAME.label -> Task.NAME
+                else -> throw AnalysisConfigException("bad value: `$value` for config field `$field`")
             }
         }
+    }
 
-    private fun JsonNode.processBoolFields() =
-        boolFields.forEach { field ->
-            val value = this.get(field).asBoolean()
-            when (field) {
-                HIDE_METHODS_NAME -> hideMethodName = value
-                EXCLUDE_CONSTRUCTORS -> excludeConstructors = value
-                REMOVE_AFTER -> removeRepoAfterAnalysis = value
-                COPY_DETECTION -> copyDetection = value
-                IS_ZIP -> zipFiles = value
-                REMOVE_AFTER_ZIP -> removeAfterZip = value
-            }
+    private fun JsonNode.processBoolFields() = boolFields.forEach { field ->
+        val value = this.get(field).asBoolean()
+        when (field) {
+            HIDE_METHODS_NAME -> hideMethodName = value
+            EXCLUDE_CONSTRUCTORS -> excludeConstructors = value
+            REMOVE_AFTER -> removeRepoAfterAnalysis = value
+            COPY_DETECTION -> copyDetection = value
+            IS_ZIP -> zipFiles = value
+            REMOVE_AFTER_ZIP -> removeAfterZip = value
         }
+    }
 
-    private fun JsonNode.processLanguages() =
-        this.forEach { maybeLang ->
-            for (realLang in Language.values()) {
-                if (maybeLang.asText().equals(realLang.label, ignoreCase = true)) {
-                    languages.add(realLang)
-                    break
-                }
+    private fun JsonNode.processExcludeNodes() = Unit // TODO
+
+    private fun JsonNode.processLanguages() = this.forEach { maybeLang ->
+        for (realLang in Language.values()) {
+            if (maybeLang.asText().equals(realLang.label, ignoreCase = true)) {
+                languages.add(realLang)
+                break
             }
         }
+    }
 
     private fun JsonNode.checkFields() {
         val badFields = mutableListOf<String>()

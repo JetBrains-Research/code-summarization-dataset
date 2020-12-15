@@ -70,23 +70,15 @@ class MethodSummaryStorage(
         return data.map { it.toJSON(mapper) }.toList()
     }
 
-    fun contains(summary: MethodSummary): Boolean {
-        return contains(summary.fullName, summary.filePath)
-    }
+    fun contains(summary: MethodSummary): Boolean =
+        contains(summary.fullName, summary.filePath)
 
-    fun contains(normalizedFullName: String, filePath: String): Boolean {
-        return visited.contains(Identity(normalizedFullName, filePath))
-    }
+    fun contains(normalizedFullName: String, filePath: String): Boolean =
+        visited.contains(Identity(normalizedFullName, filePath))
 
-    fun notContains(summary: MethodSummary): Boolean {
-        return !contains(summary)
-    }
+    fun notContains(summary: MethodSummary): Boolean = !contains(summary)
 
-    fun notContains(normalizedFullName: String, filePath: String): Boolean {
-        return !contains(normalizedFullName, filePath)
-    }
+    fun notContains(normalizedFullName: String, filePath: String): Boolean = !contains(normalizedFullName, filePath)
 
-    private fun clearFile() {
-        FileOutputStream(dumpFile, false).bufferedWriter()
-    }
+    private fun clearFile() = FileOutputStream(dumpFile, false).bufferedWriter()
 }

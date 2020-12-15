@@ -92,17 +92,14 @@ class ReposStorage(
         goodBuffer.dumpToQueue()
     }
 
-    private fun List<Repository>.dumpToQueue() =
-        this.forEach { repo ->
-            goodReposQueue.add(repo)
-        }
+    private fun List<Repository>.dumpToQueue() = this.forEach { repo -> goodReposQueue.add(repo) }
 
     private fun dumpGoodAfterThreshold() {
         goodBuffer.dumpToQueue()
         goodBuffer.dumpReposLinks(goodReposFile)
         goodBuffer.dumpReposSummary(goodSummaryDir)
         goodRepos.addAll(goodBuffer)
-        logger?.add("> good repos buffer of size ${goodBuffer.size} was dumped")
+        logger?.add("> good repos dump: ${goodBuffer.size}")
         goodBuffer.clear()
     }
 
@@ -111,27 +108,26 @@ class ReposStorage(
         badBuffer.dumpReposLinks(badReposFile)
         badBuffer.dumpReposSummary(badSummaryDir)
         badRepos.addAll(badBuffer)
-        logger?.add("> bad repos buffer of size ${badBuffer.size} was dumped")
+        logger?.add("> bad repos dump: ${badBuffer.size}")
         badBuffer.clear()
     }
 
-    private fun initRepositories() =
-        urls.forEach { url ->
-            val spl = url.split(REPO_DELIMITER)
-            if (spl.size >= SPLIT_SIZE) {
-                val owner = spl[spl.size - OWNER_POS]
-                val name = spl[spl.size - NAME_POS]
-                val info = objectMapper.createObjectNode()
-                if (owner.isNotEmpty() && name.isNotEmpty()) {
-                    allRepos.add(Repository(owner, name, info, logger = logger))
-                    goodUrls.add(url)
-                } else {
-                    badUrls.add(url)
-                }
+    private fun initRepositories() = urls.forEach { url ->
+        val spl = url.split(REPO_DELIMITER)
+        if (spl.size >= SPLIT_SIZE) {
+            val owner = spl[spl.size - OWNER_POS]
+            val name = spl[spl.size - NAME_POS]
+            val info = objectMapper.createObjectNode()
+            if (owner.isNotEmpty() && name.isNotEmpty()) {
+                allRepos.add(Repository(owner, name, info, logger = logger))
+                goodUrls.add(url)
             } else {
                 badUrls.add(url)
             }
+        } else {
+            badUrls.add(url)
         }
+    }
 
     private fun List<Repository>.dumpReposLinks(file: File) =
         FileOutputStream(file, true).bufferedWriter().use { out ->

@@ -3,12 +3,12 @@ package reposfinder.config
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
-import reposfinder.exceptions.SearchConfigException
+import reposfinder.filtering.BoolValueFilter
+import reposfinder.utils.SearchConfigException
 import reposfinder.filtering.Field
 import reposfinder.filtering.Filter
 import reposfinder.filtering.FilterType
 import reposfinder.filtering.utils.parseFilter
-import reposfinder.logic.Repository
 import java.io.File
 
 class SearchConfig(
@@ -16,7 +16,6 @@ class SearchConfig(
     val isDebug: Boolean = false
 ) {
     private companion object {
-        const val SIZE_1 = 1
         const val MILLIS_IN_HOUR = 3600000
         const val DEFAULT_DUMP_THRESHOLD = 50
         const val DEFAULT_SLEEP_RANGE: Long = 5 * 60 * 1000 // N * 60 000 milliseconds == N * 60 seconds == N minutes
@@ -88,10 +87,8 @@ class SearchConfig(
     private fun JsonNode.processSearchPart() {
         for (field in Field.values().filter { this.has(it.configName) }) {
             val filter = field.parseFilter(this) ?: continue
-            if (filter.field == Field.ANON_CONTRIBUTORS) {
-                isAnonContributors = filter.isGood(
-                    Repository("", "", jacksonObjectMapper().createObjectNode())
-                )
+            if (filter.field == Field.ANON_CONTRIBUTORS) { // anon contributors is api argument, not filter
+                isAnonContributors = (filter as BoolValueFilter).value
             } else when (filter.type) {
                 FilterType.CORE -> coreFilters.add(filter)
                 FilterType.GRAPHQL -> graphQLFilters.add(filter)
@@ -112,7 +109,7 @@ class SearchConfig(
                 isCommitsCount = true
             }
         }
-        if (coreFilters.size == SIZE_1 && isContributors) {
+        if (coreFilters.size == 1 && isContributors) {
             isOnlyContributors = true
         }
     }

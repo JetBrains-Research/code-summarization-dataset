@@ -3,16 +3,14 @@ package reposanalyzer.git
 import org.eclipse.jgit.api.Git
 import org.eclipse.jgit.lib.Repository
 import org.eclipse.jgit.storage.file.FileRepositoryBuilder
-import reposanalyzer.exceptions.NoDotGitFolder
+import reposanalyzer.utils.NoDotGitFolder
 import java.io.File
 
-fun cloneRepository(repoURL: String, repoDir: String): Git? {
-    return Git.cloneRepository()
-        .setCloneAllBranches(true)
-        .setDirectory(File(repoDir))
-        .setURI(repoURL)
-        .call()
-}
+fun cloneRepository(repoURL: String, repoDir: String): Git? = Git.cloneRepository()
+    .setCloneAllBranches(true)
+    .setDirectory(File(repoDir))
+    .setURI(repoURL)
+    .call()
 
 fun String.openRepositoryByRepoDir(repoDirPath: String): Repository {
     val dir = File(repoDirPath)

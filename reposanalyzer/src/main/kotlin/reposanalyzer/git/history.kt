@@ -32,10 +32,16 @@ fun Repository.getFirstParentHistory(startObjectId: ObjectId): List<RevCommit> {
 /*
  *   git log --first-parent --merges branch
  */
-fun Repository.getMergeCommitsHistory(startObjectId: ObjectId): List<RevCommit> {
+fun Repository.getMergeCommitsHistory(startObjectId: ObjectId, includeYoungest: Boolean = true): List<RevCommit> {
     val history = mutableListOf<RevCommit>()
     val revisionWalk = RevWalk(this)
     var currentCommit = revisionWalk.parseCommit(startObjectId)
+    currentCommit?.let {
+        // not oldest commit and not merge commit
+        if (includeYoungest && currentCommit.parents != null && currentCommit.parentCount != 2) {
+            history.add(currentCommit)
+        }
+    }
     while (currentCommit != null) {
         if (currentCommit.parentCount == 2) { // merge commit has 2 parents
             history.add(currentCommit)
@@ -54,16 +60,10 @@ fun Repository.getMergeCommitsHistory(startObjectId: ObjectId): List<RevCommit> 
  *   listMode: ListMode.ALL     ==   git branch -a
  *             ListMode.REMOTE  ==   git branch -r
  */
-fun Git.getBranchesList(listMode: ListMode = ListMode.ALL): MutableList<Ref>? {
-    return this.branchList()
-        .setListMode(listMode)
-        .call()
-}
+fun Git.getBranchesList(listMode: ListMode = ListMode.ALL): MutableList<Ref>? = this.branchList()
+    .setListMode(listMode)
+    .call()
 
-fun Repository.getShortBranchName(): String? {
-    return this.branch
-}
+fun Repository.getShortBranchName(): String? = this.branch
 
-fun Repository.getFullCurrBranchName(): String? {
-    return this.fullBranch
-}
+fun Repository.getFullCurrBranchName(): String? = this.fullBranch

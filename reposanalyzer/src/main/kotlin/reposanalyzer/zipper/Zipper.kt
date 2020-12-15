@@ -16,12 +16,14 @@ interface Zipper {
             return
         }
         dir.walkTopDown().maxDepth(1).forEach { file ->
-            compressFile(file, removeAfterZip)
+            if (!file.absolutePath.endsWith(DOT_GZ)) {
+                compressFile(file, removeAfterZip)
+            }
         }
     }
 
     fun compressFile(file: File, removeAfterZip: Boolean = false) {
-        if (!file.exists() || file.isDirectory) {
+        if (!file.exists() || file.isDirectory || file.absolutePath.endsWith(DOT_GZ)) {
             return
         }
         val gzipFile = File(file.absolutePath + DOT_GZ)

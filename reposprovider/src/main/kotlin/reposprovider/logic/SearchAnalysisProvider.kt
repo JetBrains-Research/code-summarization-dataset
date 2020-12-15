@@ -13,7 +13,7 @@ class SearchAnalysisProvider(
     private val analysisConfig: AnalysisConfig
 ) : Runnable {
     private companion object {
-        const val SLEEPT_TIME: Long = 30 * 1000L
+        const val SLEEP_TIME: Long = 15 * 1000L
     }
 
     private val reposFinder: ReposFinder = ReposFinder(config = searchConfig)
@@ -28,7 +28,7 @@ class SearchAnalysisProvider(
         searchThread.start()
         while (isFinderWorking() && !isInterrupted) {
             while (reposQueue.isEmpty() && isFinderWorking() && !isInterrupted) { // active waiting
-                Thread.sleep(SLEEPT_TIME)
+                Thread.sleep(SLEEP_TIME)
             }
             reposAnalyzer.submitAll(reposQueue.extractRepoInfos())
         }
@@ -52,11 +52,10 @@ class SearchAnalysisProvider(
 
     private fun waitWorkers() {
         while (!isInterrupted && reposAnalyzer.isAnyRunning()) {
-            Thread.sleep(SLEEPT_TIME)
+            Thread.sleep(SLEEP_TIME)
         }
     }
 
-    private fun isFinderWorking() =
-        listOf(ReposFinder.Status.READY, ReposFinder.Status.WORKING)
-            .contains(reposFinder.status)
+    private fun isFinderWorking() = listOf(ReposFinder.Status.READY, ReposFinder.Status.WORKING)
+        .contains(reposFinder.status)
 }

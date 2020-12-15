@@ -15,7 +15,7 @@ class RateLimits(
     private val isCore: Boolean,
     private val isGraphQL: Boolean,
     private val token: String,
-    private val remainingMin: Int = 50,
+    private val remainingMin: Int = 100,
     private val logger: Logger? = null
 ) {
     companion object {
@@ -26,10 +26,9 @@ class RateLimits(
         const val USED = "used"
         const val REMAINING = "remaining"
         const val RESET = "reset"
-        const val UPDATE_SLEEP = 5000L
+        const val UPDATE_SLEEP = 5 * 1000L
         const val ONE_SECOND_IN_MILLIS = 1000L
-        const val ZERO = 0
-        const val NO_TIME = 0L
+        const val NO_LIMITS = 0L
         const val BAD_TIME = -1L
     }
 
@@ -37,12 +36,15 @@ class RateLimits(
         var limit: Int = 0,
         var used: Int = 0,
         var remaining: Int = 0,
-        var resetTime: Long = 0 // milliseconds from 01.01.1970
+        var resetTime: Long = 0, // milliseconds from 01.01.1970
+        val remainingMin: Int
     ) {
         fun register(count: Int = 1) {
             remaining = max(0, remaining - count)
             used = min(used + count, limit)
         }
+
+        fun isRemaining(): Boolean = remaining > remainingMin
 
         override fun toString(): String {
             return "[limit: $limit, used: $used, remaining: $remaining, reset: ${Date(resetTime)}$]"
@@ -51,33 +53,33 @@ class RateLimits(
 
     private val objectMapper = jacksonObjectMapper()
 
-    val core = Limits()
-    val graphQL = Limits()
+    val core = Limits(remainingMin = remainingMin)
+    val graphQL = Limits(remainingMin = remainingMin)
 
     fun check(): Long {
-        var resetTime: Long = NO_TIME
-        if (isCore && checkCore()) {
+        var resetTime: Long = NO_LIMITS
+        if (isCore && !core.isRemaining()) {
             if (!tryUpdate()) {
                 resetTime = BAD_TIME
-            } else if (core.limit == ZERO) {
+            } else if (core.limit == 0) {
                 resetTime = BAD_TIME
-            } else if (checkCore()) {
+            } else if (!core.isRemaining()) {
                 resetTime = max(resetTime, core.resetTime)
             }
         }
-        if (isGraphQL && checkGraphQL() && resetTime != BAD_TIME) {
+        if (isGraphQL && !graphQL.isRemaining() && resetTime != BAD_TIME) {
             if (!tryUpdate()) {
                 resetTime = BAD_TIME
-            } else if (graphQL.limit == ZERO) {
+            } else if (graphQL.limit == 0) {
                 resetTime = BAD_TIME
-            } else if (checkGraphQL()) {
+            } else if (!graphQL.isRemaining()) {
                 resetTime = max(resetTime, graphQL.resetTime)
             }
         }
         return resetTime
     }
 
-    fun isNoLimits() = this.core.limit == ZERO || this.graphQL.limit == ZERO
+    fun isNoLimits() = this.core.limit == 0 || this.graphQL.limit == 0
 
     fun update(): Boolean {
         val (_, response, _) = getRequest(
@@ -107,10 +109,6 @@ class RateLimits(
         }
         return true
     }
-
-    private fun checkCore() = core.remaining <= remainingMin && core.limit != ZERO
-
-    private fun checkGraphQL() = graphQL.remaining <= remainingMin && graphQL.limit != ZERO
 
     private fun Limits.updateByNode(api: String, jsonNode: JsonNode?): Boolean {
         val node = jsonNode?.get(RESOURCES)?.get(api) ?: return false

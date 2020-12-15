@@ -45,7 +45,7 @@ fun List<DiffEntry>.getDiffFiles(repository: Repository, copyDetection: Boolean 
     val filePatches = mutableListOf<String>()
     val addEntries = mutableListOf<DiffEntry>()
     val modifyEntries = mutableListOf<DiffEntry>()
-    for (entry in this) {
+    this.forEach { entry ->
         when (entry.changeType) {
             DiffEntry.ChangeType.ADD -> addEntries.add(entry)
             DiffEntry.ChangeType.MODIFY -> modifyEntries.add(entry)
@@ -54,6 +54,7 @@ fun List<DiffEntry>.getDiffFiles(repository: Repository, copyDetection: Boolean 
             else -> {} // DiffEntry.ChangeType.DELETE -- useless
         }
     }
+    // EXPERIMENTAL (maybe very slow)
     if (copyDetection) { // new not copied/renamed files (ADD)
         val copyEntries = repository.renameCopyDetection(addEntries, similarityScore = 100) // 100% similarity
         val copiedFiles = copyEntries.map { it.newPath }

@@ -53,7 +53,10 @@ class ReposAnalyzer(
             worker.status = RepoSummarizer.Status.INTERRUPTED
         }
         pool.shutdown()
+        dumpLog()
     }
+
+    fun dumpLog() = logger.dump()
 
     private fun RepoInfo.constructSummarizer(): RepoSummarizer {
         val repoDumpPath = this.constructDumpPath(config.dumpFolder)

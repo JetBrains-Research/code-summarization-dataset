@@ -22,10 +22,11 @@ import reposanalyzer.methods.summarizers.MethodSummarizersFactory
 import reposanalyzer.parsing.GumTreeParserFactory
 import reposanalyzer.parsing.LabelExtractorFactory
 import reposanalyzer.utils.WorkLogger
-import reposanalyzer.utils.getAbsolutePatches
-import reposanalyzer.utils.getNotHiddenNotDirectoryFiles
-import reposanalyzer.utils.readFileToString
+import reposanalyzer.utils.CommitsLogger
 import reposanalyzer.utils.removePrefixPath
+import reposanalyzer.utils.getNotHiddenNotDirectoryFiles
+import reposanalyzer.utils.getAbsolutePatches
+import reposanalyzer.utils.readFileToString
 import reposanalyzer.zipper.Zipper
 import java.io.File
 import java.io.IOException
@@ -249,6 +250,7 @@ class RepoSummarizer(
                     fileContent,
                     relativePath
                 )
+                methodSummary.repo = "/${repoInfo.owner}/${repoInfo.name}"
                 methodSummary.commit = currCommit
                 summaryStorage.add(methodSummary)
             }
@@ -282,7 +284,7 @@ class RepoSummarizer(
     private fun loadHistory() {
         when (config.commitsType) {
             CommitsType.ONLY_MERGES -> defaultBranchHead?.let { head ->
-                commitsHistory.addAll(repository.getMergeCommitsHistory(head.objectId))
+                commitsHistory.addAll(repository.getMergeCommitsHistory(head.objectId, includeYoungest = true))
             }
             CommitsType.FIRST_PARENTS_INCLUDE_MERGES -> defaultBranchHead?.let { head ->
                 commitsHistory.addAll(repository.getFirstParentHistory(head.objectId))

@@ -1,10 +1,11 @@
 {
     "token_path" : "../repos/token.txt",
-    "dump_dir_path" : "../repos/results",
+    "dump_dir_path" : "../repos/search_results",
     "repos_urls_path": "../repos/urls.json",
-    "dump_threshold": 5,
+    "dump_threshold": 10,
     "languages": ["Java"],
     "stars_count": [">=", 0],
+    "is_fork": [false],
     "commits_count": [0, 90000],
     "contributors_count": [">=", 0],
     "anon_contributors": [false],

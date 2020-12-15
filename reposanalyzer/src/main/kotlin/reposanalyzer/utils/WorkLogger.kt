@@ -32,15 +32,11 @@ class WorkLogger(
         }
     }
 
-    fun dump() {
-        FileOutputStream(logFile, true).bufferedWriter().use { out ->
-            while (!messages.isEmpty()) {
-                out.appendLine(messages.poll())
-            }
+    fun dump() = FileOutputStream(logFile, true).bufferedWriter().use { out ->
+        while (!messages.isEmpty()) {
+            out.appendLine(messages.poll())
         }
     }
 
-    private fun clearFile() {
-        FileOutputStream(logFile, false).bufferedWriter()
-    }
+    private fun clearFile() = FileOutputStream(logFile, false).bufferedWriter()
 }

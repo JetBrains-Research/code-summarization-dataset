@@ -3,6 +3,7 @@ package reposfinder.filtering
 enum class Field(val configName: String, val gitHubName: String) {
     LANGUAGES("languages", "language"),
     STARS("stars_count", "stargazers_count"),
+    FORK("is_fork", "fork"),
     COMMITS("commits_count", "commits_count"),
     CONTRIBUTORS("contributors_count", "contributors_count"),
     ANON_CONTRIBUTORS("anon_contributors", ""),
