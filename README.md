@@ -20,11 +20,11 @@ git clone https://github.com/JetBrains-Research/code-summarization-dataset.git
 
 ## I. Repositories filtering (reposfinder module)
 
-**Input:** list of urls to existing GitHub repositories and search config
+**Input:** list of urls to existing GitHub repositories in format `.../REPOOWNER/REPONAME` (exactly 2 slashes) and search config
 
 **Output:** lists of 'good' and 'bad' repositories after filters applying with explanation about filters results
 
-#### 1. Search config
+### 1. Search config
 
 search config is .json file with all search filters and run parameters:
 ```
@@ -67,7 +67,7 @@ Examples:
 - ```"created_at": [">=","2010-01-01"] --> repository creation date >= 2010.01.01```
 - ```"updated_at": ["2010-01-01", "2015-01-01"] --> 2010.01.01 <= repository update date <= 2015.01.01```
 
-#### 2. Run
+### 2. Run
 
 run example with provided script `run_finder.sh`:
 
@@ -79,7 +79,7 @@ arguments:
     -s, --search    - path to search config .json file
     --debug         - flag, print all log messages to the console
     
-#### 3. Results
+### 3. Results
 
 In `dump_dir_path` appear 4 files and 2 folders:
 
@@ -134,7 +134,7 @@ https://api.github.com/repos/jetbrains/kotlin
 - metadata (file path, commit info)
 
 
-#### 1. Analysis config
+### 1. Analysis config
 
 analysis config is .json file with run parameters:
 
@@ -158,7 +158,7 @@ analysis config is .json file with run parameters:
 }
 ```
 
-#### 2. Run
+### 2. Run
 
 run example with provided script `run_analyzer.sh`:
 
@@ -180,7 +180,7 @@ In `dump_dir_path` appear 4 files:
   - 2 files with log
 
 
-### III. Repositories filtering and analysis (module reposprovider)
+## III. Repositories filtering and analysis (module reposprovider)
 
 reposfinder + reposanalyzer modules
 
@@ -190,7 +190,7 @@ reposfinder + reposanalyzer modules
 1. lists of 'good' and 'bad' repositories after filters applying with explanation about filters results
 2. for each 'good' repository all summary information extracted with reposanalyzer module
 
-#### 1. Run
+### 1. Run
 
 run example with provided script `run_provider.sh`:
 
@@ -203,7 +203,7 @@ arguments:
     -a, --analysis    - path to analysis config .json file
     --debug           - flag, print all log messages to the console
 
-#### 2. Results
+### 2. Results
 
 - output from reposfinder module
 - for each repository output from reposanalyzer module to folder `dump_folder/REPOOWNER__REPONAME`
