@@ -2,8 +2,8 @@ package reposfinder.config
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
-import reposfinder.exceptions.NoTokenException
-import reposfinder.exceptions.NoUrlsException
+import reposfinder.utils.NoTokenException
+import reposfinder.utils.NoUrlsException
 import java.io.File
 
 fun String.readToken(): String {
@@ -15,7 +15,7 @@ fun String.readToken(): String {
     if (token.isEmpty()) {
         throw NoTokenException("file with token is empty")
     }
-    return token
+    return token.trimEnd()
 }
 
 fun String.readUrls(): List<String> {

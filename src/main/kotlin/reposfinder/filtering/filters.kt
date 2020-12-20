@@ -20,8 +20,8 @@ interface Filter {
 
 class IntValueFilter(
     override val field: Field,
-    private val relation: Relation,
-    private val value: Long
+    val relation: Relation,
+    val value: Long
 ) : Filter {
 
     override var type = FilterType.CORE
@@ -44,8 +44,8 @@ class IntValueFilter(
 
 class DateValueFilter(
     override val field: Field,
-    private val relation: Relation,
-    private val date: LocalDate
+    val relation: Relation,
+    val date: LocalDate
 ) : Filter {
 
     override var type = FilterType.CORE
@@ -69,15 +69,15 @@ class DateValueFilter(
 
 class StringValueFilter(
     override val field: Field,
-    private val values: List<String>,
-    private val relation: Relation = Relation.EQ
+    val values: List<String>,
+    val relation: Relation = Relation.EQ
 ) : Filter {
 
     override var type = FilterType.CORE
 
     override fun isGood(repo: Repository): Boolean {
         val repoValue = repo.info.get(field.gitHubName)?.asText() ?: return false
-        val result = values.any { it.toLowerCase() == repoValue.toLowerCase() }
+        val result = values.any { it.equals(repoValue, ignoreCase = true) }
         repo.filterResults.add(
             FilterResult(
                 field = field,
@@ -91,19 +91,80 @@ class StringValueFilter(
     }
 }
 
+class LicenseFilter(
+    override val field: Field,
+    val values: List<String>,
+    var isLicense: Boolean = false,
+    val relation: Relation = Relation.EQ
+) : Filter {
+
+    private companion object {
+        const val KEY = "key"
+        const val LICENSE = "license"
+        const val NO_LICENSE = "no_license"
+        const val ANY_LICENSE = "any_license"
+    }
+
+    override var type = FilterType.CORE
+
+    override fun isGood(repo: Repository): Boolean {
+        val repoValue = repo.info.get(field.gitHubName)?.get(KEY)?.asText()
+        var result: Boolean
+        var filterValueMin: String
+        if (isLicense) {
+            if (repoValue == null) {
+                result = false
+                filterValueMin = if (values.isEmpty()) "[$ANY_LICENSE]" else values.toString()
+            } else if (values.isEmpty()) {
+                result = true
+                filterValueMin = "[$ANY_LICENSE]"
+            } else {
+                result = values.any { it.equals(repoValue, ignoreCase = true) }
+                filterValueMin = values.toString()
+            }
+        } else {
+            result = repoValue == null
+            filterValueMin = "[$NO_LICENSE]"
+        }
+        repo.filterResults.add(
+            FilterResult(
+                field = field,
+                repoValue = "[$repoValue]",
+                filterValueMin = filterValueMin,
+                relation = relation,
+                result = result
+            )
+        )
+        return result
+    }
+}
+
 class BoolValueFilter(
     override val field: Field,
-    private val value: Boolean
+    val value: Boolean
 ) : Filter {
 
     override var type: FilterType = FilterType.CORE
 
-    override fun isGood(repo: Repository): Boolean = value
+    override fun isGood(repo: Repository): Boolean {
+        val repoValue = repo.info.get(field.gitHubName)?.asBoolean() ?: return false
+        val result = value == repoValue
+        repo.filterResults.add(
+            FilterResult(
+                field = field,
+                repoValue = repoValue.toString(),
+                filterValueMin = value.toString(),
+                relation = Relation.EQ,
+                result = result
+            )
+        )
+        return result
+    }
 }
 
 class IntRangeFilter(
     override val field: Field,
-    private val range: LongRange
+    val range: LongRange
 ) : Filter {
 
     override var type = FilterType.CORE
@@ -126,7 +187,7 @@ class IntRangeFilter(
 
 class DateRangeFilter(
     override val field: Field,
-    private val dateRange: Pair<LocalDate, LocalDate>
+    val dateRange: Pair<LocalDate, LocalDate>
 ) : Filter {
 
     override var type = FilterType.CORE

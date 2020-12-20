@@ -2,8 +2,7 @@ package reposfinder.logic
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import reposfinder.api.GraphQLQueries
-import reposfinder.config.Config
-import reposfinder.filtering.Filter
+import reposfinder.config.SearchConfig
 import reposfinder.utils.Logger
 import java.io.File
 import java.lang.Integer.max
@@ -14,10 +13,12 @@ import java.util.Date
  *  [...]/{OWNER}/{REPONAME}
  */
 class ReposFinder(
-    private val config: Config
+    private val config: SearchConfig
 ) : Runnable {
     private companion object {
         const val TOKEN_SHOW_LENGTH = 20
+        const val RESET_TIME_PAUSE = 30 * 1000L
+        const val UPDATE_REQUEST_EVERY_N_REPOS = 20
     }
 
     enum class Status {
@@ -31,20 +32,21 @@ class ReposFinder(
         DONE
     }
 
-    @Volatile private var status = Status.READY
+    @Volatile var status = Status.READY
 
+    private val jsonMapper = jacksonObjectMapper()
     private val limits: RateLimits
     private val logger: Logger
 
     private val dumpDir = File(config.dumpDir)
-    val reposStorage: ReposStorage
+    private var reposWithoutUpdates = 0
 
-    private val jsonMapper = jacksonObjectMapper()
+    val reposStorage: ReposStorage
 
     init {
         dumpDir.mkdirs()
         logger = Logger(config.logPath, isDebug = config.isDebug)
-        reposStorage = ReposStorage(config.urls, config.dumpDir, config.dumpEveryNRepos, logger = logger)
+        reposStorage = ReposStorage(config.urls, config.dumpDir, config.reposDumpThreshold, logger = logger)
         limits = RateLimits(config.isCore, config.isGraphQL, config.token, logger = logger)
     }
 
@@ -55,8 +57,6 @@ class ReposFinder(
         status = Status.WORKING
         status = try {
             logStartSummary()
-            limits.update()
-            logLimits()
             searchRepos()
             reposStorage.dump()
             Status.DONE
@@ -75,27 +75,30 @@ class ReposFinder(
     }
 
     private fun searchRepos() {
+        limits.update()
+        logLimits()
         if (limits.isNoLimits()) {
             status = Status.BAD_TOKEN_LIMITS
             logger.add("ZERO LIMITS ERROR (maybe bad token)")
             return
         }
         for (repo in reposStorage.allRepos) {
-            waitingControl(limits.check())
+            limitsUpdateControl()
+            waitingControl()
             if (status != Status.WORKING) {
                 logger.add("SEARCH WAS INTERRUPTED WITH STATUS $status")
                 break
             }
-            logger.add("> processing: /${repo.owner}/${repo.name}")
-
+            logger.add("> processing /${repo.owner}/${repo.name}")
             val isCoreGood = repo.loadCore() && repo.isGood(config.coreFilters)
             val isGraphQLGood = repo.loadGraphQL() && repo.isGood(config.graphQLFilters)
-
             if (isCoreGood && isGraphQLGood) {
                 reposStorage.addGood(repo)
             } else {
                 reposStorage.addBad(repo)
             }
+
+            reposWithoutUpdates++
         }
     }
 
@@ -103,7 +106,7 @@ class ReposFinder(
         var isGood = true
         if (config.isCore) {
             if (!config.isOnlyContributors) {
-                isGood = this.loadCore(jsonMapper, config.token) && isGood
+                isGood = this.loadCore(jsonMapper, config.token)
                 limits.core.register()
                 Thread.sleep(config.sleepTimeBetweenRequests)
             }
@@ -120,7 +123,7 @@ class ReposFinder(
         var isGood = true
         if (config.isGraphQL) {
             if (config.isCommitsCount) {
-                isGood = this.loadGraphQL(GraphQLQueries.COMMITS_COUNT, jsonMapper, config.token) && isGood
+                isGood = this.loadGraphQL(GraphQLQueries.COMMITS_COUNT, jsonMapper, config.token)
                 limits.graphQL.register()
                 Thread.sleep(config.sleepTimeBetweenRequests)
             }
@@ -128,22 +131,26 @@ class ReposFinder(
         return isGood
     }
 
-    private fun Repository.isGood(filters: List<Filter>): Boolean {
-        var result = true
-        filters.forEach { filter ->
-            result = filter.isGood(this) && result
+    private fun limitsUpdateControl() {
+        if (reposWithoutUpdates >= UPDATE_REQUEST_EVERY_N_REPOS) {
+            limits.update()
+            logger.add("> limits updated")
+            logLimits()
+            reposWithoutUpdates = 0
         }
-        return result
     }
 
-    private fun waitingControl(resetTime: Long) {
-        if (resetTime == RateLimits.NO_TIME) {
-            return
-        } else if (resetTime == RateLimits.BAD_TIME) {
-            status = Status.LIMITS_UPDATE_ERROR
-            logger.add("> impossible update API limits")
-            logLimits()
+    private fun waitingControl() {
+        var resetTime = limits.check()
+        when (resetTime) {
+            RateLimits.NO_LIMITS -> return
+            RateLimits.BAD_TIME -> {
+                status = Status.LIMITS_UPDATE_ERROR
+                logger.add("> impossible update API limits")
+                return
+            }
         }
+        resetTime += RESET_TIME_PAUSE
         status = Status.LIMITS_WAITING
         logger.add("> per hour requests limits reached")
         logLimits()

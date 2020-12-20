@@ -52,6 +52,8 @@ class ReposStorage(
 
     val allRepos = mutableListOf<Repository>()
 
+    val goodReposQueue = ConcurrentLinkedQueue<Repository>()
+
     init {
         goodSummaryDir.mkdirs()
         badSummaryDir.mkdirs()
@@ -87,59 +89,60 @@ class ReposStorage(
         goodBuffer.dumpReposSummary(goodSummaryDir)
         badBuffer.dumpReposLinks(badReposFile)
         badBuffer.dumpReposSummary(badSummaryDir)
+        goodBuffer.dumpToQueue()
     }
 
+    private fun List<Repository>.dumpToQueue() = this.forEach { repo -> goodReposQueue.add(repo) }
+
     private fun dumpGoodAfterThreshold() {
+        goodBuffer.dumpToQueue()
         goodBuffer.dumpReposLinks(goodReposFile)
         goodBuffer.dumpReposSummary(goodSummaryDir)
         goodRepos.addAll(goodBuffer)
-        logger?.add("> good repos buffer of size ${goodBuffer.size} was dumped")
+        logger?.add("> good repos dump: ${goodBuffer.size}")
         goodBuffer.clear()
     }
 
     private fun dumpBadAfterThreshold() {
+        goodBuffer.dumpToQueue()
         badBuffer.dumpReposLinks(badReposFile)
         badBuffer.dumpReposSummary(badSummaryDir)
         badRepos.addAll(badBuffer)
-        logger?.add("> bad repos buffer of size ${badBuffer.size} was dumped")
+        logger?.add("> bad repos dump: ${badBuffer.size}")
         badBuffer.clear()
     }
 
-    private fun initRepositories() {
-        urls.forEach { url ->
-            val spl = url.split(REPO_DELIMITER)
-            if (spl.size >= SPLIT_SIZE) {
-                val owner = spl[spl.size - OWNER_POS]
-                val name = spl[spl.size - NAME_POS]
-                val info = objectMapper.createObjectNode()
-                if (owner.isNotEmpty() && name.isNotEmpty()) {
-                    allRepos.add(Repository(owner, name, info, logger = logger))
-                    goodUrls.add(url)
-                } else {
-                    badUrls.add(url)
-                }
+    private fun initRepositories() = urls.forEach { url ->
+        val spl = url.split(REPO_DELIMITER)
+        if (spl.size >= SPLIT_SIZE) {
+            val owner = spl[spl.size - OWNER_POS]
+            val name = spl[spl.size - NAME_POS]
+            val info = objectMapper.createObjectNode()
+            if (owner.isNotEmpty() && name.isNotEmpty()) {
+                allRepos.add(Repository(owner, name, info, logger = logger))
+                goodUrls.add(url)
             } else {
                 badUrls.add(url)
             }
+        } else {
+            badUrls.add(url)
         }
     }
 
-    private fun List<Repository>.dumpReposLinks(file: File) {
+    private fun List<Repository>.dumpReposLinks(file: File) =
         FileOutputStream(file, true).bufferedWriter().use { out ->
             this.forEach { repo ->
                 val node = objectMapper.valueToTree<JsonNode>(repo.getDescription())
                 out.appendLine(node.toString())
             }
         }
-    }
 
-    private fun List<String>.dumpUrls(file: File) {
+    private fun List<String>.dumpUrls(file: File) =
         FileOutputStream(file, true).bufferedWriter().use { out ->
             this.forEach {
                 out.appendLine(it)
             }
         }
-    }
 
     private fun List<Repository>.dumpReposSummary(dir: File, clearInfo: Boolean = true) {
         objectMapper.enable(SerializationFeature.INDENT_OUTPUT)
@@ -162,6 +165,4 @@ class ReposStorage(
         }
         objectMapper.disable(SerializationFeature.INDENT_OUTPUT)
     }
-
-    private fun Repository.createSummaryName() = "${this.owner}__${this.name}.json"
 }

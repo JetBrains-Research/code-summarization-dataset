@@ -8,6 +8,7 @@ import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import reposfinder.api.APIExtractor
 import reposfinder.api.GitHubAPI
 import reposfinder.api.GraphQLQueries
+import reposfinder.filtering.Filter
 import reposfinder.filtering.FilterResult
 import reposfinder.requests.getBody
 import reposfinder.requests.getRequest
@@ -85,7 +86,17 @@ class Repository(
         return true
     }
 
+    fun isGood(filters: List<Filter>): Boolean {
+        var result = true
+        filters.forEach { filter ->
+            result = filter.isGood(this) && result // we need all filters for statistics
+        }
+        return result
+    }
+
     fun getDescription(): Map<String, String> = mapOf(Pair(OWNER, owner), Pair(NAME, name))
+
+    fun createSummaryName() = "${this.owner}__${this.name}.json"
 
     fun toJSONExplain(objectMapper: ObjectMapper? = null): JsonNode {
         val mapper = objectMapper ?: jacksonObjectMapper()

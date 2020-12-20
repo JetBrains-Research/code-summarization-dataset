@@ -10,7 +10,6 @@ enum class GraphQLQueries(val target: String) {
     fun query(owner: String, repoName: String, target: String): String =
         """{ repository(owner: "$owner", name: "$repoName") { defaultBranchRef { $target } } }"""
 
-    fun getGraphQLBody(query: String, objectMapper: ObjectMapper): String {
-        return objectMapper.writeValueAsString(mapOf("query" to query))
-    }
+    fun getGraphQLBody(query: String, objectMapper: ObjectMapper): String =
+        objectMapper.writeValueAsString(mapOf("query" to query))
 }
