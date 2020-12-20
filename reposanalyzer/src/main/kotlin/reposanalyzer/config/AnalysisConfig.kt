@@ -10,7 +10,7 @@ import java.io.File
 
 class AnalysisConfig(
     val configPath: String,
-    val isDebug: Boolean = false
+    val isDebug: Boolean = false,
 ) {
     private companion object {
         const val REPOS_DIRS_PATH = "repos_dirs_list_path"

@@ -12,9 +12,10 @@ fun loadReposPatches(path: String): List<String> {
     val patches = mutableSetOf<String>()
     val objectMapper = jacksonObjectMapper()
     for (repoPath in objectMapper.readValue<List<String>>(File(path))) {
-        when (File(repoPath).exists()) {
-            true -> patches.add(repoPath)
-            false -> println("Repository path incorrect: $repoPath")
+        if (File(repoPath).exists()) {
+            patches.add(repoPath)
+        } else {
+            println("Repository path incorrect: $repoPath")
         }
     }
     return patches.toList()

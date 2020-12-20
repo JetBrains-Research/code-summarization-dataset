@@ -9,6 +9,7 @@ import reposfinder.filtering.Filter
 import reposfinder.filtering.FilterType
 import reposfinder.filtering.IntRangeFilter
 import reposfinder.filtering.IntValueFilter
+import reposfinder.filtering.LicenseFilter
 import reposfinder.filtering.Relation
 import reposfinder.filtering.StringValueFilter
 import java.time.LocalDate
@@ -18,13 +19,16 @@ fun Field.parseFilter(jsonNode: JsonNode): Filter? {
     for (value in jsonNode.get(this.configName)) {
         values.add(value.asText())
     }
+    if (this == Field.LICENSES) {
+        return LicenseFilter(field = this, values = values)
+    }
     if (values.isEmpty()) {
         return null
     }
     val relation = values[0].isRelation()
     return when (this) {
-        Field.LANGUAGES -> StringValueFilter(this, values)
-        Field.ANON_CONTRIBUTORS, Field.FORK -> BoolValueFilter(this, values[0].toBoolean())
+        Field.LANGUAGES -> StringValueFilter(field = this, values = values)
+        Field.ANON_CONTRIBUTORS, Field.FORK, Field.IS_LICENSE -> BoolValueFilter(this, values[0].toBoolean())
         Field.CREATED_AT, Field.PUSHED_AT, Field.UPDATED_AT -> this.getDateFilter(relation, values)
         Field.COMMITS -> {
             val filter = this.getIntFilter(relation, values)

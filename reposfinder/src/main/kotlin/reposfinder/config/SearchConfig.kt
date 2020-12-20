@@ -4,11 +4,12 @@ import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import reposfinder.filtering.BoolValueFilter
-import reposfinder.utils.SearchConfigException
 import reposfinder.filtering.Field
 import reposfinder.filtering.Filter
 import reposfinder.filtering.FilterType
+import reposfinder.filtering.LicenseFilter
 import reposfinder.filtering.utils.parseFilter
+import reposfinder.utils.SearchConfigException
 import java.io.File
 
 class SearchConfig(
@@ -46,6 +47,7 @@ class SearchConfig(
     var isContributors = false
     var isAnonContributors = false
     var isOnlyContributors = false
+    var isLicense: Boolean? = null
 
     // dumps
     var sleepTimeBetweenRequests: Long = DEFAULT_WAIT_TIME
@@ -84,14 +86,44 @@ class SearchConfig(
         reposDumpThreshold = this.get(DUMP_THRESHOLD).asInt()
     }
 
+    /*
+     *   1. is_license : []:
+     *          - any value in license field in GitHub .json (null or not null)
+     *          - ignore values in licenses field in search_config.json
+     *
+     *
+     *   2. is_license : [false]:
+     *          - null license field in GitHub .json
+     *          - ignore values in licenses field in search_config.json
+     *
+     *
+     *   3. is_license : [true]:
+     *          - not null license field in GitHub .json
+     *
+     *     + licenses : []:
+     *           - any license in GitHub .json
+     *     + licenses : [not_empty]
+     *           - only licenses from list
+     */
     private fun JsonNode.processSearchPart() {
+        var licenseFilter: Filter? = null
         for (field in Field.values().filter { this.has(it.configName) }) {
             val filter = field.parseFilter(this) ?: continue
-            if (filter.field == Field.ANON_CONTRIBUTORS) { // anon contributors is api argument, not filter
-                isAnonContributors = (filter as BoolValueFilter).value
-            } else when (filter.type) {
-                FilterType.CORE -> coreFilters.add(filter)
-                FilterType.GRAPHQL -> graphQLFilters.add(filter)
+            when (filter.field) {
+                // anon contributors is api argument, not filter
+                Field.ANON_CONTRIBUTORS -> isAnonContributors = (filter as BoolValueFilter).value
+                Field.IS_LICENSE -> isLicense = (filter as BoolValueFilter).value
+                Field.LICENSES -> licenseFilter = filter
+                else -> when (filter.type) {
+                    FilterType.CORE -> coreFilters.add(filter)
+                    FilterType.GRAPHQL -> graphQLFilters.add(filter)
+                }
+            }
+        }
+        isLicense?.let { itLicense ->
+            licenseFilter?.let { filter ->
+                (filter as LicenseFilter).isLicense = itLicense
+                coreFilters.add(filter)
             }
         }
     }

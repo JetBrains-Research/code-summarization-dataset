@@ -35,6 +35,8 @@ search config is .json file with all search filters and run parameters:
     "languages": ["Java", "Kotlin"],             // list of languages
     "stars_count": [">=", 10],                   // relations with integers
     "is_fork": [false],                          // boolean flag
+    "is_license": [true],
+    "licenses": ["gpl-3.0", "apache-2.0"],       // list of licenses
     "commits_count": [0, 100000],                // integer ranges
     "contributors_count": [">=", 10],
     "anon_contributors": [true],                 
@@ -49,7 +51,7 @@ search config is .json file with all search filters and run parameters:
 }
 ```
 
-Rules:
+**Rules**:
 - each parameter must be specified in brackets **[params, ...]**
 - dates in ```"YYYY-MM-DD"``` format with quotes
 - all integer filters support relation (>, <, <=, >=, =) in quotes **["<", N]**
@@ -57,8 +59,16 @@ Rules:
 - all date filters support relation (>, <, <=, >=, =) in quotes **[">=", "YYYY-MM-DD"]**
 - all date filters support ranges in brackets **[min incl., max incl.]**
 - all date and integer filter support implicit EQ (=) relation **[N]** == **["=", N]**
+- licenses:
+    -  `"is_license": []` - repository hasn't or has any license, values in `"licenses": [...]` field are ignored
+    -  `"is_license": [false]` - repository hasn't license, values in `"licenses": [...]` field are ignored
+    -  `"is_license": [true]` - repository has license
+        - `"licenses": []` - repository has any license
+        - `"licenses": [...]` - repository has license from the list
+- licenses not bound in the code
+- licenses filter running by `keyword` from [GitHub licenses list](https://docs.github.com/en/free-pro-team@latest/github/creating-cloning-and-archiving-repositories/licensing-a-repository#searching-github-by-license-type) provided by `license/key` path in GitHub API v3 summary `https://api.github.com/repos/REPOOWNER/REPONAME` for each repository        
 
-Examples:
+**Examples**:
 - ```"languages": ["Kotlin", "C++", "Haskell"] --> repository main language is Kotlin OR C++ OR Haskell```
 - ```"[param]_count": [42] --> repository [param]_count == 42 ```
 - ```"[param]_count": ["<=", 42] --> repository [param]_count <= 42 ```
@@ -158,6 +168,21 @@ analysis config is .json file with run parameters:
 }
 ```
 
+#### History processing
+
+Repositories analysis based on git-history, analyzer: 
+- loads commit history from default branch of repository
+- moves from the oldest (first) commit to the newest (last)
+- for every consecutive pair of commits gets the diff list of files `git diff --name-only SHA1 SHA2`
+- filters supported languages (Java) files from diff list
+- if list of files for supported languages isn't empty -- makes checkout to current commit -- `git checkout SHA` 
+- extracts new methods summary from files if their (methods) pair `<source file path, full method name (nesting hierarchy)>` wasn't added before
+
+Two types of history processing depending on the type of commit:
+- `"commits_type": "merges"` - history includes merge commits `git log --first-parent --merges DEFAULT_BRANCH`
+- `"commits_type": "first_parents"` - history includes first-parents commits `git log --first-parent DEFAULT_BRANCH`
+- both history types include oldest and youngest commits   
+
 ### 2. Run
 
 run example with provided script `run_analyzer.sh`:
@@ -171,7 +196,7 @@ arguments:
     --debug           - flag, print all log messages to the console
     
     
-#### 3. Results
+### 3. Results
 
 In `dump_dir_path` appear 4 files:
 

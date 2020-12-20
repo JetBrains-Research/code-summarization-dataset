@@ -22,11 +22,12 @@ data class RepoInfo(
         return path
     }
 
-    fun constructLoadUrl(): String? = if (owner == null || name == null) {
-        null
-    } else {
-        "$GIT_URL/$owner/$name"
-    }
+    fun constructLoadUrl(): String? =
+        if (owner == null || name == null) {
+            null
+        } else {
+            "$GIT_URL/$owner/$name"
+        }
 
     override fun toString(): String = "[owner: $owner, name: $name, path: $path]"
 }

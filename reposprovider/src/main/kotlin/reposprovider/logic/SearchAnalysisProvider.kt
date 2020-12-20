@@ -22,7 +22,7 @@ class SearchAnalysisProvider(
     private val searchThread: Thread = Thread(reposFinder)
     private val reposQueue = reposFinder.reposStorage.goodReposQueue
 
-    private var isInterrupted = false
+    @Volatile private var isInterrupted = false
 
     override fun run() {
         searchThread.start()

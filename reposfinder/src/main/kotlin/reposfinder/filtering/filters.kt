@@ -77,12 +77,60 @@ class StringValueFilter(
 
     override fun isGood(repo: Repository): Boolean {
         val repoValue = repo.info.get(field.gitHubName)?.asText() ?: return false
-        val result = values.any { it.toLowerCase() == repoValue.toLowerCase() }
+        val result = values.any { it.equals(repoValue, ignoreCase = true) }
         repo.filterResults.add(
             FilterResult(
                 field = field,
                 repoValue = listOf(repoValue).toString(),
                 filterValueMin = values.toString(),
+                relation = relation,
+                result = result
+            )
+        )
+        return result
+    }
+}
+
+class LicenseFilter(
+    override val field: Field,
+    val values: List<String>,
+    var isLicense: Boolean = false,
+    val relation: Relation = Relation.EQ
+) : Filter {
+
+    private companion object {
+        const val KEY = "key"
+        const val LICENSE = "license"
+        const val NO_LICENSE = "no_license"
+        const val ANY_LICENSE = "any_license"
+    }
+
+    override var type = FilterType.CORE
+
+    override fun isGood(repo: Repository): Boolean {
+        val repoValue = repo.info.get(field.gitHubName)?.get(KEY)?.asText()
+        var result: Boolean
+        var filterValueMin: String
+        if (isLicense) {
+            if (repoValue == null) {
+                result = false
+                filterValueMin = if (values.isEmpty()) "[$ANY_LICENSE]" else values.toString()
+            } else if (values.isEmpty()) {
+                result = true
+                filterValueMin = "[$ANY_LICENSE]"
+            } else {
+                result = values.any { it.equals(repoValue, ignoreCase = true) }
+                filterValueMin = values.toString()
+            }
+        } else {
+            result = repoValue == null
+            filterValueMin = "[$NO_LICENSE]"
+        }
+        repo.filterResults.add(
+            FilterResult(
+                field = field,
+                repoValue = "[$repoValue]",
+                filterValueMin = filterValueMin,
                 relation = relation,
                 result = result
             )
