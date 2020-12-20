@@ -16,10 +16,10 @@ data class RepoInfo(
         get() = path + File.separator + DOT_GIT
 
     fun constructDumpPath(dumpFolder: String): String {
-        var path = dumpFolder + File.separator
-        path += if (owner != null) "${owner}__" else ""
-        path += (name ?: path.substringAfterLast(File.separator))
-        return path
+        var dumpPath = dumpFolder + File.separator
+        dumpPath += if (owner != null) "${owner}__" else ""
+        dumpPath += (name ?: path.substringAfterLast(File.separator))
+        return dumpPath
     }
 
     fun constructLoadUrl(): String? =

@@ -1,7 +1,7 @@
 {
     "token_path" : "../repos/token.txt",
     "dump_dir_path" : "../repos/search_results",
-    "repos_urls_path": "../repos/java_full.json",
+    "repos_urls_path": "../repos/urls.json",
     "dump_threshold": 10,
     "languages": ["Java"],
     "stars_count": [">=", 0],

@@ -58,7 +58,7 @@ search config is .json file with all search filters and run parameters:
 - all integer filters support ranges in brackets **[min incl., max incl.]**
 - all date filters support relation (>, <, <=, >=, =) in quotes **[">=", "YYYY-MM-DD"]**
 - all date filters support ranges in brackets **[min incl., max incl.]**
-- all date and integer filter support implicit EQ (=) relation **[N]** == **["=", N]**
+- all date and integer filters support implicit EQ (=) relation **[N]** == **["=", N]**
 - licenses:
     -  `"is_license": []` - repository hasn't or has any license, values in `"licenses": [...]` field are ignored
     -  `"is_license": [false]` - repository hasn't license, values in `"licenses": [...]` field are ignored
@@ -83,12 +83,12 @@ run example with provided script `run_finder.sh`:
 
     #!/bin/bash
     ./gradlew :reposfinder:run --args="--debug -s ../repos/search_config.json"
-    
+
 arguments:
 
     -s, --search    - path to search config .json file
     --debug         - flag, print all log messages to the console
-    
+
 ### 3. Results
 
 In `dump_dir_path` appear 4 files and 2 folders:
@@ -135,8 +135,8 @@ https://api.github.com/repos/jetbrains/kotlin
 
 **Input:** repository and analysis config
 
-**Output:** summary about all functions from repository for supported languages (Java): 
-    
+**Output:** summary about all functions from repository for supported languages (Java):
+
 - function name and fullname
 - function documentation or multiline comment
 - function body
@@ -152,14 +152,14 @@ analysis config is .json file with run parameters:
 {
   "repos_dirs_list_path": "../repos/repos.json",      // path to .json list with paths to local repositories
   "dump_dir_path" : "../repos/analysis_results",      // path to dump directory
-  "languages": ["Java"],                              // interesting languages 
+  "languages": ["Java"],                              // interesting languages
   "commits_type": "merges",                           // commits type (merges or first_parents, see explanation below)
   "task": "name",                                     // current supported task - name extraction
   "granularity": "method",                            // current supported granularity - method
   "hide_methods_names": true,                         // hides methods names in methods bodies and AST's
   "exclude_constructors": true,                       // exclude constructors from summary
   "exclude_nodes": [],                                // unsupported
-  "log_dump_threshold": 200,                          // log messages dump to file threshold 
+  "log_dump_threshold": 200,                          // log messages dump to file threshold
   "summary_dump_threshold": 200,                      // methods summary dump threshold
   "remove_repo_after_analysis": false,                // whether the repository should be deleted after analysis
   "gzip_files": true,                                 // whether the repository should be gziped
@@ -170,12 +170,12 @@ analysis config is .json file with run parameters:
 
 #### History processing
 
-Repositories analysis based on git-history, analyzer: 
+Repositories analysis based on git-history, analyzer:
 - loads commit history from default branch of repository
 - moves from the oldest (first) commit to the newest (last)
 - for every consecutive pair of commits gets the diff list of files `git diff --name-only SHA1 SHA2`
 - filters supported languages (Java) files from diff list
-- if list of files for supported languages isn't empty -- makes checkout to current commit -- `git checkout SHA` 
+- if list of files for supported languages isn't empty - makes checkout to current commit `git checkout SHA`
 - extracts new methods summary from files if their (methods) pair `<source file path, full method name (nesting hierarchy)>` wasn't added before
 
 Two types of history processing depending on the type of commit:
@@ -189,13 +189,13 @@ run example with provided script `run_analyzer.sh`:
 
     #!/bin/bash
     ./gradlew :reposanalyzer:run --args="--debug -a ../repos/analysis_config.json"
-    
+
 arguments:
 
     -a, --analysis    - path to analysis config .json file
     --debug           - flag, print all log messages to the console
-    
-    
+
+
 ### 3. Results
 
 In `dump_dir_path` appear 4 files:
@@ -211,7 +211,7 @@ reposfinder + reposanalyzer modules
 
 **Input:** list of urls to existing GitHub repositories, search and analysis configs
 
-**Output:** 
+**Output:**
 1. lists of 'good' and 'bad' repositories after filters applying with explanation about filters results
 2. for each 'good' repository all summary information extracted with reposanalyzer module
 
@@ -221,7 +221,7 @@ run example with provided script `run_provider.sh`:
 
     #!/bin/bash
     ./gradlew :reposprovider:run --args="--debug -s ../repos/search_config.json -a ../repos/analysis_config.json"
-    
+
 arguments:
 
     -s, --search      - path to search config .json file
@@ -232,5 +232,3 @@ arguments:
 
 - output from reposfinder module
 - for each repository output from reposanalyzer module to folder `dump_folder/REPOOWNER__REPONAME`
-
-
