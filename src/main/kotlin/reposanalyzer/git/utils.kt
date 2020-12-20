@@ -7,14 +7,14 @@ import org.eclipse.jgit.revwalk.RevCommit
 import reposanalyzer.utils.getDateByMilliseconds
 import java.util.Calendar
 
-fun RevCommit.getCommitInfo(): CommitInfo {
-    return CommitInfo(
-        this.parentCount,
-        this.shortMessage,
-        this.authorIdent.getWhen().time, // milliseconds
-        this.name // hash
-    )
-}
+fun RevCommit.getCommitInfo(): CommitInfo = CommitInfo(
+    this.parentCount,
+    this.shortMessage,
+    this.authorIdent.getWhen().time, // milliseconds
+    this.authorIdent.name,
+    this.authorIdent.emailAddress,
+    this.name // hash
+)
 
 fun RevCommit.toJSON(objectMapper: ObjectMapper? = null, outerCalendar: Calendar? = null): JsonNode {
     val mapper = objectMapper ?: jacksonObjectMapper()
@@ -26,6 +26,8 @@ fun RevCommit.toJSON(objectMapper: ObjectMapper? = null, outerCalendar: Calendar
     jsonNode.set<JsonNode>("parents_cnt", mapper.valueToTree(this.parentCount))
     jsonNode.set<JsonNode>("message", mapper.valueToTree(this.shortMessage))
     jsonNode.set<JsonNode>("date", mapper.valueToTree(date))
+    jsonNode.set<JsonNode>("author_name", mapper.valueToTree(this.authorIdent.name))
+    jsonNode.set<JsonNode>("author_email", mapper.valueToTree(this.authorIdent.emailAddress))
     jsonNode.set<JsonNode>("hash", mapper.valueToTree(this.name))
     return jsonNode
 }

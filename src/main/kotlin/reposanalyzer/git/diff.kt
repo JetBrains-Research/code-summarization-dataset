@@ -40,3 +40,34 @@ fun Repository.renameCopyDetection(diff: List<DiffEntry>, similarityScore: Int =
     detector.addAll(diff)
     return detector.compute().filter { diffEntry -> diffEntry.score >= detector.renameScore }
 }
+
+fun List<DiffEntry>.getDiffFiles(repository: Repository, copyDetection: Boolean = false): List<String> {
+    val filePatches = mutableListOf<String>()
+    val addEntries = mutableListOf<DiffEntry>()
+    val modifyEntries = mutableListOf<DiffEntry>()
+    this.forEach { entry ->
+        when (entry.changeType) {
+            DiffEntry.ChangeType.ADD -> addEntries.add(entry)
+            DiffEntry.ChangeType.MODIFY -> modifyEntries.add(entry)
+            DiffEntry.ChangeType.COPY -> {} // not implemented? in DiffEntry
+            DiffEntry.ChangeType.RENAME -> {} // not implemented? in DiffEntry
+            else -> {} // DiffEntry.ChangeType.DELETE -- useless
+        }
+    }
+    // EXPERIMENTAL (maybe very slow)
+    if (copyDetection) { // new not copied/renamed files (ADD)
+        val copyEntries = repository.renameCopyDetection(addEntries, similarityScore = 100) // 100% similarity
+        val copiedFiles = copyEntries.map { it.newPath }
+        val newFiles = addEntries.map { it.newPath }.filter { !copiedFiles.contains(it) }
+        filePatches.addAll(newFiles)
+    } else { // new and maybe copied/renamed files (ADD)
+        addEntries.forEach { diffEntry ->
+            filePatches.add(diffEntry.newPath) // newPath
+        }
+    }
+    // modified files (MODIFY)
+    modifyEntries.forEach { diffEntry ->
+        filePatches.add(diffEntry.oldPath) // oldPath
+    }
+    return filePatches
+}

@@ -1,5 +1,5 @@
 package reposanalyzer.config
 
-enum class Granularity {
-    METHOD
+enum class Granularity(val label: String) {
+    METHOD("method")
 }

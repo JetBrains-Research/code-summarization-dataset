@@ -1,4 +1,4 @@
-package reposanalyzer.logic
+package reposanalyzer.utils
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
@@ -46,29 +46,28 @@ class CommitsLogger(
                 out.appendLine(jsonNode.toString())
             }
         }
-        log.clear() // clear log after dump
+        clear()
     }
 
-    private fun toJSON(): List<JsonNode> {
-        val pairs = mutableListOf<JsonNode>()
-        log.forEach { (pair, filesByLang) ->
-            val jsonNode = objectMapper.createObjectNode()
-            val filesNode = objectMapper.createObjectNode()
-            var filesCnt = 0
-            for ((lang, files) in filesByLang) {
-                if (files.isNotEmpty()) {
-                    filesCnt += files.size
-                    filesNode.set<JsonNode>(lang.label, objectMapper.valueToTree(files))
-                }
+    fun clear() = log.clear()
+
+    private fun toJSON(): List<JsonNode> = log.map { (pair, filesByLang) ->
+        val jsonNode = objectMapper.createObjectNode()
+        val filesNode = objectMapper.createObjectNode()
+        var filesCnt = 0
+        for ((lang, files) in filesByLang) {
+            if (files.isNotEmpty()) {
+                filesCnt += files.size
+                filesNode.set<JsonNode>(lang.label, objectMapper.valueToTree(files))
             }
-            val new = pair.first.toJSON(objectMapper, calendar)
-            val old = pair.second.toJSON(objectMapper, calendar)
-            jsonNode.set<JsonNode>("new_commit", new)
-            jsonNode.set<JsonNode>("old_commit", old)
-            jsonNode.set<JsonNode>("files_cnt", objectMapper.valueToTree(filesCnt))
-            jsonNode.set<JsonNode>("processed_files", filesNode)
-            pairs.add(jsonNode)
         }
-        return pairs
+        val new = pair.first.toJSON(objectMapper, calendar)
+        val old = pair.second.toJSON(objectMapper, calendar)
+        jsonNode.set<JsonNode>("new_commit", new)
+        jsonNode.set<JsonNode>("old_commit", old)
+        jsonNode.set<JsonNode>("files_cnt", objectMapper.valueToTree(filesCnt))
+        jsonNode.set<JsonNode>("processed_files", filesNode)
+
+        jsonNode
     }
 }

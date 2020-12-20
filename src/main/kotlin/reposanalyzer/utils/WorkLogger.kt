@@ -10,7 +10,7 @@ class WorkLogger(
     private val isDebug: Boolean = false
 ) {
     companion object {
-        const val DUMP_EVERY_N_MESSAGES = 10
+        const val DUMP_EVERY_N_MESSAGES = 5
     }
 
     private val logFile: File = File(pathToLogFile)
@@ -32,15 +32,11 @@ class WorkLogger(
         }
     }
 
-    fun dump() {
-        FileOutputStream(logFile, true).bufferedWriter().use { out ->
-            while (!messages.isEmpty()) {
-                out.appendLine(messages.poll())
-            }
+    fun dump() = FileOutputStream(logFile, true).bufferedWriter().use { out ->
+        while (!messages.isEmpty()) {
+            out.appendLine(messages.poll())
         }
     }
 
-    private fun clearFile() {
-        FileOutputStream(logFile, false).bufferedWriter()
-    }
+    private fun clearFile() = FileOutputStream(logFile, false).bufferedWriter()
 }

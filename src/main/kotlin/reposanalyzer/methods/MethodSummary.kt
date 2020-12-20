@@ -14,6 +14,7 @@ import reposanalyzer.git.toJSON
 data class MethodSummary(
     var name: String,
     var fullName: String,
+    var repo: String = "",
     var filePath: String,
     var language: Language,
     var doc: String? = null,
@@ -32,6 +33,7 @@ data class MethodSummary(
         jsonNode.set<JsonNode>("name", mapper.valueToTree(name))
         jsonNode.set<JsonNode>("full_name", mapper.valueToTree(fullName))
         jsonNode.set<JsonNode>("language", mapper.valueToTree(language.label))
+        jsonNode.set<JsonNode>("repo", mapper.valueToTree(repo))
         jsonNode.set<JsonNode>("file", mapper.valueToTree(filePath))
         jsonNode.set<JsonNode>("doc", mapper.valueToTree(doc))
         jsonNode.set<JsonNode>("comment", mapper.valueToTree(comment))

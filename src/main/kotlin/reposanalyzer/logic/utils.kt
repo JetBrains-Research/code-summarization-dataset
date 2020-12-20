@@ -7,15 +7,15 @@ import java.io.File
 
 fun loadReposPatches(path: String): List<String> {
     if (!File(path).exists()) {
-        println("Path doesn't exist: $path")
-        return listOf()
+        throw IllegalArgumentException("Path to repos dirs doesn't exist: $path")
     }
     val patches = mutableSetOf<String>()
     val objectMapper = jacksonObjectMapper()
     for (repoPath in objectMapper.readValue<List<String>>(File(path))) {
-        when (File(repoPath).exists()) {
-            true -> patches.add(repoPath)
-            false -> println("Repository path incorrect: $repoPath")
+        if (File(repoPath).exists()) {
+            patches.add(repoPath)
+        } else {
+            println("Repository path incorrect: $repoPath")
         }
     }
     return patches.toList()
@@ -37,10 +37,8 @@ fun List<File>.getFilesByLanguage(languages: List<Language>): Map<Language, List
     return filesByLang
 }
 
-fun isFileFromLanguage(file: File, language: Language): Boolean {
-    return language.extensions.any { ext ->
-        file.absolutePath.endsWith(ext)
-    }
+fun isFileFromLanguage(file: File, language: Language): Boolean = language.extensions.any { ext ->
+    file.absolutePath.endsWith(ext)
 }
 
 fun List<String>.getSupportedFiles(supportedExtensions: List<String>): List<String> =
