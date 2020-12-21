@@ -1,2 +1,2 @@
 #!/bin/bash
-python postprocess/main.py PATH_TO_REPO_ANALYSIS_RESULT
+python postprocess/main.py repos/analysis_results
