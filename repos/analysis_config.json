@@ -8,6 +8,7 @@
   "hide_methods_names": true,
   "exclude_constructors": true,
   "exclude_nodes": [],
+  "threads_count": 3,
   "log_dump_threshold": 200,
   "summary_dump_threshold": 200,
   "remove_repo_after_analysis": false,
@@ -15,4 +16,3 @@
   "remove_after_gzip": false,
   "copy_detection": false
 }
-

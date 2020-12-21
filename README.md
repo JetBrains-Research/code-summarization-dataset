@@ -13,8 +13,8 @@ git clone https://github.com/JetBrains-Research/code-summarization-dataset.git
 
 **Input:** repository and analysis config
 
-**Output:** summary about all functions from repository for supported languages (Java): 
-    
+**Output:** summary about all functions from repository for supported languages (Java):
+
 - function name and fullname
 - function documentation or multiline comment
 - function body
@@ -30,14 +30,15 @@ analysis config is .json file with run parameters:
 {
   "repos_dirs_list_path": "repos/repos.json",         // path to .json list with paths to local repositories
   "dump_dir_path" : "repos/analysis_results",         // path to dump directory
-  "languages": ["Java"],                              // interesting languages 
+  "languages": ["Java"],                              // interesting languages
   "commits_type": "merges",                           // commits type (merges or first_parents, see explanation below)
   "task": "name",                                     // current supported task - name extraction
   "granularity": "method",                            // current supported granularity - method
   "hide_methods_names": true,                         // hides methods names in methods bodies and AST's
   "exclude_constructors": true,                       // exclude constructors from summary
   "exclude_nodes": [],                                // unsupported
-  "log_dump_threshold": 200,                          // log messages dump to file threshold 
+  "threads_count": 3,                                 // how many repositories are analyzed in parallel (thread pool size)  
+  "log_dump_threshold": 200,                          // log messages dump to file threshold
   "summary_dump_threshold": 200,                      // methods summary dump threshold
   "remove_repo_after_analysis": false,                // whether the repository should be deleted after analysis
   "gzip_files": true,                                 // whether the repository should be gziped
@@ -48,12 +49,12 @@ analysis config is .json file with run parameters:
 
 #### History processing
 
-Repositories analysis based on git-history, analyzer: 
+Repositories analysis based on git-history, analyzer:
 - loads commit history from default branch of repository
 - moves from the oldest (first) commit to the newest (last)
 - for every consecutive pair of commits gets the diff list of files `git diff --name-only SHA1 SHA2`
 - filters supported languages (Java) files from diff list
-- if list of files for supported languages isn't empty -- makes checkout to current commit `git checkout SHA` 
+- if list of files for supported languages isn't empty -- makes checkout to current commit `git checkout SHA`
 - extracts new methods summary from files if their (methods) pair `<source file path, full method name (nesting hierarchy)>` wasn't added before
 
 Two types of history processing depending on the type of commit:
@@ -67,13 +68,13 @@ run example with provided script `run_analyzer.sh`:
 
     #!/bin/bash
     ./gradlew :reposanalyzer:run --args="--debug -a ../repos/analysis_config.json"
-    
+
 arguments:
 
     -a, --analysis    - path to analysis config .json file
     --debug           - flag, print all log messages to the console
-    
-    
+
+
 ### 3. Results
 
 In `dump_dir_path` appear 4 files:

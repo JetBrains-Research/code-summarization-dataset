@@ -18,7 +18,7 @@ data class RepoInfo(
     fun constructDumpPath(dumpFolder: String): String {
         var dumpPath = dumpFolder + File.separator
         dumpPath += if (owner != null) "${owner}__" else ""
-        dumpPath += (name ?: this.path.substringAfterLast(File.separator))
+        dumpPath += (name ?: path.substringAfterLast(File.separator))
         return dumpPath
     }
 

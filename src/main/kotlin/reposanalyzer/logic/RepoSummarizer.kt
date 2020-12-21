@@ -1,6 +1,8 @@
 package reposanalyzer.logic
 
 import astminer.cli.normalizeParseResult
+import astminer.common.model.Node
+import astminer.common.model.Parser
 import astminer.common.preOrder
 import org.apache.commons.io.FileUtils
 import org.eclipse.jgit.api.Git
@@ -19,22 +21,23 @@ import reposanalyzer.git.getMergeCommitsHistory
 import reposanalyzer.git.openRepositoryByDotGitDir
 import reposanalyzer.methods.MethodSummaryStorage
 import reposanalyzer.methods.summarizers.MethodSummarizersFactory
-import reposanalyzer.parsing.GumTreeParserFactory
 import reposanalyzer.parsing.LabelExtractorFactory
-import reposanalyzer.utils.WorkLogger
 import reposanalyzer.utils.CommitsLogger
-import reposanalyzer.utils.removePrefixPath
-import reposanalyzer.utils.getNotHiddenNotDirectoryFiles
+import reposanalyzer.utils.WorkLogger
 import reposanalyzer.utils.getAbsolutePatches
+import reposanalyzer.utils.getNotHiddenNotDirectoryFiles
 import reposanalyzer.utils.readFileToString
+import reposanalyzer.utils.removePrefixPath
 import reposanalyzer.zipper.Zipper
 import java.io.File
 import java.io.IOException
 import java.util.Date
+import java.util.concurrent.ConcurrentHashMap
 
 class RepoSummarizer(
     private val repoInfo: RepoInfo,
     private val dumpPath: String,
+    private val parsers: ConcurrentHashMap<Language, Parser<out Node>>,
     private val config: AnalysisConfig
 ) : Runnable, Zipper {
 
@@ -61,10 +64,6 @@ class RepoSummarizer(
     }
 
     @Volatile var status = Status.NOT_INITIALIZED
-
-    private val parserFactory = GumTreeParserFactory()
-    private val labelExtractorFactory = LabelExtractorFactory()
-    private val methodSummarizerFactory = MethodSummarizersFactory()
 
     private var currCommit: RevCommit? = null
     private var prevCommit: RevCommit? = null
@@ -220,14 +219,19 @@ class RepoSummarizer(
     }
 
     private fun Map<Language, List<File>>.parseFilesByLanguage() =
-        this.forEach { (lang, files) -> if (files.isNotEmpty()) { files.parseFiles(lang) } }
+        this.filter { (_, files) -> files.isNotEmpty() }
+            .forEach { (lang, files) -> files.parseFiles(lang) }
 
     private fun List<File>.parseFiles(language: Language) {
-        val parser = parserFactory.getParser(language)
-        val labelExtractor = labelExtractorFactory.getLabelExtractor(
+        val parser = parsers[language]
+        if (parser == null) {
+            workLogger.add("> unsupported language $language -- no parser")
+            return
+        }
+        val labelExtractor = LabelExtractorFactory.getLabelExtractor(
             config.task, config.granularity, config.hideMethodName, config.filterPredicates
         )
-        val summarizer = methodSummarizerFactory.getMethodSummarizer(language, config.hideMethodName)
+        val summarizer = MethodSummarizersFactory.getMethodSummarizer(language, config.hideMethodName)
         parser.parseFiles(this) { parseResult ->
             val fileContent = parseResult.filePath.readFileToString()
             val relativePath = parseResult.filePath.removePrefix(repoInfo.path + File.separator)

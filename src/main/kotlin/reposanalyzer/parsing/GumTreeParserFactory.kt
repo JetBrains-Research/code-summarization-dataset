@@ -5,11 +5,13 @@ import astminer.common.model.Parser
 import astminer.parse.java.GumTreeJavaParser
 import reposanalyzer.config.Language
 
-class GumTreeParserFactory {
-    fun getParser(language: Language): Parser<out Node> {
-        return when (language) {
-            Language.JAVA -> GumTreeJavaParser()
-            else -> throw NotImplementedError() // TODO
+interface GumTreeParserFactory {
+
+    companion object {
+        fun getParser(language: Language): Parser<out Node> {
+            return when (language) {
+                Language.JAVA -> GumTreeJavaParser()
+            }
         }
     }
 }
