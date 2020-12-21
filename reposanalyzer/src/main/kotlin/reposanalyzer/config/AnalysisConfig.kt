@@ -23,19 +23,21 @@ class AnalysisConfig(
         const val TASK = "task"
         const val GRANULARITY = "granularity"
         const val EXCLUDE_NODES = "exclude_nodes"
+        const val THREADS_COUNT = "threads_count"
         const val LOG_DUMP_THRESHOLD = "log_dump_threshold"
         const val METHODS_DUMP_THRESHOLD = "summary_dump_threshold"
         const val COPY_DETECTION = "copy_detection"
         const val IS_ZIP = "gzip_files"
         const val REMOVE_AFTER_ZIP = "remove_after_gzip"
 
+        const val DEFAULT_THREADS_COUNT = 1
         const val DEFAULT_LOG_DUMP_THRESHOLD = 200
         const val DEFAULT_METHOD_DUMP_THRESHOLD = 200
     }
 
     private val pathFields = listOf(REPOS_DIRS_PATH, DUMP_DIR_PATH)
     private val listFields = listOf(LANGUAGES)
-    private val intFields = listOf(LOG_DUMP_THRESHOLD, METHODS_DUMP_THRESHOLD)
+    private val intFields = listOf(THREADS_COUNT, LOG_DUMP_THRESHOLD, METHODS_DUMP_THRESHOLD)
     private val stringFields = listOf(COMMITS_TYPE, TASK, GRANULARITY)
     private val boolFields = listOf(
         HIDE_METHODS_NAME, EXCLUDE_CONSTRUCTORS, REMOVE_AFTER,
@@ -48,6 +50,7 @@ class AnalysisConfig(
     val languages: MutableList<Language> = mutableListOf()
     val excludeNodes: List<String> = listOf()
 
+    var threadsCount: Int = DEFAULT_THREADS_COUNT
     var logDumpThreshold: Int = DEFAULT_LOG_DUMP_THRESHOLD
     var summaryDumpThreshold: Int = DEFAULT_METHOD_DUMP_THRESHOLD
     var task: Task = Task.NAME
@@ -100,9 +103,10 @@ class AnalysisConfig(
     private fun JsonNode.processIntFields() = intFields.forEach { field ->
         val value = this.get(field).asInt()
         if (value <= 0) {
-            throw AnalysisConfigException("impossible threshold value `$value` for field $field")
+            throw AnalysisConfigException("impossible value `$value` for field $field")
         }
         when (field) {
+            THREADS_COUNT -> threadsCount = value
             LOG_DUMP_THRESHOLD -> logDumpThreshold = value
             METHODS_DUMP_THRESHOLD -> summaryDumpThreshold = value
         }

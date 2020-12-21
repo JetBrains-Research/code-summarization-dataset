@@ -51,6 +51,15 @@ search config is .json file with all search filters and run parameters:
 }
 ```
 
+**GitHub token**:
+- search requires a [GitHub API personal access token](https://docs.github.com/en/free-pro-team@latest/github/authenticating-to-github/creating-a-personal-access-token) without any special permissions
+- token is 40 symbols code that must be located in a separate file on the first line without additional data, e.g.
+
+        file: token.txt
+        
+        496**********************************4cf
+
+
 **Rules**:
 - each parameter must be specified in brackets **[params, ...]**
 - dates in ```"YYYY-MM-DD"``` format with quotes
@@ -159,6 +168,7 @@ analysis config is .json file with run parameters:
   "hide_methods_names": true,                         // hides methods names in methods bodies and AST's
   "exclude_constructors": true,                       // exclude constructors from summary
   "exclude_nodes": [],                                // unsupported
+  "threads_count": 3,                                 // how many repositories are analyzed in parallel (thread pool size)
   "log_dump_threshold": 200,                          // log messages dump to file threshold
   "summary_dump_threshold": 200,                      // methods summary dump threshold
   "remove_repo_after_analysis": false,                // whether the repository should be deleted after analysis

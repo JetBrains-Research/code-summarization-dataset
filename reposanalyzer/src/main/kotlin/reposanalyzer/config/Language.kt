@@ -7,21 +7,5 @@ enum class Language(
     JAVA(
         "Java",
         listOf(".java")
-    ),
-    KOTLIN(
-        "Kotlin",
-        listOf(".kt", ".kts")
-    ),
-    CSHARP(
-        "C#",
-        listOf(".cs")
-    ),
-    PYTHON(
-        "Python",
-        listOf(".py")
-    ),
-    CPP(
-        "C++",
-        listOf(".cpp", ".c", ".hpp", ".h")
     )
 }

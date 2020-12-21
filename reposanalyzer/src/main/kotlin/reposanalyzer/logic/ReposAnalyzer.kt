@@ -1,10 +1,15 @@
 package reposanalyzer.logic
 
+import astminer.common.model.Node
+import astminer.common.model.Parser
 import reposanalyzer.config.AnalysisConfig
+import reposanalyzer.config.Language
+import reposanalyzer.parsing.GumTreeParserFactory
 import reposanalyzer.utils.WorkLogger
 import reposanalyzer.utils.isDotGitPresent
 import java.io.File
 import java.util.Date
+import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.concurrent.Executors
 
@@ -18,15 +23,21 @@ class ReposAnalyzer(
     private var allPatches = mutableListOf<RepoInfo>()
     private var goodPatches = mutableListOf<RepoInfo>()
     private var badPatches = mutableListOf<RepoInfo>()
+
+    private val parsers = ConcurrentHashMap<Language, Parser<out Node>>()
+
     private val logger: WorkLogger
 
-    val pool = Executors.newSingleThreadExecutor()
+    val pool = Executors.newFixedThreadPool(config.threadsCount)
     val workers = ConcurrentLinkedQueue<RepoSummarizer>()
 
     init {
         File(config.dumpFolder).mkdirs()
-        logger = WorkLogger(config.dumpFolder + File.separator + LOG_FILE_NAME)
-        logger.add("> analyzer loaded at ${Date(System.currentTimeMillis())}")
+        logger = WorkLogger(config.dumpFolder + File.separator + LOG_FILE_NAME, config.isDebug)
+        for (lang in Language.values()) {
+            parsers[lang] = GumTreeParserFactory.getParser(lang)
+        }
+        logger.add("> analyzer witch ${config.threadsCount} threads loaded at ${Date(System.currentTimeMillis())}")
     }
 
     fun submit(repoInfo: RepoInfo): Boolean {
@@ -61,7 +72,7 @@ class ReposAnalyzer(
     private fun RepoInfo.constructSummarizer(): RepoSummarizer {
         val repoDumpPath = this.constructDumpPath(config.dumpFolder)
         File(repoDumpPath).mkdirs()
-        return RepoSummarizer(this, repoDumpPath, config)
+        return RepoSummarizer(this, repoDumpPath, parsers, config)
     }
 
     private fun RepoInfo.isRepoPathGood(): Boolean =
