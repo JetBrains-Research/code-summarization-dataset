@@ -1,6 +1,6 @@
 import os.path
 import copy
-from code_summarization.utils import read_file, json_dump
+from code_summarization.utils import json_dump
 
 
 def pretty_dump(data, fileout):
