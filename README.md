@@ -43,7 +43,16 @@ search config is .json file with all search filters and run parameters:
 }
 ```
 
-**Rules**:
+**GitHub token**
+- search requires a [GitHub API personal access token](https://docs.github.com/en/free-pro-team@latest/github/authenticating-to-github/creating-a-personal-access-token) without any special permissions
+- token is 40 symbols code that must be located in a separate file on the first line without additional data, e.g.
+
+        file: token.txt
+
+        496**********************************4cf
+
+
+**Rules**
 - each parameter must be specified in brackets **[params, ...]**
 - dates in ```"YYYY-MM-DD"``` format with quotes
 - all integer filters support relation (>, <, <=, >=, =) in quotes **["<", N]**
@@ -60,7 +69,7 @@ search config is .json file with all search filters and run parameters:
 - licenses not bound in the code
 - licenses filter running by `keyword` from [GitHub licenses list](https://docs.github.com/en/free-pro-team@latest/github/creating-cloning-and-archiving-repositories/licensing-a-repository#searching-github-by-license-type) provided by `license/key` path in GitHub API v3 summary `https://api.github.com/repos/REPOOWNER/REPONAME` for each repository        
 
-**Examples**:
+**Examples**
 - ```"languages": ["Kotlin", "C++", "Haskell"] --> repository main language is Kotlin OR C++ OR Haskell```
 - ```"[param]_count": [42] --> repository [param]_count == 42 ```
 - ```"[param]_count": ["<=", 42] --> repository [param]_count <= 42 ```
@@ -75,12 +84,12 @@ run example with provided script `run_finder.sh`:
 
     #!/bin/bash
     ./gradlew :reposfinder:run --args="--debug -s ../repos/search_config.json"
-    
+
 arguments:
 
     -s, --search    - path to search config .json file
     --debug         - flag, print all log messages to the console
-    
+
 ### 3. Results
 
 In `dump_dir_path` appear 4 files and 2 folders:
