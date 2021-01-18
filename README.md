@@ -72,6 +72,8 @@ Two types of history processing depending on the type of commit:
   `merges_part_in_history = 512 / 66016 = 0.00776`
   
    => if we set `merges_part_in_history = 0.01`, then the repository will not be analyzed because the repository value is below the value we set (`0.00776 [real value] < 0.01 [value in config]`)
+
+  *set `merges_part_in_history = 0.0`  if you do not have enough statistics
    
 
 ### 2. Run

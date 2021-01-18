@@ -106,7 +106,7 @@ class AnalysisConfig(
 
     private fun JsonNode.processFloatFields() = floatFields.forEach { field ->
         val value = this.get(field).asDouble().toFloat()
-        if (value <= 0) {
+        if (value < 0) {
             throw AnalysisConfigException("impossible value `$value` for field $field")
         }
         when (field) {
