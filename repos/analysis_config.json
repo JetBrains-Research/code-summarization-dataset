@@ -3,6 +3,7 @@
   "dump_dir_path" : "repos/analysis_results",
   "languages": ["Java"],
   "commits_type": "merges",
+  "merges_part_in_history": 0.5,
   "task": "name",
   "granularity": "method",
   "hide_methods_names": true,

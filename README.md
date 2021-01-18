@@ -32,6 +32,7 @@ analysis config is .json file with run parameters:
   "dump_dir_path" : "repos/analysis_results",         // path to dump directory
   "languages": ["Java"],                              // interesting languages
   "commits_type": "merges",                           // commits type (merges or first_parents, see explanation below)
+  "merges_part_in_history": 0.005,                    // part of merge commits in first_parents history (see below)
   "task": "name",                                     // current supported task - name extraction
   "granularity": "method",                            // current supported granularity - method
   "hide_methods_names": true,                         // hides methods names in methods bodies and AST's
@@ -60,7 +61,18 @@ Repositories analysis based on git-history, analyzer:
 Two types of history processing depending on the type of commit:
 - `"commits_type": "merges"` - history includes merge commits `git log --first-parent --merges DEFAULT_BRANCH`
 - `"commits_type": "first_parents"` - history includes first-parents commits `git log --first-parent DEFAULT_BRANCH`
-- both history types include oldest and youngest commits   
+- both history types include oldest and youngest commits
+- `"merges_part_in_history": 0.005` - this is an attempt to distinguish repositories using rebase-based history from merge-based history, 
+  e.g. for [Kotlin repository](https://github.com/JetBrains/Kotlin):
+  
+  `git log --first-parent --pretty=oneline | wc -l` is **66016** first parents commits
+  
+  `git log --first-parent --merges --pretty=oneline | wc -l` is **512** merge commits
+  
+  `merges_part_in_history = 512 / 66016 = 0.00776`
+  
+   => if we set `merges_part_in_history = 0.01`, then the repository will not be analyzed because the repository value is below the value we set (`0.00776 [real value] < 0.01 [value in config]`)
+   
 
 ### 2. Run
 

@@ -4,7 +4,6 @@ import astminer.cli.normalizeParseResult
 import astminer.common.model.Node
 import astminer.common.model.Parser
 import astminer.common.preOrder
-import org.apache.commons.io.FileUtils
 import org.eclipse.jgit.api.Git
 import org.eclipse.jgit.lib.Ref
 import org.eclipse.jgit.lib.Repository
@@ -16,18 +15,16 @@ import reposanalyzer.git.checkoutCommit
 import reposanalyzer.git.checkoutHashOrName
 import reposanalyzer.git.getCommitsDiff
 import reposanalyzer.git.getDiffFiles
-import reposanalyzer.git.getFirstParentHistory
-import reposanalyzer.git.getMergeCommitsHistory
-import reposanalyzer.git.openRepositoryByDotGitDir
 import reposanalyzer.methods.MethodSummaryStorage
 import reposanalyzer.methods.summarizers.MethodSummarizersFactory
 import reposanalyzer.parsing.LabelExtractorFactory
 import reposanalyzer.utils.CommitsLogger
 import reposanalyzer.utils.WorkLogger
-import reposanalyzer.utils.getAbsolutePatches
 import reposanalyzer.utils.getNotHiddenNotDirectoryFiles
-import reposanalyzer.utils.readFileToString
+import reposanalyzer.utils.getAbsolutePatches
 import reposanalyzer.utils.removePrefixPath
+import reposanalyzer.utils.readFileToString
+import reposanalyzer.utils.deleteDirectory
 import reposanalyzer.zipper.Zipper
 import java.io.File
 import java.io.IOException
@@ -56,6 +53,7 @@ class RepoSummarizer(
         REPO_NOT_PRESENT,
         INTERRUPTED,
         EMPTY_HISTORY,
+        SMALL_MERGES_PART,
         INIT_ERROR,
         INIT_BAD_DEF_BRANCH_ERROR,
         WORK_ERROR
@@ -78,7 +76,7 @@ class RepoSummarizer(
     override fun run() {
         init()
         if (status != Status.LOADED) {
-            workLogger.add("> SUMMARIZER IS NOT LOADED")
+            workLogger.add("> SUMMARIZER NOT LOADED: $status")
             return
         }
         status = Status.RUNNING
@@ -106,27 +104,36 @@ class RepoSummarizer(
     private fun init() {
         try {
             initStorageAndLogs()
-            initRepository()
-            if (status == Status.REPO_NOT_PRESENT) {
-                return
-            }
-            status = when (defaultBranchHead) {
-                null -> Status.INIT_BAD_DEF_BRANCH_ERROR
-                else -> {
-                    loadHistory()
-                    workLogger.add("> init: default repo branch: ${defaultBranchHead?.name}")
-                    workLogger.add("> init: commits count: ${commitsHistory.size}")
-                    if (commitsHistory.isEmpty()) Status.EMPTY_HISTORY else Status.LOADED
+            status = if (!analysisRepository.initRepository(dumpPath)) {
+                Status.REPO_NOT_PRESENT
+            } else if (!analysisRepository.loadDefaultBranchHead()) {
+                Status.INIT_BAD_DEF_BRANCH_ERROR
+            } else {
+                git = analysisRepository.git
+                repository = analysisRepository.repository
+                defaultBranchHead = analysisRepository.defaultBranchHead
+                loadHistory()
+                if (commitsHistory.isEmpty()) {
+                    Status.EMPTY_HISTORY
+                } else if (analysisRepository.mergesPart < config.mergesPart) {
+                    Status.SMALL_MERGES_PART
+                } else {
+                    Status.LOADED
                 }
             }
+            workLogger.add("> init: default repo branch: ${defaultBranchHead?.name}")
+            workLogger.add(
+                "> init: commits count [merge: ${analysisRepository.mergeCommitsNumber}, " +
+                    "first-parents: ${analysisRepository.firstParentsCommitsNumber}]"
+            )
             when (status) {
-                Status.INIT_BAD_DEF_BRANCH_ERROR -> workLogger.add("> BAD DEFAULT BRANCH FOR $analysisRepository")
-                Status.EMPTY_HISTORY -> workLogger.add("> init: no history for $analysisRepository")
-                Status.LOADED -> workLogger.add("> init: successful loaded for $analysisRepository")
+                Status.INIT_BAD_DEF_BRANCH_ERROR -> workLogger.add("> BAD DEFAULT BRANCH: $analysisRepository")
+                Status.EMPTY_HISTORY -> workLogger.add("> NO HISTORY FOR REPOSITORY: $analysisRepository")
+                Status.LOADED -> workLogger.add("> SUCCESSFUL LOADED: $analysisRepository")
                 else -> {} // ignore
             }
         } catch (e: Exception) {
-            workLogger.add("========= WORKER INIT ERROR FOR $analysisRepository =========")
+            workLogger.add("========= WORKER INIT ERROR: $analysisRepository =========")
             workLogger.add(e.stackTraceToString())
             status = Status.INIT_ERROR
         } finally {
@@ -136,15 +143,15 @@ class RepoSummarizer(
 
     private fun initStorageAndLogs() {
         File(dumpPath).mkdirs()
-        val workLogPath = dumpPath + File.separator + WORK_LOG
-        val commitsLogPath = dumpPath + File.separator + COMMITS_LOG
-        val methodsSummaryPath = dumpPath + File.separator + METHODS_SUMMARY_FILE
+        val workLogPath = File(dumpPath).resolve(WORK_LOG).absolutePath
+        val commitsLogPath = File(dumpPath).resolve(COMMITS_LOG).absolutePath
+        val methodsSummaryPath = File(dumpPath).resolve(METHODS_SUMMARY_FILE).absolutePath
         workLogger = WorkLogger(workLogPath, config.isDebug)
         commitsLogger = CommitsLogger(commitsLogPath, config.logDumpThreshold)
         summaryStorage = MethodSummaryStorage(methodsSummaryPath, config.summaryDumpThreshold, workLogger)
     }
 
-    private fun initRepository() {
+    private fun initRepository(): Boolean {
         val isRepoPresent: Boolean = if (analysisRepository.isRepoCloned()) {
             analysisRepository.openRepositoryByDotGitDir()
             true
@@ -155,9 +162,8 @@ class RepoSummarizer(
             git = analysisRepository.git
             repository = analysisRepository.repository
             defaultBranchHead = analysisRepository.defaultBranchHead
-        } else {
-            status = Status.REPO_NOT_PRESENT
         }
+        return isRepoPresent
     }
 
     private fun processCommits() {
@@ -248,6 +254,7 @@ class RepoSummarizer(
     }
 
     private fun dump() {
+        analysisRepository.dump(File(dumpPath).resolve("repo_info.json").absolutePath)
         summaryStorage.dump()
         summaryStorage.clear()
         commitsLogger.dump()
@@ -255,11 +262,7 @@ class RepoSummarizer(
         workLogger.dump()
         if (status != Status.REPO_NOT_PRESENT) {
             if (config.removeRepoAfterAnalysis) {
-                try {
-                    FileUtils.deleteDirectory(File(analysisRepository.path))
-                } catch (e: IOException) {
-                    // ignore
-                }
+                analysisRepository.path.deleteDirectory()
             }
             if (config.zipFiles) {
                 try {
@@ -272,13 +275,10 @@ class RepoSummarizer(
     }
 
     private fun loadHistory() {
+        analysisRepository.loadCommitsHistory()
         when (config.commitsType) {
-            CommitsType.ONLY_MERGES -> defaultBranchHead?.let { head ->
-                commitsHistory.addAll(repository.getMergeCommitsHistory(head.objectId, includeYoungest = true))
-            }
-            CommitsType.FIRST_PARENTS_INCLUDE_MERGES -> defaultBranchHead?.let { head ->
-                commitsHistory.addAll(repository.getFirstParentHistory(head.objectId))
-            }
+            CommitsType.ONLY_MERGES -> commitsHistory.addAll(analysisRepository.mergeCommits)
+            CommitsType.FIRST_PARENTS_INCLUDE_MERGES -> commitsHistory.addAll(analysisRepository.firstParentsCommits)
         }
         commitsHistory.reverse() // reverse history == from oldest commit to newest
     }
