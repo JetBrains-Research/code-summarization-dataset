@@ -25,7 +25,11 @@ fun dotGitFilter(patches: List<String>): Pair<List<String>, List<String>> {
     return Pair(exists, notExists)
 }
 
-fun String.isDotGitPresent() = File(this + File.separator + ".git").exists()
+fun String.isDotGitPresent() =
+    File(this).isDirectory && File(this).resolve(".git").exists()
+
+fun File.isDotGitPresent() =
+    this.isDirectory && this.resolve(".git").exists()
 
 fun getNotHiddenNotDirectoryFiles(dirPath: String): List<File> =
     File(dirPath).walkTopDown().filter { !it.isHidden && !it.isDirectory }.toList()

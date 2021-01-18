@@ -35,7 +35,7 @@ import java.util.Date
 import java.util.concurrent.ConcurrentHashMap
 
 class RepoSummarizer(
-    private val repoInfo: RepoInfo,
+    private val analysisRepository: AnalysisRepository,
     private val dumpPath: String,
     private val parsers: ConcurrentHashMap<Language, Parser<out Node>>,
     private val config: AnalysisConfig
@@ -45,8 +45,6 @@ class RepoSummarizer(
         const val METHODS_SUMMARY_FILE = "methods.jsonl"
         const val COMMITS_LOG = "commits_log.jsonl"
         const val WORK_LOG = "work_log.txt"
-        const val LOADED_REPO = "LOADED_REPO"
-
         const val FIRST_HASH = 7
     }
 
@@ -92,7 +90,7 @@ class RepoSummarizer(
             workLogger.add("> search ended at ${Date(System.currentTimeMillis())}")
             if (status == Status.RUNNING) Status.DONE else status
         } catch (e: Exception) {
-            workLogger.add("========= WORKER RUNNING ERROR FOR $repoInfo =========")
+            workLogger.add("========= WORKER RUNNING ERROR FOR $analysisRepository =========")
             workLogger.add(e.stackTraceToString())
             Status.WORK_ERROR
         } finally {
@@ -122,13 +120,13 @@ class RepoSummarizer(
                 }
             }
             when (status) {
-                Status.INIT_BAD_DEF_BRANCH_ERROR -> workLogger.add("> BAD DEFAULT BRANCH FOR $repoInfo")
-                Status.EMPTY_HISTORY -> workLogger.add("> init: no history for $repoInfo")
-                Status.LOADED -> workLogger.add("> init: successful loaded for $repoInfo")
+                Status.INIT_BAD_DEF_BRANCH_ERROR -> workLogger.add("> BAD DEFAULT BRANCH FOR $analysisRepository")
+                Status.EMPTY_HISTORY -> workLogger.add("> init: no history for $analysisRepository")
+                Status.LOADED -> workLogger.add("> init: successful loaded for $analysisRepository")
                 else -> {} // ignore
             }
         } catch (e: Exception) {
-            workLogger.add("========= WORKER INIT ERROR FOR $repoInfo =========")
+            workLogger.add("========= WORKER INIT ERROR FOR $analysisRepository =========")
             workLogger.add(e.stackTraceToString())
             status = Status.INIT_ERROR
         } finally {
@@ -147,36 +145,24 @@ class RepoSummarizer(
     }
 
     private fun initRepository() {
-        if (repoInfo.path.isEmpty()) {
-            val url = repoInfo.constructLoadUrl()
-            if (url == null) {
-                status = Status.REPO_NOT_PRESENT
-                return
-            }
-            repoInfo.path = dumpPath + File.separator + LOADED_REPO
-            val dir = File(repoInfo.path)
-            if (dir.exists()) FileUtils.deleteDirectory(dir)
-            git = Git.cloneRepository()
-                .setURI(url)
-                .setDirectory(dir)
-                .setCloneAllBranches(true)
-                .call()
-            repository = git.repository
-            defaultBranchHead = repository.findRef(repository.fullBranch)
+        val isRepoPresent: Boolean = if (analysisRepository.isRepoCloned()) {
+            analysisRepository.openRepositoryByDotGitDir()
+            true
         } else {
-            if (!File(repoInfo.path).exists()) {
-                status = Status.REPO_NOT_PRESENT
-                return
-            }
-            repository = repoInfo.dotGitPath.openRepositoryByDotGitDir()
-            git = Git(repository)
-            defaultBranchHead = repository.findRef(repository.fullBranch)
+            analysisRepository.cloneRepository(dumpPath)
+        }
+        if (isRepoPresent) {
+            git = analysisRepository.git
+            repository = analysisRepository.repository
+            defaultBranchHead = analysisRepository.defaultBranchHead
+        } else {
+            status = Status.REPO_NOT_PRESENT
         }
     }
 
     private fun processCommits() {
         currCommit = commitsHistory.firstOrNull() ?: return // log must be not empty by init state
-        currCommit?.processCommit(currCommit, repoInfo.path, filesPatches = listOf()) // process first commit
+        currCommit?.processCommit(currCommit, analysisRepository.path, filesPatches = listOf()) // process first commit
         for (i in 1 until commitsHistory.size) { // process others commits
             if (status != Status.RUNNING) break
             prevCommit = currCommit
@@ -184,7 +170,7 @@ class RepoSummarizer(
             val diff = git.getCommitsDiff(repository.newObjectReader(), currCommit, prevCommit)
             val processedDiff = diff.getDiffFiles(repository, config.copyDetection)
             val supportedFiles = processedDiff.getSupportedFiles(config.supportedExtensions)
-            val filesPatches = supportedFiles.getAbsolutePatches(repoInfo.path) // files with supported extension
+            val filesPatches = supportedFiles.getAbsolutePatches(analysisRepository.path) // supported extensions files
             workLogger.add(
                 "> files diff [${prevCommit?.name?.substring(0, FIRST_HASH)}, " +
                     "${currCommit?.name?.substring(0, FIRST_HASH)}, " +
@@ -206,7 +192,7 @@ class RepoSummarizer(
         workLogger.add("> checkout on [${this.name.substring(0, FIRST_HASH)}, ${this.shortMessage}]")
         git.checkoutCommit(this) // checkout
         val files = if (dirPath != null) {
-            getNotHiddenNotDirectoryFiles(repoInfo.path)
+            getNotHiddenNotDirectoryFiles(analysisRepository.path)
         } else {
             getNotHiddenNotDirectoryFiles(filesPatches)
         }
@@ -214,7 +200,7 @@ class RepoSummarizer(
         filesByLang.parseFilesByLanguage()
         commitsLogger.add(
             this, prevCommit,
-            filesByLang.removePrefixPath(repoInfo.path + File.separator)
+            filesByLang.removePrefixPath(analysisRepository.path + File.separator)
         )
     }
 
@@ -234,7 +220,7 @@ class RepoSummarizer(
         val summarizer = MethodSummarizersFactory.getMethodSummarizer(language, config.hideMethodName)
         parser.parseFiles(this) { parseResult ->
             val fileContent = parseResult.filePath.readFileToString()
-            val relativePath = parseResult.filePath.removePrefix(repoInfo.path + File.separator)
+            val relativePath = parseResult.filePath.removePrefix(analysisRepository.path + File.separator)
 
             normalizeParseResult(parseResult, true)
             val labeledParseResults = labelExtractor.toLabeledData(parseResult)
@@ -254,7 +240,7 @@ class RepoSummarizer(
                     fileContent,
                     relativePath
                 )
-                methodSummary.repo = "/${repoInfo.owner}/${repoInfo.name}"
+                methodSummary.repo = "/${analysisRepository.owner}/${analysisRepository.name}"
                 methodSummary.commit = currCommit
                 summaryStorage.add(methodSummary)
             }
@@ -270,7 +256,7 @@ class RepoSummarizer(
         if (status != Status.REPO_NOT_PRESENT) {
             if (config.removeRepoAfterAnalysis) {
                 try {
-                    FileUtils.deleteDirectory(File(repoInfo.path))
+                    FileUtils.deleteDirectory(File(analysisRepository.path))
                 } catch (e: IOException) {
                     // ignore
                 }

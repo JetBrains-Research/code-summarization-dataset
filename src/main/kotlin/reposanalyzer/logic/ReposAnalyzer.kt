@@ -17,39 +17,40 @@ class ReposAnalyzer(
     val config: AnalysisConfig
 ) {
     private companion object {
+        const val SLEEP_TIME_WAITING = 30 * 1000L
         const val LOG_FILE_NAME = "main_log.txt"
     }
 
-    private var allPatches = mutableListOf<RepoInfo>()
-    private var goodPatches = mutableListOf<RepoInfo>()
-    private var badPatches = mutableListOf<RepoInfo>()
+    private var allPatches = mutableListOf<AnalysisRepository>()
+    private var goodPatches = mutableListOf<AnalysisRepository>()
+    private var badPatches = mutableListOf<AnalysisRepository>()
 
     private val parsers = ConcurrentHashMap<Language, Parser<out Node>>()
 
     private val logger: WorkLogger
 
-    val pool = Executors.newFixedThreadPool(config.threadsCount)
-    val workers = ConcurrentLinkedQueue<RepoSummarizer>()
+    private val pool = Executors.newFixedThreadPool(config.threadsCount)
+    private val workers = ConcurrentLinkedQueue<RepoSummarizer>()
 
     init {
         File(config.dumpFolder).mkdirs()
-        logger = WorkLogger(config.dumpFolder + File.separator + LOG_FILE_NAME, config.isDebug)
+        logger = WorkLogger(File(config.dumpFolder).resolve(LOG_FILE_NAME).absolutePath, config.isDebug)
         for (lang in Language.values()) {
             parsers[lang] = GumTreeParserFactory.getParser(lang)
         }
-        logger.add("> analyzer witch ${config.threadsCount} threads loaded at ${Date(System.currentTimeMillis())}")
+        logger.add("> analyzer with ${config.threadsCount} threads loaded at ${Date(System.currentTimeMillis())}")
     }
 
-    fun submit(repoInfo: RepoInfo): Boolean {
-        val worker = repoInfo.constructSummarizer()
+    fun submit(analysisRepository: AnalysisRepository): Boolean {
+        val worker = analysisRepository.constructSummarizer()
         pool.submit(worker)
         workers.add(worker)
-        logger.add("> worker for $repoInfo submitted at ${Date(System.currentTimeMillis())}")
-        goodPatches.add(repoInfo)
+        logger.add("> worker for $analysisRepository submitted at ${Date(System.currentTimeMillis())}")
+        goodPatches.add(analysisRepository)
         return true
     }
 
-    fun submitAll(repos: List<RepoInfo>) = repos.forEach { repo -> submit(repo) }
+    fun submitAll(repos: List<AnalysisRepository>) = repos.forEach { repo -> submit(repo) }
 
     fun isAnyRunning(): Boolean {
         val statuses = listOf(
@@ -67,15 +68,27 @@ class ReposAnalyzer(
         dumpLog()
     }
 
+    fun waitUntilAnyRunning() {
+        try {
+            while (isAnyRunning()) {
+                Thread.sleep(SLEEP_TIME_WAITING)
+            }
+        } catch (e: InterruptedException) {
+            // ignore
+        } finally {
+            interrupt()
+        }
+    }
+
     fun dumpLog() = logger.dump()
 
-    private fun RepoInfo.constructSummarizer(): RepoSummarizer {
+    private fun AnalysisRepository.constructSummarizer(): RepoSummarizer {
         val repoDumpPath = this.constructDumpPath(config.dumpFolder)
         File(repoDumpPath).mkdirs()
         return RepoSummarizer(this, repoDumpPath, parsers, config)
     }
 
-    private fun RepoInfo.isRepoPathGood(): Boolean =
+    private fun AnalysisRepository.isRepoPathGood(): Boolean =
         if (allPatches.contains(this)) {
             logger.add("> path already added: $this")
             false
