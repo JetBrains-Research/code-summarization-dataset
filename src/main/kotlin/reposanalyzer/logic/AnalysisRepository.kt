@@ -104,7 +104,6 @@ class AnalysisRepository(
         mergeCommits.clear()
         firstParentsCommits.clear()
         git.close()
-        repository.close()
     }
 
     fun dump(dumpPath: String, objectMapper: ObjectMapper? = null) {
