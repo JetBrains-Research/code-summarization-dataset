@@ -1,4 +1,5 @@
 import org.junit.Test
+import reposanalyzer.git.isRepoCloned
 import reposanalyzer.logic.AnalysisRepository
 import reposanalyzer.utils.isDotGitPresent
 import java.io.File
@@ -39,7 +40,7 @@ class AnalysisRepositoryTest {
         val repository = AnalysisRepository("", owner, name)
 
         assertTrue(repository.cloneRepository(testFolder.absolutePath))
-        assertTrue(repository.isRepoCloned())
+        assertTrue(repository.path.isRepoCloned())
         assertTrue(repository.path.isDotGitPresent())
 
         // lateinit test
@@ -59,11 +60,11 @@ class AnalysisRepositoryTest {
         val onlineRepo = AnalysisRepository("", owner, name)
 
         assertTrue(onlineRepo.cloneRepository(testFolder.absolutePath))
-        assertTrue(onlineRepo.isRepoCloned())
+        assertTrue(onlineRepo.path.isRepoCloned())
         assertTrue(onlineRepo.path.isDotGitPresent())
 
         val repoFromOffline = AnalysisRepository(onlineRepo.path)
-        assertTrue(repoFromOffline.isRepoCloned())
+        assertTrue(repoFromOffline.path.isRepoCloned())
         assertFalse(repoFromOffline.isLoaded)
 
         assertTrue(repoFromOffline.openRepositoryByDotGitDir())

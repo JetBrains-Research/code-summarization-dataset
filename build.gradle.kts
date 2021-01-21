@@ -25,7 +25,7 @@ dependencies {
     implementation("org.jetbrains.kotlin", "kotlin-reflect", "1.4.10")
     // astminer
     implementation("io.github.vovak.astminer", "astminer", "0.6")
-    // dependency astminer
+    // clickt - cli parser
     implementation("com.github.ajalt.clikt", "clikt", "3.0.1")
     // fuel
     implementation("com.github.kittinunf.fuel", "fuel", "2.3.0")

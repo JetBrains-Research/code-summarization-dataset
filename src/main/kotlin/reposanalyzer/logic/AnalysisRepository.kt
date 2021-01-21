@@ -13,6 +13,7 @@ import reposanalyzer.git.constructRepoLoadUrl
 import reposanalyzer.git.getDefaultBranch
 import reposanalyzer.git.getFirstParentHistory
 import reposanalyzer.git.getMergeCommitsHistory
+import reposanalyzer.git.isRepoCloned
 import reposanalyzer.git.openRepositoryByDotGitDir
 import reposanalyzer.git.tryCloneRepositoryNTimes
 import reposanalyzer.utils.isDotGitPresent
@@ -47,30 +48,29 @@ class AnalysisRepository(
     @Volatile var isLoaded = false
 
     fun initRepository(dumpPath: String): Boolean =
-        if (isRepoCloned()) {
+        if (path.isRepoCloned()) {
             openRepositoryByDotGitDir()
         } else {
             cloneRepository(dumpPath)
         }
 
     fun cloneRepository(rootPath: String): Boolean {
-        if (isRepoCloned()) {
-            return true
+        if (!path.isRepoCloned()) {
+            val url = constructRepoLoadUrl(owner, name) ?: return false
+            path = File(rootPath).resolve(LOADED_REPO).absolutePath
+            val dir = File(path)
+            if (dir.exists() && dir.isDotGitPresent()) {
+                FileUtils.deleteDirectory(dir)
+            }
+            git = tryCloneRepositoryNTimes(url, dir, CLONE_TRIES_NUMBER, TIME_BETWEEN_TRIES) ?: return false
+            repository = git.repository
+            isLoaded = true
         }
-        val url = constructRepoLoadUrl(owner, name) ?: return false
-        path = File(rootPath).resolve(LOADED_REPO).absolutePath
-        val dir = File(path)
-        if (dir.exists() && dir.isDotGitPresent()) {
-            FileUtils.deleteDirectory(dir)
-        }
-        git = tryCloneRepositoryNTimes(url, dir, CLONE_TRIES_NUMBER, TIME_BETWEEN_TRIES) ?: return false
-        repository = git.repository
-        isLoaded = true
         return true
     }
 
     fun openRepositoryByDotGitDir(): Boolean {
-        if (!isRepoCloned()) {
+        if (!path.isRepoCloned()) {
             return false
         }
         repository = File(path).resolve(DOT_GIT).absolutePath.openRepositoryByDotGitDir()
@@ -93,14 +93,18 @@ class AnalysisRepository(
         }
     }
 
-    fun isRepoCloned(): Boolean =
-        path.isNotEmpty() && path.isDotGitPresent()
-
     fun constructDumpPath(dumpFolder: String): String {
         var dumpPath = dumpFolder + File.separator
         dumpPath += if (owner != null) "${owner}__" else ""
         dumpPath += (name ?: path.substringAfterLast(File.separator))
         return dumpPath
+    }
+
+    fun clear() {
+        mergeCommits.clear()
+        firstParentsCommits.clear()
+        git.close()
+        repository.close()
     }
 
     fun dump(dumpPath: String, objectMapper: ObjectMapper? = null) {

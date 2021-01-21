@@ -15,19 +15,19 @@ import reposanalyzer.git.checkoutCommit
 import reposanalyzer.git.checkoutHashOrName
 import reposanalyzer.git.getCommitsDiff
 import reposanalyzer.git.getDiffFiles
+import reposanalyzer.git.isRepoCloned
 import reposanalyzer.methods.MethodSummaryStorage
 import reposanalyzer.methods.summarizers.MethodSummarizersFactory
 import reposanalyzer.parsing.LabelExtractorFactory
 import reposanalyzer.utils.CommitsLogger
 import reposanalyzer.utils.WorkLogger
-import reposanalyzer.utils.getNotHiddenNotDirectoryFiles
-import reposanalyzer.utils.getAbsolutePatches
-import reposanalyzer.utils.removePrefixPath
-import reposanalyzer.utils.readFileToString
 import reposanalyzer.utils.deleteDirectory
+import reposanalyzer.utils.getAbsolutePatches
+import reposanalyzer.utils.getNotHiddenNotDirectoryFiles
+import reposanalyzer.utils.readFileToString
+import reposanalyzer.utils.removePrefixPath
 import reposanalyzer.zipper.Zipper
 import java.io.File
-import java.io.IOException
 import java.util.Date
 import java.util.concurrent.ConcurrentHashMap
 
@@ -94,7 +94,6 @@ class RepoSummarizer(
         } finally {
             try {
                 dump()
-                git.close()
             } catch (e: Exception) {
                 // ignore
             }
@@ -152,7 +151,7 @@ class RepoSummarizer(
     }
 
     private fun initRepository(): Boolean {
-        val isRepoPresent: Boolean = if (analysisRepository.isRepoCloned()) {
+        val isRepoPresent: Boolean = if (analysisRepository.path.isRepoCloned()) {
             analysisRepository.openRepositoryByDotGitDir()
             true
         } else {
@@ -226,7 +225,11 @@ class RepoSummarizer(
         val summarizer = MethodSummarizersFactory.getMethodSummarizer(language, config.hideMethodName)
         parser.parseFiles(this) { parseResult ->
             val fileContent = parseResult.filePath.readFileToString()
-            val relativePath = parseResult.filePath.removePrefix(analysisRepository.path + File.separator)
+            val fileLinesStarts = parseResult.filePath.getFileLinesLength().calculateLinesStarts()
+            val relativePath = parseResult.filePath
+                .removePrefix(analysisRepository.path + File.separator)
+                .splitToParents()
+                .joinToString("/")
 
             normalizeParseResult(parseResult, true)
             val labeledParseResults = labelExtractor.toLabeledData(parseResult)
@@ -244,9 +247,11 @@ class RepoSummarizer(
                     root,
                     label,
                     fileContent,
-                    relativePath
+                    relativePath,
+                    fileLinesStarts
                 )
-                methodSummary.repo = "/${analysisRepository.owner}/${analysisRepository.name}"
+                methodSummary.repoOwner = analysisRepository.owner
+                methodSummary.repoName = analysisRepository.name
                 methodSummary.commit = currCommit
                 summaryStorage.add(methodSummary)
             }
@@ -260,16 +265,13 @@ class RepoSummarizer(
         commitsLogger.dump()
         commitsLogger.clear()
         workLogger.dump()
+        analysisRepository.clear()
         if (status != Status.REPO_NOT_PRESENT) {
             if (config.removeRepoAfterAnalysis) {
                 analysisRepository.path.deleteDirectory()
             }
             if (config.zipFiles) {
-                try {
-                    compressFolder(File(dumpPath), config.removeAfterZip)
-                } catch (e: IOException) {
-                    // ignore
-                }
+                compressFolder(File(dumpPath), config.removeAfterZip)
             }
         }
     }
