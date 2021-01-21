@@ -58,6 +58,7 @@ class RepoSummarizer(
         REPO_NOT_PRESENT,
         INTERRUPTED,
         EMPTY_HISTORY,
+        SMALL_COMMITS_NUMBER,
         SMALL_MERGES_PART,
         INIT_ERROR,
         INIT_BAD_DEF_BRANCH_ERROR,
@@ -82,16 +83,19 @@ class RepoSummarizer(
         init()
         if (status != Status.LOADED) {
             workLogger.add("> SUMMARIZER NOT LOADED: $status")
+            dumpRepoSummary()
             return
         }
         status = Status.RUNNING
-        status = try {
+        try {
             workLogger.add("> search started at ${Date(System.currentTimeMillis())}")
             processCommits()
             git.checkoutHashOrName(defaultBranchHead?.name) // back to normal head
             workLogger.add("> back to start HEAD: ${defaultBranchHead?.name}")
             workLogger.add("> search ended at ${Date(System.currentTimeMillis())}")
-            if (status == Status.RUNNING) Status.DONE else status
+            if (status == Status.RUNNING) {
+                status = Status.DONE
+            }
         } catch (e: Exception) {
             workLogger.add("========= WORKER RUNNING ERROR FOR $analysisRepo =========")
             workLogger.add(e.stackTraceToString())
@@ -117,13 +121,6 @@ class RepoSummarizer(
                 repository = analysisRepo.repository
                 defaultBranchHead = analysisRepo.defaultBranchHead
                 loadHistory()
-                if (commitsHistory.isEmpty()) {
-                    Status.EMPTY_HISTORY
-                } else if (analysisRepo.mergesPart < config.mergesPart) {
-                    Status.SMALL_MERGES_PART
-                } else {
-                    Status.LOADED
-                }
             }
             workLogger.add("> init: default repo branch: ${defaultBranchHead?.name}")
             workLogger.add(
@@ -255,6 +252,7 @@ class RepoSummarizer(
         jsonNode.set<JsonNode>("total_methods", mapper.valueToTree(stats.totalMethods))
         jsonNode.set<JsonNode>("total_uniq_full_names", mapper.valueToTree(stats.totalUniqMethodsFullNames))
         jsonNode.set<JsonNode>("processed_files", mapper.valueToTree(stats.totalFiles))
+        jsonNode.set<JsonNode>("process_end_status", mapper.valueToTree(status))
         mapper.writeValue(FileOutputStream(File(dumpPath).resolve(REPO_INFO), false), jsonNode)
     }
 
@@ -276,12 +274,22 @@ class RepoSummarizer(
         }
     }
 
-    private fun loadHistory() {
+    private fun loadHistory(): Status {
         analysisRepo.loadCommitsHistory()
         when (config.commitsType) {
             CommitsType.ONLY_MERGES -> commitsHistory.addAll(analysisRepo.mergeCommits)
             CommitsType.FIRST_PARENTS_INCLUDE_MERGES -> commitsHistory.addAll(analysisRepo.firstParentsCommits)
         }
         commitsHistory.reverse() // reverse history == from oldest commit to newest
+
+        return if (commitsHistory.isEmpty()) {
+            Status.EMPTY_HISTORY
+        } else if (commitsHistory.size < config.minCommitsNumber) {
+            Status.SMALL_COMMITS_NUMBER
+        } else if (analysisRepo.mergesPart < config.mergesPart) {
+            Status.SMALL_MERGES_PART
+        } else {
+            Status.LOADED
+        }
     }
 }

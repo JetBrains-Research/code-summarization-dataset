@@ -57,6 +57,9 @@ class ReposAnalyzer(
             RepoSummarizer.Status.NOT_INITIALIZED, RepoSummarizer.Status.LOADED,
             RepoSummarizer.Status.RUNNING
         )
+        while (workers.peek() != null && !statuses.contains(workers.peek().status)) {
+            workers.poll()
+        }
         return workers.any { statuses.contains(it.status) }
     }
 

@@ -3,6 +3,7 @@
   "dump_dir_path" : "repos/analysis_results",
   "languages": ["Java"],
   "commits_type": "merges",
+  "min_commits_number": 0,
   "merges_part_in_history": 0.0,
   "task": "name",
   "granularity": "method",
@@ -12,8 +13,8 @@
   "threads_count": 3,
   "log_dump_threshold": 200,
   "summary_dump_threshold": 200,
-  "remove_repo_after_analysis": false,
-  "gzip_files": true,
+  "remove_repo_after_analysis": true,
+  "gzip_files": false,
   "remove_after_gzip": false,
   "copy_detection": false
 }

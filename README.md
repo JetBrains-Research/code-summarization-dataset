@@ -32,6 +32,7 @@ analysis config is .json file with run parameters:
   "dump_dir_path" : "repos/analysis_results",         // path to dump directory
   "languages": ["Java"],                              // interesting languages
   "commits_type": "merges",                           // commits type (merges or first_parents, see explanation below)
+  "min_commits_number": 0,                            // minimum number of commits of selected type for analysis start
   "merges_part_in_history": 0.005,                    // part of merge commits in first_parents history (see below)
   "task": "name",                                     // current supported task - name extraction
   "granularity": "method",                            // current supported granularity - method
