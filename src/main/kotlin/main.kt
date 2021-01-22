@@ -1,6 +1,3 @@
-fun getSum(a: Int, b: Int): Int = a + b
+import reposanalyzer.utils.AnalyzerParser
 
-
-fun main() {
-    print("Hello world!")
-}
+fun main(args: Array<String>) = AnalyzerParser().main(args)
