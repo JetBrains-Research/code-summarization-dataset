@@ -67,6 +67,9 @@ class RepoSummarizer(
 
     @Volatile var status = Status.NOT_INITIALIZED
 
+    private var analysisStart: Long = 0
+    private var analysisEnd: Long = 0
+
     private var currCommit: RevCommit? = null
     private var prevCommit: RevCommit? = null
     private var defaultBranchHead: Ref? = null
@@ -80,16 +83,18 @@ class RepoSummarizer(
     private lateinit var git: Git
 
     override fun run() {
+        analysisStart = System.currentTimeMillis()
         init()
+        dumpRepoSummary() // dump repo summary before running
         if (status != Status.LOADED) {
             workLogger.add("> SUMMARIZER NOT LOADED: $status")
-            dumpRepoSummary()
             return
         }
         status = Status.RUNNING
         try {
             workLogger.add("> search started at ${Date(System.currentTimeMillis())}")
             processCommits()
+            analysisEnd = System.currentTimeMillis()
             git.checkoutHashOrName(defaultBranchHead?.name) // back to normal head
             workLogger.add("> back to start HEAD: ${defaultBranchHead?.name}")
             workLogger.add("> search ended at ${Date(System.currentTimeMillis())}")
@@ -246,13 +251,16 @@ class RepoSummarizer(
     }
 
     private fun dumpRepoSummary() {
+        val secondsSpent = (analysisEnd - analysisStart) / 1000L
         val stats = summaryStorage.getStats()
         val mapper = jacksonObjectMapper().enable(SerializationFeature.INDENT_OUTPUT)
         val jsonNode = analysisRepo.toJSON(mapper) as ObjectNode
         jsonNode.set<JsonNode>("total_methods", mapper.valueToTree(stats.totalMethods))
         jsonNode.set<JsonNode>("total_uniq_full_names", mapper.valueToTree(stats.totalUniqMethodsFullNames))
         jsonNode.set<JsonNode>("processed_files", mapper.valueToTree(stats.totalFiles))
+        jsonNode.set<JsonNode>("analysis_languages", mapper.valueToTree(config.languages))
         jsonNode.set<JsonNode>("process_end_status", mapper.valueToTree(status))
+        jsonNode.set<JsonNode>("seconds_spent", mapper.valueToTree(if (secondsSpent >= 0) secondsSpent else 0))
         mapper.writeValue(FileOutputStream(File(dumpPath).resolve(REPO_INFO), false), jsonNode)
     }
 
