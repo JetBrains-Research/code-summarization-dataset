@@ -1,7 +1,9 @@
 package reposanalyzer.utils
 
+import org.apache.commons.io.FileUtils
 import reposanalyzer.config.Language
 import java.io.File
+import java.io.IOException
 import java.util.Calendar
 
 fun String.readFileToString(): String {
@@ -12,20 +14,18 @@ fun String.readFileToString(): String {
     return file.readText()
 }
 
-fun dotGitFilter(patches: List<String>): Pair<List<String>, List<String>> {
-    val exists = mutableListOf<String>()
-    val notExists = mutableListOf<String>()
-    patches.forEach { path ->
-        if (path.isDotGitPresent()) {
-            exists.add(path)
-        } else {
-            notExists.add(path)
-        }
+fun String.deleteDirectory() =
+    try {
+        FileUtils.deleteDirectory(File(this))
+    } catch (e: IOException) {
+        // ignore
     }
-    return Pair(exists, notExists)
-}
 
-fun String.isDotGitPresent() = File(this + File.separator + ".git").exists()
+fun String.isDotGitPresent() =
+    File(this).isDirectory && File(this).resolve(".git").exists()
+
+fun File.isDotGitPresent() =
+    this.isDirectory && this.resolve(".git").exists()
 
 fun getNotHiddenNotDirectoryFiles(dirPath: String): List<File> =
     File(dirPath).walkTopDown().filter { !it.isHidden && !it.isDirectory }.toList()

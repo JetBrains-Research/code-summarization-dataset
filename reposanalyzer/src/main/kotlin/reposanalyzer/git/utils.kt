@@ -3,8 +3,11 @@ package reposanalyzer.git
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import org.eclipse.jgit.api.Git
 import org.eclipse.jgit.revwalk.RevCommit
 import reposanalyzer.utils.getDateByMilliseconds
+import reposanalyzer.utils.isDotGitPresent
+import java.io.File
 import java.util.Calendar
 
 fun RevCommit.getCommitInfo(): CommitInfo = CommitInfo(
@@ -31,3 +34,38 @@ fun RevCommit.toJSON(objectMapper: ObjectMapper? = null, outerCalendar: Calendar
     jsonNode.set<JsonNode>("hash", mapper.valueToTree(this.name))
     return jsonNode
 }
+
+fun String.isRepoCloned(): Boolean = this.isNotEmpty() && this.isDotGitPresent()
+
+fun constructRepoLoadUrl(owner: String?, name: String?): String? =
+    if (owner == null || name == null) {
+        null
+    } else {
+        "https://github.com/$owner/$name"
+    }
+
+fun tryCloneRepositoryNTimes(url: String, cloneDir: File, n: Int, sleepTime: Long): Git? {
+    for (i in 1..n) {
+        val git = tryCloneRepository(url, cloneDir)
+        if (git != null) {
+            return git
+        }
+        try {
+            Thread.sleep(sleepTime)
+        } catch (e: InterruptedException) {
+            // ignore
+        }
+    }
+    return null
+}
+
+fun tryCloneRepository(url: String, cloneDir: File): Git? =
+    try {
+        Git.cloneRepository()
+            .setURI(url)
+            .setDirectory(cloneDir)
+            .setCloneAllBranches(true)
+            .call()
+    } catch (e: Exception) {
+        null
+    }

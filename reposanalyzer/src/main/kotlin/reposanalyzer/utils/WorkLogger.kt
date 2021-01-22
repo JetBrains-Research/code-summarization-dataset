@@ -2,7 +2,7 @@ package reposanalyzer.utils
 
 import java.io.File
 import java.io.FileOutputStream
-import java.util.*
+import java.util.Date
 import java.util.concurrent.ConcurrentLinkedQueue
 
 class WorkLogger(

@@ -1,7 +1,7 @@
 package reposprovider.logic
 
 import reposanalyzer.config.AnalysisConfig
-import reposanalyzer.logic.RepoInfo
+import reposanalyzer.logic.AnalysisRepository
 import reposanalyzer.logic.ReposAnalyzer
 import reposfinder.config.SearchConfig
 import reposfinder.logic.ReposFinder
@@ -41,13 +41,13 @@ class SearchAnalysisProvider(
         isInterrupted = true
     }
 
-    private fun Queue<Repository>.extractRepoInfos(): List<RepoInfo> {
-        val infos = mutableListOf<RepoInfo>()
+    private fun Queue<Repository>.extractRepoInfos(): List<AnalysisRepository> {
+        val repos = mutableListOf<AnalysisRepository>()
         while (!this.isEmpty()) {
             val repo = reposQueue.poll()
-            infos.add(RepoInfo("", repo.name, repo.owner))
+            repos.add(AnalysisRepository("", repo.owner, repo.name))
         }
-        return infos
+        return repos
     }
 
     private fun waitWorkers() {

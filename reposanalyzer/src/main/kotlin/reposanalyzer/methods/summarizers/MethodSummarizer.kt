@@ -21,9 +21,15 @@ interface MethodSummarizer {
     var hideMethodName: Boolean
     var hiddenMethodName: String
 
-    fun <T : Node> summarize(root: T, label: String, fileContent: String, filePath: String): MethodSummary
+    fun <T : Node> summarize(
+        root: T,
+        label: String,
+        fileContent: String,
+        filePath: String,
+        fileLinesStarts: List<Int>? = null
+    ): MethodSummary
 
-    fun <T : Node> T.extractBody(label: String, fileContent: String): String? = null
+    fun <T : Node> T.extractBody(label: String, fileContent: String): Triple<Int, Int, String?>? = null
 
     fun <T : Node> T.extractDoc(fileContent: String): String? = null
 

@@ -6,7 +6,7 @@ import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.required
 import com.github.ajalt.clikt.parameters.options.validate
 import reposanalyzer.config.AnalysisConfig
-import reposanalyzer.logic.RepoInfo
+import reposanalyzer.logic.AnalysisRepository
 import reposanalyzer.logic.ReposAnalyzer
 import reposanalyzer.logic.loadReposPatches
 import java.io.File
@@ -33,7 +33,8 @@ class AnalyzerParser : CliktCommand() {
         val analysisConfig = AnalysisConfig(configPath = analysisConfigPath, isDebug = true)
         val reposAnalyzer = ReposAnalyzer(config = analysisConfig)
         reposAnalyzer.submitAll(
-            loadReposPatches(analysisConfig.reposUrlsPath).map { RepoInfo(it) }
+            loadReposPatches(analysisConfig.reposUrlsPath).map { AnalysisRepository(it) }
         )
+        reposAnalyzer.waitUntilAnyRunning()
     }
 }

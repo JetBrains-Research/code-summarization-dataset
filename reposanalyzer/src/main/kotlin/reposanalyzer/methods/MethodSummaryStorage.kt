@@ -17,32 +17,38 @@ import java.io.FileOutputStream
  *
  *  Visited methods storage (visited) does not clear at dumps
  */
+data class MethodIdentity(
+    val methodNormalizedFullName: String,
+    val filePath: String
+)
+
 class MethodSummaryStorage(
     private val dumpFilePath: String,
     private val dumpThreshold: Int = 500,
     private val logger: WorkLogger? = null
 ) {
-    private data class Identity(val methodNormalizedFullName: String, val filePath: String)
-
     private val data = mutableSetOf<MethodSummary>()
-    private val visited = mutableSetOf<Identity>()
+    private val visited = mutableSetOf<MethodIdentity>()
     private val dumpFile = File(dumpFilePath)
     private val objectMapper = jacksonObjectMapper()
+
+    var methodsNumber: Int = 0
+
+    val size: Int
+        get() = data.size
 
     init {
         dumpFile.createNewFile()
         clearFile()
     }
 
-    val size: Int
-        get() = data.size
-
     fun add(summary: MethodSummary): Boolean {
         if (contains(summary)) {
             return false
         }
-        visited.add(Identity(summary.fullName, summary.filePath))
+        visited.add(MethodIdentity(summary.fullName, summary.filePath))
         data.add(summary)
+        methodsNumber++
         if (size >= dumpThreshold) {
             dump()
         }
@@ -60,6 +66,8 @@ class MethodSummaryStorage(
         data.clear() // clear data after dump WITHOUT cleaning visited list
     }
 
+    fun getStats() = MethodSummaryStorageStats(visited)
+
     fun clear() {
         data.clear()
         visited.clear()
@@ -74,7 +82,7 @@ class MethodSummaryStorage(
         contains(summary.fullName, summary.filePath)
 
     fun contains(normalizedFullName: String, filePath: String): Boolean =
-        visited.contains(Identity(normalizedFullName, filePath))
+        visited.contains(MethodIdentity(normalizedFullName, filePath))
 
     fun notContains(summary: MethodSummary): Boolean = !contains(summary)
 

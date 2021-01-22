@@ -159,16 +159,18 @@ analysis config is .json file with run parameters:
 
 ```
 {
-  "repos_dirs_list_path": "../repos/repos.json",      // path to .json list with paths to local repositories
-  "dump_dir_path" : "../repos/analysis_results",      // path to dump directory
+  "repos_dirs_list_path": "repos/repos.json",         // path to .json list with paths to local repositories
+  "dump_dir_path" : "repos/analysis_results",         // path to dump directory
   "languages": ["Java"],                              // interesting languages
   "commits_type": "merges",                           // commits type (merges or first_parents, see explanation below)
+  "min_commits_number": 0,                            // minimum number of commits of selected type for analysis start
+  "merges_part_in_history": 0.005,                    // part of merge commits in first_parents history (see below)
   "task": "name",                                     // current supported task - name extraction
   "granularity": "method",                            // current supported granularity - method
   "hide_methods_names": true,                         // hides methods names in methods bodies and AST's
   "exclude_constructors": true,                       // exclude constructors from summary
   "exclude_nodes": [],                                // unsupported
-  "threads_count": 3,                                 // how many repositories are analyzed in parallel (thread pool size)
+  "threads_count": 3,                                 // how many repositories are analyzed in parallel (thread pool size)  
   "log_dump_threshold": 200,                          // log messages dump to file threshold
   "summary_dump_threshold": 200,                      // methods summary dump threshold
   "remove_repo_after_analysis": false,                // whether the repository should be deleted after analysis
@@ -191,7 +193,20 @@ Repositories analysis based on git-history, analyzer:
 Two types of history processing depending on the type of commit:
 - `"commits_type": "merges"` - history includes merge commits `git log --first-parent --merges DEFAULT_BRANCH`
 - `"commits_type": "first_parents"` - history includes first-parents commits `git log --first-parent DEFAULT_BRANCH`
-- both history types include oldest and youngest commits   
+- both history types include oldest and youngest commits
+- `"merges_part_in_history": 0.005` - this is an attempt to distinguish repositories using rebase-based history from merge-based history,
+  e.g. for [Kotlin repository](https://github.com/JetBrains/Kotlin):
+
+  `git log --first-parent --pretty=oneline | wc -l` is **66016** first parents commits
+
+  `git log --first-parent --merges --pretty=oneline | wc -l` is **512** merge commits
+
+  `merges_part_in_history = 512 / 66016 = 0.00776`
+
+  => if we set `merges_part_in_history = 0.01`, then the repository will not be analyzed because the repository value is below the value we set (`0.00776 [real value] < 0.01 [value in config]`)
+
+  *set `merges_part_in_history = 0.0`  if you do not have enough statistics
+
 
 ### 2. Run
 
@@ -209,7 +224,7 @@ arguments:
 ### 3. Results
 
 In `dump_dir_path` appear 4 files:
-
+  - `repo_info.json`    -- repository analysis summary 
   - `methods.jsonl`     -- all methods summary (one method per line)
   - `commits_log.jsonl` -- all consecutive traversed commits pairs (one pair per line)
   - 2 files with log

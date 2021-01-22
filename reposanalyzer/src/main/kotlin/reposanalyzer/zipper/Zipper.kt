@@ -5,6 +5,7 @@ import java.io.BufferedOutputStream
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
+import java.io.IOException
 
 interface Zipper {
     private companion object {
@@ -12,13 +13,17 @@ interface Zipper {
     }
 
     fun compressFolder(dir: File, removeAfterZip: Boolean = false) {
-        if (!dir.exists() || !dir.isDirectory) {
-            return
-        }
-        dir.walkTopDown().maxDepth(1).forEach { file ->
-            if (!file.absolutePath.endsWith(DOT_GZ)) {
-                compressFile(file, removeAfterZip)
+        try {
+            if (!dir.exists() || !dir.isDirectory) {
+                return
             }
+            dir.walkTopDown().maxDepth(1).forEach { file ->
+                if (!file.absolutePath.endsWith(DOT_GZ)) {
+                    compressFile(file, removeAfterZip)
+                }
+            }
+        } catch (e: IOException) {
+            // ignore
         }
     }
 

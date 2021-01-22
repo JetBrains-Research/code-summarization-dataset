@@ -20,6 +20,8 @@ class AnalysisConfig(
         const val EXCLUDE_CONSTRUCTORS = "exclude_constructors"
         const val REMOVE_AFTER = "remove_repo_after_analysis"
         const val COMMITS_TYPE = "commits_type"
+        const val MIN_COMMITS_NUMBER = "min_commits_number"
+        const val MERGES_PART = "merges_part_in_history"
         const val TASK = "task"
         const val GRANULARITY = "granularity"
         const val EXCLUDE_NODES = "exclude_nodes"
@@ -37,12 +39,16 @@ class AnalysisConfig(
 
     private val pathFields = listOf(REPOS_DIRS_PATH, DUMP_DIR_PATH)
     private val listFields = listOf(LANGUAGES)
-    private val intFields = listOf(THREADS_COUNT, LOG_DUMP_THRESHOLD, METHODS_DUMP_THRESHOLD)
+    private val intFields = listOf(
+        THREADS_COUNT, LOG_DUMP_THRESHOLD,
+        METHODS_DUMP_THRESHOLD, MIN_COMMITS_NUMBER
+    )
     private val stringFields = listOf(COMMITS_TYPE, TASK, GRANULARITY)
     private val boolFields = listOf(
         HIDE_METHODS_NAME, EXCLUDE_CONSTRUCTORS, REMOVE_AFTER,
         IS_ZIP, REMOVE_AFTER_ZIP, COPY_DETECTION
     )
+    private val floatFields = listOf(MERGES_PART)
 
     lateinit var reposUrlsPath: String
     lateinit var dumpFolder: String
@@ -56,6 +62,8 @@ class AnalysisConfig(
     var task: Task = Task.NAME
     var granularity: Granularity = Granularity.METHOD
     var commitsType: CommitsType = CommitsType.FIRST_PARENTS_INCLUDE_MERGES
+    var minCommitsNumber: Int = 0
+    var mergesPart: Float = 0.0f
     var copyDetection: Boolean = false
     var hideMethodName: Boolean = false
     var excludeConstructors: Boolean = false
@@ -81,6 +89,7 @@ class AnalysisConfig(
         this.processIntFields()
         this.processStringFields()
         this.processBoolFields()
+        this.processFloatFields()
         if (languages.isEmpty()) {
             throw AnalysisConfigException("no language specified")
         }
@@ -100,15 +109,26 @@ class AnalysisConfig(
         }
     }
 
+    private fun JsonNode.processFloatFields() = floatFields.forEach { field ->
+        val value = this.get(field).asDouble().toFloat()
+        if (value < 0) {
+            throw AnalysisConfigException("impossible value `$value` for field $field")
+        }
+        when (field) {
+            MERGES_PART -> mergesPart = value
+        }
+    }
+
     private fun JsonNode.processIntFields() = intFields.forEach { field ->
         val value = this.get(field).asInt()
-        if (value <= 0) {
+        if (value <= 0 && field != MIN_COMMITS_NUMBER) {
             throw AnalysisConfigException("impossible value `$value` for field $field")
         }
         when (field) {
             THREADS_COUNT -> threadsCount = value
             LOG_DUMP_THRESHOLD -> logDumpThreshold = value
             METHODS_DUMP_THRESHOLD -> summaryDumpThreshold = value
+            MIN_COMMITS_NUMBER -> minCommitsNumber = value
         }
     }
 

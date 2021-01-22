@@ -2,6 +2,7 @@ package reposanalyzer.methods.summarizers
 
 import astminer.common.model.Node
 import reposanalyzer.config.Language
+import reposanalyzer.logic.whichLine
 import reposanalyzer.methods.MethodSummary
 import reposanalyzer.methods.buildNormalizedFullName
 import reposanalyzer.methods.extractContent
@@ -20,14 +21,15 @@ class JavaMethodSummarizer : MethodSummarizer {
         root: T,
         label: String,
         fileContent: String,
-        filePath: String
+        filePath: String,
+        fileLinesStarts: List<Int>?
     ): MethodSummary {
         val parents = root.getParents()
         val normalizedLabel = normalizeAstLabel(label)
         val normalizedFullName = buildNormalizedFullName(label, parents)
         val doc = root.extractDoc(fileContent)
         val comment = root.extractMultipleComment(fileContent)
-        val body = root.extractBody(label, fileContent)
+        val (pos, length, body) = root.extractBody(label, fileContent)
         val ast = root.extractAST(normalizedLabel)
         return MethodSummary(
             name = normalizedLabel,
@@ -36,13 +38,17 @@ class JavaMethodSummarizer : MethodSummarizer {
             language = language,
             doc = doc,
             comment = comment,
+            posInFile = pos,
+            length = length,
+            firstLineInFile = fileLinesStarts?.whichLine(pos + if (doc != null) 1 else 0),
+            lastLineInFile = fileLinesStarts?.whichLine(pos + length - 1),
             body = body,
             ast = ast,
             parents = parents
         )
     }
 
-    override fun <T : Node> T.extractBody(label: String, fileContent: String): String? {
+    override fun <T : Node> T.extractBody(label: String, fileContent: String): Triple<Int, Int, String?> {
         var pos = this.getNodeStart()
         var length = this.getNodeLength()
         this.getChildByTypeLabel(AstMinerTypeLabels.JAVA_DOC)?.let { child ->
@@ -54,7 +60,7 @@ class JavaMethodSummarizer : MethodSummarizer {
         if (hideMethodName && body != null) { // replace first label occurrence " $label" to " METHOD_NAME"
             body = body.replaceFirst(" $label", " $hiddenMethodName")
         }
-        return body
+        return Triple(pos, length, body)
     }
 
     override fun <T : Node> T.extractDoc(fileContent: String): String? {
