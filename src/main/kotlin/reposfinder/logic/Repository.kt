@@ -8,6 +8,7 @@ import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import reposfinder.api.APIExtractor
 import reposfinder.api.GitHubAPI
 import reposfinder.api.GraphQLQueries
+import reposfinder.config.SearchConfig
 import reposfinder.filtering.Filter
 import reposfinder.filtering.FilterResult
 import reposfinder.requests.getBody
@@ -30,7 +31,25 @@ class Repository(
         const val NAME = "name"
     }
 
-    fun loadCore(objectMapper: ObjectMapper, token: String? = null): Boolean {
+    fun loadCore(config: SearchConfig, limits: RateLimits, objectMapper: ObjectMapper): Boolean {
+        var isCoreGood = true
+        var isContributorsGood = true
+        if (config.isCore) {
+            if (!config.isOnlyContributors) {
+                isCoreGood = this.loadCore(objectMapper, config.token)
+                limits.core.register()
+                Thread.sleep(config.sleepTimeBetweenRequests)
+            }
+            if (config.isContributors) {
+                isContributorsGood = this.loadContributors(config.isAnonContributors, config.token)
+                limits.core.register()
+                Thread.sleep(config.sleepTimeBetweenRequests)
+            }
+        }
+        return isCoreGood && isContributorsGood
+    }
+
+    private fun loadCore(objectMapper: ObjectMapper, token: String? = null): Boolean {
         val (_, response, _) = getRequest(
             url = GitHubAPI.URL.core(owner, name),
             token = token
@@ -44,7 +63,19 @@ class Repository(
         return true
     }
 
-    fun loadGraphQL(requestType: GraphQLQueries, objectMapper: ObjectMapper, token: String? = null): Boolean {
+    fun loadGraphQL(config: SearchConfig, limits: RateLimits, objectMapper: ObjectMapper): Boolean {
+        var isCommitsGood = true
+        if (config.isGraphQL) {
+            if (config.isCommitsCount) {
+                isCommitsGood = this.loadGraphQL(GraphQLQueries.COMMITS_COUNT, objectMapper, config.token)
+                limits.graphQL.register()
+                Thread.sleep(config.sleepTimeBetweenRequests)
+            }
+        }
+        return isCommitsGood
+    }
+
+    private fun loadGraphQL(requestType: GraphQLQueries, objectMapper: ObjectMapper, token: String? = null): Boolean {
         val query = when (requestType) {
             GraphQLQueries.COMMITS_COUNT -> requestType.getGraphQLBody(
                 requestType.query(owner, name, requestType.target),
@@ -71,7 +102,7 @@ class Repository(
         return true
     }
 
-    fun loadContributors(isAnon: Boolean, token: String? = null): Boolean {
+    private fun loadContributors(isAnon: Boolean, token: String? = null): Boolean {
         val (_, response, _) = getRequest(
             url = GitHubAPI.URL.contributors(owner, name, isAnon = isAnon),
             token = token

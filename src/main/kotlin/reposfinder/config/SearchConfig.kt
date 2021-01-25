@@ -75,6 +75,9 @@ class SearchConfig(
         if (isContributors) {
             pausePerRepo += this.sleepTimeBetweenRequests
         }
+        if (pausePerRepo == 0L) {
+            pausePerRepo = 1L
+        }
         return MILLIS_IN_HOUR / pausePerRepo
     }
 
