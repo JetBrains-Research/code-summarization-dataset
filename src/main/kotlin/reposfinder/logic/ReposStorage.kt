@@ -104,7 +104,6 @@ class ReposStorage(
     }
 
     private fun dumpBadAfterThreshold() {
-        goodBuffer.dumpToQueue()
         badBuffer.dumpReposLinks(badReposFile)
         badBuffer.dumpReposSummary(badSummaryDir)
         badRepos.addAll(badBuffer)
