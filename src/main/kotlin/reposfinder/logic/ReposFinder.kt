@@ -1,7 +1,6 @@
 package reposfinder.logic
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import reposfinder.api.GraphQLQueries
 import reposfinder.config.SearchConfig
 import reposfinder.utils.Logger
 import java.io.File
@@ -55,8 +54,11 @@ class ReposFinder(
             return
         }
         status = Status.WORKING
+        logStartSummary()
+        if (!checkLimitsBeforeStart()) {
+            return
+        }
         status = try {
-            logStartSummary()
             searchRepos()
             reposStorage.dump()
             Status.DONE
@@ -74,14 +76,18 @@ class ReposFinder(
         status = Status.INTERRUPTED
     }
 
-    private fun searchRepos() {
+    private fun checkLimitsBeforeStart(): Boolean {
         limits.update()
         logLimits()
         if (limits.isNoLimits()) {
             status = Status.BAD_TOKEN_LIMITS
             logger.add("ZERO LIMITS ERROR (maybe bad token)")
-            return
+            return false
         }
+        return true
+    }
+
+    private fun searchRepos() {
         for (repo in reposStorage.allRepos) {
             limitsUpdateControl()
             waitingControl()
@@ -90,45 +96,15 @@ class ReposFinder(
                 break
             }
             logger.add("> processing /${repo.owner}/${repo.name}")
-            val isCoreGood = repo.loadCore() && repo.isGood(config.coreFilters)
-            val isGraphQLGood = repo.loadGraphQL() && repo.isGood(config.graphQLFilters)
+            val isCoreGood = repo.loadCore(config, limits, jsonMapper) && repo.isGood(config.coreFilters)
+            val isGraphQLGood = repo.loadGraphQL(config, limits, jsonMapper) && repo.isGood(config.graphQLFilters)
             if (isCoreGood && isGraphQLGood) {
                 reposStorage.addGood(repo)
             } else {
                 reposStorage.addBad(repo)
             }
-
             reposWithoutUpdates++
         }
-    }
-
-    private fun Repository.loadCore(): Boolean {
-        var isGood = true
-        if (config.isCore) {
-            if (!config.isOnlyContributors) {
-                isGood = this.loadCore(jsonMapper, config.token)
-                limits.core.register()
-                Thread.sleep(config.sleepTimeBetweenRequests)
-            }
-            if (config.isContributors) {
-                isGood = this.loadContributors(config.isAnonContributors, config.token) && isGood
-                limits.core.register()
-                Thread.sleep(config.sleepTimeBetweenRequests)
-            }
-        }
-        return isGood
-    }
-
-    private fun Repository.loadGraphQL(): Boolean {
-        var isGood = true
-        if (config.isGraphQL) {
-            if (config.isCommitsCount) {
-                isGood = this.loadGraphQL(GraphQLQueries.COMMITS_COUNT, jsonMapper, config.token)
-                limits.graphQL.register()
-                Thread.sleep(config.sleepTimeBetweenRequests)
-            }
-        }
-        return isGood
     }
 
     private fun limitsUpdateControl() {
@@ -190,7 +166,7 @@ class ReposFinder(
     }
 
     private fun logLimits() {
-        logger.add("> Core API limits: ${limits.core}")
-        logger.add("> GraphQL API limits: ${limits.graphQL}")
+        logger.add("> limits API - Core    ${limits.core}")
+        logger.add("> limits API - GraphQL ${limits.graphQL}")
     }
 }

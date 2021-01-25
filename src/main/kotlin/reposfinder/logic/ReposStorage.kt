@@ -4,8 +4,8 @@ import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import reposfinder.utils.Logger
+import reposfinder.utils.appendLines
 import java.io.File
-import java.io.FileOutputStream
 import java.util.concurrent.ConcurrentLinkedQueue
 
 class ReposStorage(
@@ -31,15 +31,15 @@ class ReposStorage(
 
     private val objectMapper = jacksonObjectMapper()
 
-    private val goodSummaryDir = File(dumpDirPath + File.separator + GOOD_REPOS_DIR)
-    private val badSummaryDir = File(dumpDirPath + File.separator + BAD_REPOS_DIR)
-    private val goodReposFile = File(dumpDirPath + File.separator + GOOD_REPOS_FILE)
-    private val badReposFile = File(dumpDirPath + File.separator + BAD_REPOS_FILE)
-    private val goodUrlsFile = File(dumpDirPath + File.separator + GOOD_INPUT_URLS)
-    private val badUrlsFile = File(dumpDirPath + File.separator + BAD_INPUT_URLS)
+    private val goodSummaryDir = File(dumpDirPath).resolve(GOOD_REPOS_DIR)
+    private val badSummaryDir = File(dumpDirPath).resolve(BAD_REPOS_DIR)
+    private val goodReposFile = File(dumpDirPath).resolve(GOOD_REPOS_FILE)
+    private val badReposFile = File(dumpDirPath).resolve(BAD_REPOS_FILE)
+    private val goodUrlsFile = File(dumpDirPath).resolve(GOOD_INPUT_URLS)
+    private val badUrlsFile = File(dumpDirPath).resolve(BAD_INPUT_URLS)
 
-    private val explainGoodDir = File(goodSummaryDir.absolutePath + File.separator + EXPLAIN)
-    private val explainBadDir = File(badSummaryDir.absolutePath + File.separator + EXPLAIN)
+    private val explainGoodDir = File(goodSummaryDir.absolutePath).resolve(EXPLAIN)
+    private val explainBadDir = File(badSummaryDir.absolutePath).resolve(EXPLAIN)
 
     val goodUrls = mutableListOf<String>()
     val badUrls = mutableListOf<String>()
@@ -64,8 +64,8 @@ class ReposStorage(
         goodUrlsFile.createNewFile()
         badUrlsFile.createNewFile()
         initRepositories()
-        goodUrls.dumpUrls(goodUrlsFile)
-        badUrls.dumpUrls(badUrlsFile)
+        goodUrlsFile.appendLines(goodUrls)
+        badUrlsFile.appendLines(badUrls)
     }
 
     fun addGood(repo: Repository) {
@@ -130,37 +130,25 @@ class ReposStorage(
     }
 
     private fun List<Repository>.dumpReposLinks(file: File) =
-        FileOutputStream(file, true).bufferedWriter().use { out ->
-            this.forEach { repo ->
-                val node = objectMapper.valueToTree<JsonNode>(repo.getDescription())
-                out.appendLine(node.toString())
+        file.appendLines(
+            this.map {
+                objectMapper.valueToTree<JsonNode>(it.toString()).toString()
             }
-        }
-
-    private fun List<String>.dumpUrls(file: File) =
-        FileOutputStream(file, true).bufferedWriter().use { out ->
-            this.forEach {
-                out.appendLine(it)
-            }
-        }
+        )
 
     private fun List<Repository>.dumpReposSummary(dir: File, clearInfo: Boolean = true) {
         objectMapper.enable(SerializationFeature.INDENT_OUTPUT)
         for (repo in this) {
-            val path = dir.absolutePath + File.separator + repo.createSummaryName()
-            val explainPath = dir.absolutePath + File.separator + EXPLAIN +
-                File.separator + repo.createSummaryName()
-            objectMapper.writeValue(
-                File(path),
-                repo.toJSON(objectMapper, uselessFieldsSuffixes)
+            val summaryFile = File(dir.absolutePath).resolve(repo.createSummaryName())
+            val explainFile = File(dir.absolutePath).resolve(
+                EXPLAIN + File.separator + repo.createSummaryName()
             )
-            objectMapper.writeValue(
-                File(explainPath),
-                repo.toJSONExplain(objectMapper)
-            )
+            objectMapper.writeValue(summaryFile, repo.toJSON(objectMapper, uselessFieldsSuffixes))
+            objectMapper.writeValue(explainFile, repo.toJSONExplain(objectMapper))
             // release memory (~7 KB per repo)
             if (clearInfo) {
                 repo.info = objectMapper.createObjectNode()
+                repo.filterResults.clear()
             }
         }
         objectMapper.disable(SerializationFeature.INDENT_OUTPUT)
