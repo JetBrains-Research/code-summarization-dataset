@@ -30,6 +30,7 @@ class SearchAnalysisProvider(
             while (reposQueue.isEmpty() && isFinderWorking() && !isInterrupted) { // active waiting
                 Thread.sleep(SLEEP_TIME)
             }
+            reposAnalyzer.processDoneWorkers()
             reposAnalyzer.submitAll(reposQueue.extractRepoInfos())
         }
         reposAnalyzer.submitAll(reposQueue.extractRepoInfos())
@@ -51,11 +52,17 @@ class SearchAnalysisProvider(
     }
 
     private fun waitWorkers() {
-        while (!isInterrupted && reposAnalyzer.isAnyRunning()) {
-            Thread.sleep(SLEEP_TIME)
+        try {
+            while (!isInterrupted && reposAnalyzer.isAnyRunning()) {
+                reposAnalyzer.processDoneWorkers()
+                Thread.sleep(SLEEP_TIME)
+            }
+            reposAnalyzer.processDoneWorkers()
+        } catch (e: InterruptedException) {
+            isInterrupted = true
         }
     }
 
-    private fun isFinderWorking() = listOf(ReposFinder.Status.READY, ReposFinder.Status.WORKING)
-        .contains(reposFinder.status)
+    private fun isFinderWorking() =
+        listOf(ReposFinder.Status.READY, ReposFinder.Status.WORKING).contains(reposFinder.status)
 }
