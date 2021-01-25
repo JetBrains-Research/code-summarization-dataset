@@ -36,7 +36,7 @@ import java.util.Date
 import java.util.concurrent.ConcurrentHashMap
 
 class RepoSummarizer(
-    private val analysisRepo: AnalysisRepository,
+    val analysisRepo: AnalysisRepository,
     private val dumpPath: String,
     private val parsers: ConcurrentHashMap<Language, Parser<out Node>>,
     private val config: AnalysisConfig

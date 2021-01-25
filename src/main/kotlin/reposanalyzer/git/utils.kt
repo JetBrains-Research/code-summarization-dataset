@@ -6,7 +6,6 @@ import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import org.eclipse.jgit.api.Git
 import org.eclipse.jgit.revwalk.RevCommit
 import reposanalyzer.utils.getDateByMilliseconds
-import reposanalyzer.utils.isDotGitPresent
 import java.io.File
 import java.util.Calendar
 
@@ -34,6 +33,12 @@ fun RevCommit.toJSON(objectMapper: ObjectMapper? = null, outerCalendar: Calendar
     jsonNode.set<JsonNode>("hash", mapper.valueToTree(this.name))
     return jsonNode
 }
+
+fun String.isDotGitPresent() =
+    File(this).isDirectory && File(this).resolve(".git").exists()
+
+fun File.isDotGitPresent() =
+    this.isDirectory && this.resolve(".git").exists()
 
 fun String.isRepoCloned(): Boolean = this.isNotEmpty() && this.isDotGitPresent()
 

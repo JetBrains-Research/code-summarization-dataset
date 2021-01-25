@@ -13,10 +13,10 @@ import reposanalyzer.git.constructRepoLoadUrl
 import reposanalyzer.git.getDefaultBranch
 import reposanalyzer.git.getFirstParentHistory
 import reposanalyzer.git.getMergeCommitsHistory
+import reposanalyzer.git.isDotGitPresent
 import reposanalyzer.git.isRepoCloned
 import reposanalyzer.git.openRepositoryByDotGitDir
 import reposanalyzer.git.tryCloneRepositoryNTimes
-import reposanalyzer.utils.isDotGitPresent
 import java.io.File
 import java.io.FileOutputStream
 

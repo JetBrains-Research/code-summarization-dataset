@@ -4,13 +4,16 @@ import astminer.common.model.Node
 import astminer.common.model.Parser
 import reposanalyzer.config.AnalysisConfig
 import reposanalyzer.config.Language
+import reposanalyzer.git.isDotGitPresent
 import reposanalyzer.parsing.GumTreeParserFactory
 import reposanalyzer.utils.WorkLogger
-import reposanalyzer.utils.isDotGitPresent
+import reposanalyzer.utils.appendLines
+import scala.concurrent.Channel
 import java.io.File
-import java.util.Date
+import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentLinkedQueue
+import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.Executors
 
 class ReposAnalyzer(
@@ -18,8 +21,15 @@ class ReposAnalyzer(
 ) {
     private companion object {
         const val SLEEP_TIME_WAITING = 30 * 1000L
-        const val LOG_FILE_NAME = "main_log.txt"
+        const val LOG_FILE_NAME = "work_log.txt"
+        const val DONE_LOG_FILE_NAME = "done_log.txt"
     }
+
+    private val runStatuses = listOf(
+        RepoSummarizer.Status.NOT_INITIALIZED, RepoSummarizer.Status.LOADED, RepoSummarizer.Status.RUNNING
+    )
+
+    private val doneWorkersLogFile = File(config.dumpFolder).resolve(DONE_LOG_FILE_NAME)
 
     private var allPatches = mutableListOf<AnalysisRepository>()
     private var goodPatches = mutableListOf<AnalysisRepository>()
@@ -30,10 +40,12 @@ class ReposAnalyzer(
     private val logger: WorkLogger
 
     private val pool = Executors.newFixedThreadPool(config.threadsCount)
-    private val workers = ConcurrentLinkedQueue<RepoSummarizer>()
+    private val workers = LinkedList<RepoSummarizer>()
+    private val doneWorkers = LinkedList<RepoSummarizer>()
 
     init {
         File(config.dumpFolder).mkdirs()
+        doneWorkersLogFile.createNewFile()
         logger = WorkLogger(File(config.dumpFolder).resolve(LOG_FILE_NAME).absolutePath, config.isDebug)
         for (lang in Language.values()) {
             parsers[lang] = GumTreeParserFactory.getParser(lang)
@@ -53,14 +65,25 @@ class ReposAnalyzer(
     fun submitAll(repos: List<AnalysisRepository>) = repos.forEach { repo -> submit(repo) }
 
     fun isAnyRunning(): Boolean {
-        val statuses = listOf(
-            RepoSummarizer.Status.NOT_INITIALIZED, RepoSummarizer.Status.LOADED,
-            RepoSummarizer.Status.RUNNING
-        )
-        while (workers.peek() != null && !statuses.contains(workers.peek().status)) {
-            workers.poll()
+        return workers.any { runStatuses.contains(it.status) }
+    }
+
+    fun processDoneWorkers() {
+        val iter = workers.iterator()
+        while (iter.hasNext()) {
+            val worker = iter.next()
+            if (!runStatuses.contains(worker.status)) {
+                doneWorkers.add(worker)
+                iter.remove()
+            }
         }
-        return workers.any { statuses.contains(it.status) }
+        val toDump = mutableListOf<String>()
+        while (!doneWorkers.isEmpty()) {
+            val worker = doneWorkers.poll()
+            val repo = worker.analysisRepo
+            toDump.add("${worker.status},${repo.owner}/${repo.name}")
+        }
+        doneWorkersLogFile.appendLines(toDump)
     }
 
     fun interrupt() {
@@ -74,8 +97,10 @@ class ReposAnalyzer(
     fun waitUntilAnyRunning() {
         try {
             while (isAnyRunning()) {
+                processDoneWorkers()
                 Thread.sleep(SLEEP_TIME_WAITING)
             }
+            processDoneWorkers()
         } catch (e: InterruptedException) {
             // ignore
         } finally {

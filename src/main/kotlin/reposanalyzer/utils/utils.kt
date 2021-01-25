@@ -3,6 +3,7 @@ package reposanalyzer.utils
 import org.apache.commons.io.FileUtils
 import reposanalyzer.config.Language
 import java.io.File
+import java.io.FileOutputStream
 import java.io.IOException
 import java.util.Calendar
 
@@ -21,11 +22,12 @@ fun String.deleteDirectory() =
         // ignore
     }
 
-fun String.isDotGitPresent() =
-    File(this).isDirectory && File(this).resolve(".git").exists()
-
-fun File.isDotGitPresent() =
-    this.isDirectory && this.resolve(".git").exists()
+fun File.appendLines(lines: List<String>) =
+    FileOutputStream(this, true).bufferedWriter().use { out ->
+        lines.forEach {
+            out.appendLine(it)
+        }
+    }
 
 fun getNotHiddenNotDirectoryFiles(dirPath: String): List<File> =
     File(dirPath).walkTopDown().filter { !it.isHidden && !it.isDirectory }.toList()
