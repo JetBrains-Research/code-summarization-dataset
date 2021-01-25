@@ -132,7 +132,7 @@ class ReposStorage(
     private fun List<Repository>.dumpReposLinks(file: File) =
         file.appendLines(
             this.map {
-                objectMapper.valueToTree<JsonNode>(it.toString()).toString()
+                objectMapper.valueToTree<JsonNode>(it.getDescription()).toString()
             }
         )
 

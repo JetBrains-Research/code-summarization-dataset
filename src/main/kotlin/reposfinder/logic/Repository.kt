@@ -125,7 +125,7 @@ class Repository(
         return result
     }
 
-    override fun toString(): String = mapOf(Pair(OWNER, owner), Pair(NAME, name)).toString()
+    fun getDescription(): Map<String, String> = mapOf(Pair(OWNER, owner), Pair(NAME, name))
 
     fun createSummaryName() = "${this.owner}__${this.name}.json"
 
