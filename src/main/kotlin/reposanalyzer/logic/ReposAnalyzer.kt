@@ -8,12 +8,10 @@ import reposanalyzer.git.isDotGitPresent
 import reposanalyzer.parsing.GumTreeParserFactory
 import reposanalyzer.utils.WorkLogger
 import reposanalyzer.utils.appendLines
-import scala.concurrent.Channel
 import java.io.File
-import java.util.*
+import java.util.Date
+import java.util.LinkedList
 import java.util.concurrent.ConcurrentHashMap
-import java.util.concurrent.ConcurrentLinkedQueue
-import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.Executors
 
 class ReposAnalyzer(

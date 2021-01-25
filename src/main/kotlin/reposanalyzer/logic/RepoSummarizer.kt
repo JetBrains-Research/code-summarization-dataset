@@ -242,9 +242,10 @@ class RepoSummarizer(
                     relativePath,
                     fileLinesStarts
                 )
+                methodSummary.commit = currCommit
                 methodSummary.repoOwner = analysisRepo.owner
                 methodSummary.repoName = analysisRepo.name
-                methodSummary.commit = currCommit
+                methodSummary.repoLicense = analysisRepo.licence
                 summaryStorage.add(methodSummary)
             }
         }

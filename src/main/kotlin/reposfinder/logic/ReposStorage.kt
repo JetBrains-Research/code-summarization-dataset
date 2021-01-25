@@ -118,7 +118,7 @@ class ReposStorage(
             val name = spl[spl.size - NAME_POS]
             val info = objectMapper.createObjectNode()
             if (owner.isNotEmpty() && name.isNotEmpty()) {
-                allRepos.add(Repository(owner, name, info, logger = logger))
+                allRepos.add(Repository(owner, name, null, info, logger = logger))
                 goodUrls.add(url)
             } else {
                 badUrls.add(url)

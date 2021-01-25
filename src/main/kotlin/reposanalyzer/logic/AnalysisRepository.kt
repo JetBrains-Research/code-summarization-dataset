@@ -23,7 +23,8 @@ import java.io.FileOutputStream
 class AnalysisRepository(
     var path: String = "",
     var owner: String? = null,
-    var name: String? = null
+    var name: String? = null,
+    var licence: String? = null
 ) {
     private companion object {
         const val CLONE_TRIES_NUMBER = 2
@@ -118,6 +119,7 @@ class AnalysisRepository(
         val jsonNode = mapper.createObjectNode()
         jsonNode.set<JsonNode>("owner", mapper.valueToTree(owner))
         jsonNode.set<JsonNode>("name", mapper.valueToTree(name))
+        jsonNode.set<JsonNode>("license", mapper.valueToTree(licence))
         jsonNode.set<JsonNode>("default_branch", mapper.valueToTree(defaultBranchHead?.name))
         jsonNode.set<JsonNode>("merge_commits_cnt", mapper.valueToTree(mergeCommitsNumber))
         jsonNode.set<JsonNode>("first_parents_commits_cnt", mapper.valueToTree(firstParentsCommitsNumber))

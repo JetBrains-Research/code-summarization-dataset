@@ -20,6 +20,7 @@ import reposfinder.utils.Logger
 class Repository(
     val owner: String,
     val name: String,
+    var license: String? = null,
     var info: JsonNode,
     var filterResults: MutableList<FilterResult> = mutableListOf(),
     val logger: Logger? = null
@@ -60,6 +61,7 @@ class Repository(
             return false
         }
         info = objectMapper.readTree(response.getBody())
+        license = info.get("license")?.get("key")?.asText()
         return true
     }
 

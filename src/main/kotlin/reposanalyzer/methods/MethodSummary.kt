@@ -16,6 +16,7 @@ data class MethodSummary(
     var fullName: String,
     var repoOwner: String? = null,
     var repoName: String? = null,
+    var repoLicense: String? = null,
     var filePath: String,
     var language: Language,
     var doc: String? = null,
@@ -50,6 +51,7 @@ data class MethodSummary(
         jsonNode.set<JsonNode>("full_name", mapper.valueToTree(fullName))
         jsonNode.set<JsonNode>("language", mapper.valueToTree(language.label))
         jsonNode.set<JsonNode>("repo", mapper.valueToTree("/$repoOwner/$repoName"))
+        jsonNode.set<JsonNode>("repo_license", mapper.valueToTree(repoLicense))
         jsonNode.set<JsonNode>("file", mapper.valueToTree(filePath))
         jsonNode.set<JsonNode>("url", mapper.valueToTree(createUrl()))
         jsonNode.set<JsonNode>("doc", mapper.valueToTree(doc))

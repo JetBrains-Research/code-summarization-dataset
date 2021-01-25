@@ -46,7 +46,7 @@ class SearchAnalysisProvider(
         val repos = mutableListOf<AnalysisRepository>()
         while (!this.isEmpty()) {
             val repo = reposQueue.poll()
-            repos.add(AnalysisRepository("", repo.owner, repo.name))
+            repos.add(AnalysisRepository("", repo.owner, repo.name, repo.license))
         }
         return repos
     }
