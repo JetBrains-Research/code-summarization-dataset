@@ -31,6 +31,7 @@ class AnalysisConfig(
         const val COPY_DETECTION = "copy_detection"
         const val IS_ZIP = "gzip_files"
         const val REMOVE_AFTER_ZIP = "remove_after_gzip"
+        const val DATA_DUMP_FOLDER = "data"
 
         const val DEFAULT_THREADS_COUNT = 1
         const val DEFAULT_LOG_DUMP_THRESHOLD = 200
@@ -52,6 +53,7 @@ class AnalysisConfig(
 
     lateinit var reposUrlsPath: String
     lateinit var dumpFolder: String
+    lateinit var dataDumpFolder: String
 
     val languages: MutableList<Language> = mutableListOf()
     val excludeNodes: List<String> = listOf()
@@ -80,7 +82,6 @@ class AnalysisConfig(
         val jsonNode = jsonMapper.readValue<JsonNode>(file)
         jsonNode.checkFields()
         jsonNode.processAllFields()
-        File(dumpFolder).mkdirs()
     }
 
     private fun JsonNode.processAllFields() {
@@ -135,7 +136,10 @@ class AnalysisConfig(
     private fun JsonNode.processPathFields() = pathFields.forEach { field ->
         when (field) {
             REPOS_DIRS_PATH -> reposUrlsPath = this.get(field).asText()
-            DUMP_DIR_PATH -> dumpFolder = this.get(field).asText()
+            DUMP_DIR_PATH -> {
+                dumpFolder = this.get(field).asText()
+                dataDumpFolder = File(dumpFolder).resolve(DATA_DUMP_FOLDER).absolutePath
+            }
         }
     }
 

@@ -42,7 +42,7 @@ class ReposAnalyzer(
     private val doneWorkers = LinkedList<RepoSummarizer>()
 
     init {
-        File(config.dumpFolder).mkdirs()
+        File(config.dataDumpFolder).mkdirs()
         doneWorkersLogFile.createNewFile()
         logger = WorkLogger(File(config.dumpFolder).resolve(LOG_FILE_NAME).absolutePath, config.isDebug)
         for (lang in Language.values()) {
@@ -106,10 +106,10 @@ class ReposAnalyzer(
         }
     }
 
-    fun dumpLog() = logger.dump()
+    private fun dumpLog() = logger.dump()
 
     private fun AnalysisRepository.constructSummarizer(): RepoSummarizer {
-        val repoDumpPath = this.constructDumpPath(config.dumpFolder)
+        val repoDumpPath = this.constructDumpPath(config.dataDumpFolder)
         File(repoDumpPath).mkdirs()
         return RepoSummarizer(this, repoDumpPath, parsers, config)
     }

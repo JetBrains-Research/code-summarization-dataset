@@ -49,15 +49,15 @@ data class MethodSummary(
         val jsonNode = mapper.createObjectNode()
         jsonNode.set<JsonNode>("name", mapper.valueToTree(name))
         jsonNode.set<JsonNode>("full_name", mapper.valueToTree(fullName))
-        jsonNode.set<JsonNode>("language", mapper.valueToTree(language.label))
+        jsonNode.set<JsonNode>("file", mapper.valueToTree(filePath))
         jsonNode.set<JsonNode>("repo", mapper.valueToTree("/$repoOwner/$repoName"))
         jsonNode.set<JsonNode>("repo_license", mapper.valueToTree(repoLicense))
-        jsonNode.set<JsonNode>("file", mapper.valueToTree(filePath))
         jsonNode.set<JsonNode>("url", mapper.valueToTree(createUrl()))
+        jsonNode.set<JsonNode>("commit", commit?.toJSON(mapper))
+        jsonNode.set<JsonNode>("language", mapper.valueToTree(language.label))
         jsonNode.set<JsonNode>("doc", mapper.valueToTree(doc))
         jsonNode.set<JsonNode>("comment", mapper.valueToTree(comment))
         jsonNode.set<JsonNode>("body", mapper.valueToTree(body))
-        jsonNode.set<JsonNode>("commit", commit?.toJSON(mapper))
         jsonNode.set<JsonNode>("ast", ast?.toJSON(mapper))
 
         return jsonNode
