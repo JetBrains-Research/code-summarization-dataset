@@ -38,15 +38,25 @@ class ProviderParser : CliktCommand() {
         }
     }
 
-    private val isDebug by option(
+    private val isFullDebug by option(
         "-d",
         "--debug",
-        help = "Debug mode: log in console"
+        help = "Debug mode: full log in console"
+    ).flag(default = false)
+
+    private val isAnalysisDebug by option(
+        "--ad",
+        help = "Debug mode: analysis log in console"
+    ).flag(default = false)
+
+    private val isSearchDebug by option(
+        "--sd",
+        help = "Debug mode: search log in console"
     ).flag(default = false)
 
     override fun run() {
-        val searchConfig = SearchConfig(configPath = searchConfigPath, isDebug = isDebug)
-        val analysisConfig = AnalysisConfig(configPath = analysisConfigPath, isDebug = isDebug)
+        val searchConfig = SearchConfig(configPath = searchConfigPath, isDebug = isFullDebug || isSearchDebug)
+        val analysisConfig = AnalysisConfig(configPath = analysisConfigPath, isDebug = isFullDebug || isAnalysisDebug)
         val provider = SearchAnalysisProvider(searchConfig = searchConfig, analysisConfig = analysisConfig)
         provider.run()
     }

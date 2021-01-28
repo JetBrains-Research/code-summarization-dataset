@@ -88,15 +88,33 @@ search config is .json file with all search filters and run parameters:
 
 ### 2. Run
 
-run example with provided script `run_finder.sh`:
+#### 2.1 as code in project
+- import `SearchConfig` and `ReposFinder` classes
+- provide a path to `search_config.json`, initialize config and finder
+  ```
+  val searchConfig = SearchConfig(configPath = searchConfigPath, isDebug = isDebug)
+  val reposFinder = ReposFinder(config = searchConfig)
+  reposFinder.run()
+  ```
 
-    #!/bin/bash
-    ./gradlew :reposfinder:run --args="--debug -s ../repos/search_config.json"
+#### 2.2 as separate module 
+- write own entry point
+  ```
+  import reposfinder.utils.FinderParser
 
-arguments:
+  fun main(args: Array<String>) = FinderParser().main(args)
+  ```
 
-    -s, --search    - path to search config .json file
-    --debug         - flag, print all log messages to the console
+- run with script and command line arguments
+  ```
+  #!/bin/bash
+  ./gradlew :run --args="--debug -s /path/to/search_config.json"
+  ```
+
+- arguments
+
+      -s, --search    - path to search config .json file
+      --debug         - flag, print all log messages to the console
 
 ### 3. Results
 
@@ -210,15 +228,46 @@ Two types of history processing depending on the type of commit:
 
 ### 2. Run
 
-run example with provided script `run_analyzer.sh`:
+#### 2.1 as code in project
+- import `AnalysisConfig`, `ReposAnalyzer` and `AnalysisRepository` classes
+- provide a path to `analysis_config.json`, initialize config and analyser
+- `submit` (or `submitAll`) any number of repositories for analysis
+  ```
+  val analysisConfig = AnalysisConfig(configPath = analysisConfigPath, isDebug = true)
+  val reposAnalyzer = ReposAnalyzer(config = analysisConfig)
+  
+  // for already loaded repository
+  reposAnalyzer.submit(
+      AnalysisRepository("path/to/loaded/repository")
+  )
+  
+  // for repository that will be loaded from GitHub
+  reposAnalyzer.submit(
+      AnalysisRepository(owner = "JetBrains-Research", name = "astminer")
+  )
+  
+  reposAnalyzer.waitUntilAnyRunning()
+  ```
 
-    #!/bin/bash
-    ./gradlew :reposanalyzer:run --args="--debug -a ../repos/analysis_config.json"
+#### 2.2 as separate module
+- write own entry point
+  ```
+  import reposanalyzer.utils.AnalyzerParser
+  
+  fun main(args: Array<String>) = AnalyzerParser().main(args)
+  ```
 
-arguments:
+- run with script and command line arguments
+  ```
+  #!/bin/bash
+  ./gradlew :run --args="--debug -s /path/to/analysis_config.json"
+  ```
 
-    -a, --analysis    - path to analysis config .json file
-    --debug           - flag, print all log messages to the console
+- arguments
+  ```
+  -a, --analysis    - path to analysis config .json file
+  --debug           - flag, print all log messages to the console
+  ```
 
 
 ### 3. Results
@@ -251,9 +300,11 @@ arguments:
 
     -s, --search      - path to search config .json file
     -a, --analysis    - path to analysis config .json file
+    --sd              - flag, print search log messages to the console
+    --ad              - flag, print analysis log messages to the console
     --debug           - flag, print all log messages to the console
 
 ### 2. Results
 
 - output from reposfinder module
-- for each repository output from reposanalyzer module to folder `dump_folder/REPOOWNER__REPONAME`
+- for each repository output from reposanalyzer module to folder `dump_folder/data/REPOOWNER__REPONAME`
