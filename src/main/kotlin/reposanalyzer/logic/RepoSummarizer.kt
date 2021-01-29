@@ -1,9 +1,7 @@
 package reposanalyzer.logic
 
-import astminer.cli.normalizeParseResult
 import astminer.common.model.Node
 import astminer.common.model.Parser
-import astminer.common.preOrder
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.databind.node.ObjectNode
@@ -20,14 +18,12 @@ import reposanalyzer.git.checkoutHashOrName
 import reposanalyzer.git.getCommitsDiff
 import reposanalyzer.git.getDiffFiles
 import reposanalyzer.methods.MethodSummaryStorage
-import reposanalyzer.methods.summarizers.MethodSummarizersFactory
-import reposanalyzer.parsing.LabelExtractorFactory
+import reposanalyzer.parsing.FileMethodsParser
 import reposanalyzer.utils.CommitsLogger
 import reposanalyzer.utils.WorkLogger
 import reposanalyzer.utils.deleteDirectory
 import reposanalyzer.utils.getAbsolutePatches
 import reposanalyzer.utils.getNotHiddenNotDirectoryFiles
-import reposanalyzer.utils.readFileToString
 import reposanalyzer.utils.removePrefixPath
 import reposanalyzer.zipper.Zipper
 import java.io.File
@@ -75,6 +71,7 @@ class RepoSummarizer(
     private var defaultBranchHead: Ref? = null
     private val commitsHistory = mutableListOf<RevCommit>()
 
+    private lateinit var fileMethodsParser: FileMethodsParser
     private lateinit var summaryStorage: MethodSummaryStorage
     private lateinit var commitsLogger: CommitsLogger
     private lateinit var workLogger: WorkLogger
@@ -155,6 +152,9 @@ class RepoSummarizer(
         workLogger = WorkLogger(workLogPath, config.isDebug)
         commitsLogger = CommitsLogger(commitsLogPath, config.logDumpThreshold)
         summaryStorage = MethodSummaryStorage(methodsSummaryPath, config.summaryDumpThreshold, workLogger)
+        fileMethodsParser = FileMethodsParser(analysisRepo, summaryStorage,
+            config.task, config.hideMethodName, config.filterPredicates, config.excludeNodes
+        )
     }
 
     private fun processCommits() {
@@ -211,43 +211,10 @@ class RepoSummarizer(
             workLogger.add("> unsupported language $language -- no parser")
             return
         }
-        val labelExtractor = LabelExtractorFactory.getLabelExtractor(
-            config.task, config.granularity, config.hideMethodName, config.filterPredicates
-        )
-        val summarizer = MethodSummarizersFactory.getMethodSummarizer(language, config.hideMethodName)
-        parser.parseFiles(this) { parseResult ->
-            val fileContent = parseResult.filePath.readFileToString()
-            val fileLinesStarts = parseResult.filePath.getFileLinesLength().calculateLinesStarts()
-            val relativePath = parseResult.filePath
-                .removePrefix(analysisRepo.path + File.separator)
-                .splitToParents()
-                .joinToString("/")
-
-            normalizeParseResult(parseResult, true)
-            val labeledParseResults = labelExtractor.toLabeledData(parseResult)
-            labeledParseResults.forEach { (root, label) ->
-                val methodFullName = summarizer.getMethodFullName(root, label)
-                if (summaryStorage.contains(methodFullName, parseResult.filePath)) {
-                    return@forEach
-                }
-                root.preOrder().forEach { node ->
-                    config.excludeNodes.forEach {
-                        node.removeChildrenOfType(it)
-                    }
-                }
-                val methodSummary = summarizer.summarize(
-                    root,
-                    label,
-                    fileContent,
-                    relativePath,
-                    fileLinesStarts
-                )
-                methodSummary.commit = currCommit
-                methodSummary.repoOwner = analysisRepo.owner
-                methodSummary.repoName = analysisRepo.name
-                methodSummary.repoLicense = analysisRepo.licence
-                summaryStorage.add(methodSummary)
-            }
+        val results = fileMethodsParser.parse(parser, this, language)
+        results.forEach {
+            fileMethodsParser.addCommonInfo(it, currCommit)
+            summaryStorage.add(it)
         }
     }
 
