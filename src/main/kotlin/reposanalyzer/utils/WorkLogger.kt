@@ -18,7 +18,7 @@ class WorkLogger(
 
     init {
         logFile.createNewFile()
-        clearFile()
+        logFile.absolutePath.clearFile()
         add("> logger loaded at ${Date(System.currentTimeMillis())}")
     }
 
@@ -37,6 +37,4 @@ class WorkLogger(
             out.appendLine(messages.poll())
         }
     }
-
-    private fun clearFile() = FileOutputStream(logFile, false).bufferedWriter()
 }

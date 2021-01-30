@@ -12,13 +12,14 @@ interface Zipper {
         const val DOT_GZ = ".gz"
     }
 
-    fun compressFolder(dir: File, removeAfterZip: Boolean = false) {
+    fun compressFolder(dir: File, excludeFiles: List<String> = emptyList(), removeAfterZip: Boolean = false) {
         try {
             if (!dir.exists() || !dir.isDirectory) {
                 return
             }
             dir.walkTopDown().maxDepth(1).forEach { file ->
-                if (!file.absolutePath.endsWith(DOT_GZ)) {
+                val name = file.absolutePath.substringAfterLast(File.separator)
+                if (!file.absolutePath.endsWith(DOT_GZ) && !excludeFiles.contains(name)) {
                     compressFile(file, removeAfterZip)
                 }
             }

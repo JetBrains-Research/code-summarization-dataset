@@ -1,11 +1,16 @@
 package reposanalyzer.utils
 
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.databind.SerializationFeature
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import org.apache.commons.io.FileUtils
 import reposanalyzer.config.Language
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
 import java.util.Calendar
+
+fun String.clearFile() = FileOutputStream(this, false).bufferedWriter()
 
 fun String.readFileToString(): String {
     val file = File(this)
@@ -48,6 +53,10 @@ fun Map<Language, List<File>>.removePrefixPath(prefix: String): Map<Language, Li
     }
     return newMap
 }
+
+fun getObjectMapper(objectMapper: ObjectMapper? = null) =
+    objectMapper ?: jacksonObjectMapper().enable(SerializationFeature.INDENT_OUTPUT)
+
 
 fun Calendar.getDateByMilliseconds(time: Long): String {
     this.timeInMillis = time

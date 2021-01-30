@@ -1,5 +1,6 @@
 package reposfinder.utils
 
+import reposanalyzer.utils.clearFile
 import java.io.File
 import java.io.FileOutputStream
 import java.util.LinkedList
@@ -18,6 +19,7 @@ class Logger(
 
     init {
         logFile.createNewFile()
+        logFile.absolutePath.clearFile()
         clearFile()
     }
 

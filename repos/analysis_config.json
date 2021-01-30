@@ -1,20 +1,30 @@
 {
   "repos_dirs_list_path": "repos/repos.json",
   "dump_dir_path" : "repos/analysis_results",
+
   "languages": ["Java"],
+
   "commits_type": "merges",
   "min_commits_number": 0,
   "merges_part_in_history": 0.0,
+
   "task": "name",
   "granularity": "method",
   "hide_methods_names": true,
   "exclude_constructors": true,
   "exclude_nodes": [],
+
+  "max_paths": 1000,
+  "max_path_width": 10,
+  "max_path_length": 10,
+
   "threads_count": 3,
   "log_dump_threshold": 200,
   "summary_dump_threshold": 200,
-  "remove_repo_after_analysis": false,
+
   "gzip_files": true,
   "remove_after_gzip": false,
+  "remove_repo_after_analysis": true,
+
   "copy_detection": false
 }

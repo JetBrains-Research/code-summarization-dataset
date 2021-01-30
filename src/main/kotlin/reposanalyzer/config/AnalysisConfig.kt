@@ -33,6 +33,10 @@ class AnalysisConfig(
         const val REMOVE_AFTER_ZIP = "remove_after_gzip"
         const val DATA_DUMP_FOLDER = "data"
 
+        const val MAX_PATHS = "max_paths"
+        const val MAX_PATH_WIDTH = "max_path_width"
+        const val MAX_PATH_LENGTH = "max_path_length"
+
         const val DEFAULT_THREADS_COUNT = 1
         const val DEFAULT_LOG_DUMP_THRESHOLD = 200
         const val DEFAULT_METHOD_DUMP_THRESHOLD = 200
@@ -42,7 +46,8 @@ class AnalysisConfig(
     private val listFields = listOf(LANGUAGES)
     private val intFields = listOf(
         THREADS_COUNT, LOG_DUMP_THRESHOLD,
-        METHODS_DUMP_THRESHOLD, MIN_COMMITS_NUMBER
+        METHODS_DUMP_THRESHOLD, MIN_COMMITS_NUMBER,
+        MAX_PATHS, MAX_PATH_LENGTH, MAX_PATH_WIDTH
     )
     private val stringFields = listOf(COMMITS_TYPE, TASK, GRANULARITY)
     private val boolFields = listOf(
@@ -72,6 +77,11 @@ class AnalysisConfig(
     var removeRepoAfterAnalysis: Boolean = false
     var zipFiles: Boolean = false
     var removeAfterZip: Boolean = false
+
+    var maxPaths: Int = 0
+    var maxPathWidth: Int = 5
+    var maxPathLength: Int = 5
+    var isPathMining = false
 
     val filterPredicates = mutableListOf<MethodFilterPredicate>()
     val supportedExtensions = mutableListOf<String>()
@@ -121,8 +131,9 @@ class AnalysisConfig(
     }
 
     private fun JsonNode.processIntFields() = intFields.forEach { field ->
+        val excludeCheck = listOf(MIN_COMMITS_NUMBER, MAX_PATHS, MAX_PATH_LENGTH, MAX_PATH_WIDTH)
         val value = this.get(field).asInt()
-        if (value <= 0 && field != MIN_COMMITS_NUMBER) {
+        if (value < 0 || (value == 0 && !excludeCheck.contains(field))) {
             throw AnalysisConfigException("impossible value `$value` for field $field")
         }
         when (field) {
@@ -130,6 +141,12 @@ class AnalysisConfig(
             LOG_DUMP_THRESHOLD -> logDumpThreshold = value
             METHODS_DUMP_THRESHOLD -> summaryDumpThreshold = value
             MIN_COMMITS_NUMBER -> minCommitsNumber = value
+            MAX_PATHS -> {
+                maxPaths = value
+                isPathMining = maxPaths > 0
+            }
+            MAX_PATH_WIDTH -> maxPathWidth = value
+            MAX_PATH_LENGTH -> maxPathLength = value
         }
     }
 

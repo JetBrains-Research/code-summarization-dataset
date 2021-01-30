@@ -8,6 +8,7 @@ import reposanalyzer.git.isDotGitPresent
 import reposanalyzer.parsing.GumTreeParserFactory
 import reposanalyzer.utils.WorkLogger
 import reposanalyzer.utils.appendLines
+import reposanalyzer.utils.clearFile
 import java.io.File
 import java.util.Date
 import java.util.LinkedList
@@ -44,6 +45,7 @@ class ReposAnalyzer(
     init {
         File(config.dataDumpFolder).mkdirs()
         doneWorkersLogFile.createNewFile()
+        doneWorkersLogFile.absolutePath.clearFile()
         logger = WorkLogger(File(config.dumpFolder).resolve(LOG_FILE_NAME).absolutePath, config.isDebug)
         for (lang in Language.values()) {
             parsers[lang] = GumTreeParserFactory.getParser(lang)

@@ -18,7 +18,7 @@ fun RevCommit.getCommitInfo(): CommitInfo = CommitInfo(
     this.name // hash
 )
 
-fun RevCommit.toJSON(objectMapper: ObjectMapper? = null, outerCalendar: Calendar? = null): JsonNode {
+fun RevCommit.toJSONMain(objectMapper: ObjectMapper? = null, outerCalendar: Calendar? = null): JsonNode {
     val mapper = objectMapper ?: jacksonObjectMapper()
     val calendar = outerCalendar ?: Calendar.getInstance()
 

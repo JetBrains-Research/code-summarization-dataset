@@ -1,5 +1,6 @@
 package reposanalyzer.methods.summarizers
 
+import astminer.cli.separateToken
 import astminer.common.model.Node
 import reposanalyzer.config.Language
 import reposanalyzer.logic.whichLine
@@ -26,6 +27,7 @@ class JavaMethodSummarizer : MethodSummarizer {
     ): MethodSummary {
         val parents = root.getParents()
         val normalizedLabel = normalizeAstLabel(label)
+        val splittedLabel = separateToken(label)
         val normalizedFullName = buildNormalizedFullName(label, parents)
         val doc = root.extractDoc(fileContent)
         val comment = root.extractMultipleComment(fileContent)
@@ -33,6 +35,7 @@ class JavaMethodSummarizer : MethodSummarizer {
         val ast = root.extractAST(normalizedLabel)
         return MethodSummary(
             name = normalizedLabel,
+            splittedName = splittedLabel,
             fullName = normalizedFullName,
             filePath = filePath,
             language = language,

@@ -18,7 +18,7 @@ import reposanalyzer.git.checkoutHashOrName
 import reposanalyzer.git.getCommitsDiff
 import reposanalyzer.git.getDiffFiles
 import reposanalyzer.methods.MethodSummaryStorage
-import reposanalyzer.parsing.FileMethodsParser
+import reposanalyzer.parsing.MethodParseProvider
 import reposanalyzer.utils.CommitsLogger
 import reposanalyzer.utils.WorkLogger
 import reposanalyzer.utils.deleteDirectory
@@ -41,6 +41,7 @@ class RepoSummarizer(
     private companion object {
         const val REPO_INFO = "repo_info.json"
         const val METHODS_SUMMARY_FILE = "methods.jsonl"
+        const val METHODS_PATHS_FILE = "paths.jsonl"
         const val COMMITS_LOG = "commits_log.jsonl"
         const val WORK_LOG = "work_log.txt"
         const val FIRST_HASH = 7
@@ -71,7 +72,7 @@ class RepoSummarizer(
     private var defaultBranchHead: Ref? = null
     private val commitsHistory = mutableListOf<RevCommit>()
 
-    private lateinit var fileMethodsParser: FileMethodsParser
+    private lateinit var methodParseProvider: MethodParseProvider
     private lateinit var summaryStorage: MethodSummaryStorage
     private lateinit var commitsLogger: CommitsLogger
     private lateinit var workLogger: WorkLogger
@@ -149,12 +150,13 @@ class RepoSummarizer(
         val workLogPath = File(dumpPath).resolve(WORK_LOG).absolutePath
         val commitsLogPath = File(dumpPath).resolve(COMMITS_LOG).absolutePath
         val methodsSummaryPath = File(dumpPath).resolve(METHODS_SUMMARY_FILE).absolutePath
+        val methodsPathsPath = File(dumpPath).resolve(METHODS_PATHS_FILE).absolutePath
         workLogger = WorkLogger(workLogPath, config.isDebug)
         commitsLogger = CommitsLogger(commitsLogPath, config.logDumpThreshold)
-        summaryStorage = MethodSummaryStorage(methodsSummaryPath, config.summaryDumpThreshold, workLogger)
-        fileMethodsParser = FileMethodsParser(analysisRepo, summaryStorage,
-            config.task, config.hideMethodName, config.filterPredicates, config.excludeNodes
+        summaryStorage = MethodSummaryStorage(
+            methodsSummaryPath, methodsPathsPath, config.summaryDumpThreshold, workLogger
         )
+        methodParseProvider = MethodParseProvider(analysisRepo, summaryStorage, config)
     }
 
     private fun processCommits() {
@@ -211,11 +213,7 @@ class RepoSummarizer(
             workLogger.add("> unsupported language $language -- no parser")
             return
         }
-        val results = fileMethodsParser.parse(parser, this, language)
-        results.forEach {
-            fileMethodsParser.addCommonInfo(it, currCommit)
-            summaryStorage.add(it)
-        }
+        methodParseProvider.parse(parser, this, language, currCommit)
     }
 
     private fun dumpRepoSummary() {
@@ -225,6 +223,7 @@ class RepoSummarizer(
         val jsonNode = analysisRepo.toJSON(mapper) as ObjectNode
         jsonNode.set<JsonNode>("total_methods", mapper.valueToTree(stats.totalMethods))
         jsonNode.set<JsonNode>("total_uniq_full_names", mapper.valueToTree(stats.totalUniqMethodsFullNames))
+        jsonNode.set<JsonNode>("total_paths", mapper.valueToTree(stats.pathsNumber))
         jsonNode.set<JsonNode>("processed_files", mapper.valueToTree(stats.totalFiles))
         jsonNode.set<JsonNode>("analysis_languages", mapper.valueToTree(config.languages))
         jsonNode.set<JsonNode>("process_end_status", mapper.valueToTree(status))
@@ -233,6 +232,7 @@ class RepoSummarizer(
     }
 
     private fun dump() {
+        workLogger.add("> TOTAL DUMPS [${summaryStorage.methodsNumber} methods, ${summaryStorage.pathsNumber} paths]")
         dumpRepoSummary()
         summaryStorage.dump()
         summaryStorage.clear()
@@ -245,7 +245,7 @@ class RepoSummarizer(
                 analysisRepo.path.deleteDirectory()
             }
             if (config.zipFiles) {
-                compressFolder(File(dumpPath), config.removeAfterZip)
+                compressFolder(File(dumpPath), listOf(REPO_INFO, WORK_LOG), config.removeAfterZip)
             }
         }
     }

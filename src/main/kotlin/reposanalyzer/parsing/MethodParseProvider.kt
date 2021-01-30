@@ -1,14 +1,16 @@
 package reposanalyzer.parsing
 
-import astminer.cli.MethodFilterPredicate
 import astminer.cli.normalizeParseResult
 import astminer.common.model.Node
 import astminer.common.model.Parser
 import astminer.common.preOrder
+import astminer.paths.PathMiner
+import astminer.paths.PathRetrievalSettings
+import astminer.paths.toPathContext
 import org.eclipse.jgit.revwalk.RevCommit
+import reposanalyzer.config.AnalysisConfig
 import reposanalyzer.config.Granularity
 import reposanalyzer.config.Language
-import reposanalyzer.config.Task
 import reposanalyzer.logic.AnalysisRepository
 import reposanalyzer.logic.calculateLinesStarts
 import reposanalyzer.logic.getFileLinesLength
@@ -19,19 +21,21 @@ import reposanalyzer.methods.summarizers.MethodSummarizersFactory
 import reposanalyzer.utils.readFileToString
 import java.io.File
 
-class FileMethodsParser(
+class MethodParseProvider(
     private val analysisRepo: AnalysisRepository,
     private val summaryStorage: MethodSummaryStorage,
-    private val task: Task,
-    private val hideMethodsNames: Boolean,
-    private val filterPredicates: List<MethodFilterPredicate> = emptyList(),
-    private val excludeNodes: List<String> = emptyList()
+    private val config: AnalysisConfig
 ) {
+    private val pathMiner = PathMiner(PathRetrievalSettings(config.maxPathLength, config.maxPathWidth))
 
-    fun parse(parser: Parser<out Node>, files: List<File>, language: Language): List<MethodSummary> {
+    fun parse(
+        parser: Parser<out Node>,
+        files: List<File>,
+        language: Language,
+        currCommit: RevCommit? = null
+    ) {
         val labelExtractor = getLabelExtractor()
         val summarizer = getMethodSummarizer(language)
-        val results = mutableListOf<MethodSummary>()
 
         parser.parseFiles(files) { parseResult ->
             val fileContent = parseResult.filePath.readFileToString()
@@ -49,7 +53,7 @@ class FileMethodsParser(
                     return@forEach
                 }
                 root.preOrder().forEach { node ->
-                    excludeNodes.forEach {
+                    config.excludeNodes.forEach {
                         node.removeChildrenOfType(it)
                     }
                 }
@@ -60,10 +64,21 @@ class FileMethodsParser(
                     relativePath,
                     fileLinesStarts
                 )
-                results.add(methodSummary)
+                methodSummary.paths = retrievePaths(root)
+                addCommonInfo(methodSummary, currCommit)
+                summaryStorage.add(methodSummary)
             }
         }
-        return results
+    }
+
+    fun <T : Node> retrievePaths(root: T): List<String> {
+        if (!config.isPathMining) return emptyList()
+        val paths = pathMiner.retrievePaths(root)
+        val pathContexts = paths.map { toPathContext(it) }.shuffled().take(config.maxPaths)
+        return pathContexts.map { pathContext ->
+            val nodePath = pathContext.orientedNodeTypes.map { node -> node.typeLabel }
+            "${pathContext.startToken},${nodePath.joinToString("|")},${pathContext.endToken}"
+        }
     }
 
     fun addCommonInfo(methodSummary: MethodSummary, currCommit: RevCommit? = null) {
@@ -76,9 +91,9 @@ class FileMethodsParser(
     }
 
     private fun getLabelExtractor() = LabelExtractorFactory.getLabelExtractor(
-        task, Granularity.METHOD, hideMethodsNames, filterPredicates
+        config.task, Granularity.METHOD, config.hideMethodName, config.filterPredicates
     )
 
     private fun getMethodSummarizer(lang: Language) =
-        MethodSummarizersFactory.getMethodSummarizer(lang, hideMethodsNames)
+        MethodSummarizersFactory.getMethodSummarizer(lang, config.hideMethodName)
 }
