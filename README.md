@@ -6,7 +6,7 @@ Tool for mining data from GitHub for code summarization tasks.
 
 Follow these steps to run the tool:
 - Clone repo from Github
-```
+```commandline
 git clone https://github.com/JetBrains-Research/code-summarization-dataset.git
 ```
 # Tool modules
@@ -27,7 +27,7 @@ git clone https://github.com/JetBrains-Research/code-summarization-dataset.git
 ### 1. Search config
 
 search config is .json file with all search filters and run parameters:
-```
+```json
 {
     "token_path" : "repos/token.txt",            // path to GitHub token
     "dump_dir_path" : "repos/search_results",    // dump directory path
@@ -54,11 +54,11 @@ search config is .json file with all search filters and run parameters:
 **GitHub token**:
 - search requires a [GitHub API personal access token](https://docs.github.com/en/free-pro-team@latest/github/authenticating-to-github/creating-a-personal-access-token) without any special permissions
 - token is 40 symbols code that must be located in a separate file on the first line without additional data, e.g.
-
-        file: token.txt
+  ```text
+  file: token.txt
         
-        496**********************************4cf
-
+  496**********************************4cf
+  ```
 
 **Rules**:
 - each parameter must be specified in brackets **[params, ...]**
@@ -91,7 +91,7 @@ search config is .json file with all search filters and run parameters:
 #### 2.1 as code in project
 - import `SearchConfig` and `ReposFinder` classes
 - provide a path to `search_config.json`, initialize config and finder
-  ```
+  ```kotlin
   val searchConfig = SearchConfig(configPath = searchConfigPath, isDebug = isDebug)
   val reposFinder = ReposFinder(config = searchConfig)
   reposFinder.run()
@@ -99,14 +99,14 @@ search config is .json file with all search filters and run parameters:
 
 #### 2.2 as separate module 
 - write own entry point
-  ```
+  ```kotlin
   import reposfinder.utils.FinderParser
 
   fun main(args: Array<String>) = FinderParser().main(args)
   ```
 
 - run with script and command line arguments
-  ```
+  ```shell
   #!/bin/bash
   ./gradlew :run --args="--debug -s /path/to/search_config.json"
   ```
@@ -131,32 +131,32 @@ In `dump_dir_path` appear 4 files and 2 folders:
 ### 4. Search data sources
 
 **commits_count** - 1 [GraphQL](https://developer.github.com/v4/explorer/) query:
-```
-    query {
-      repository(owner: "JetBrains-Research", name: "code-summarization-dataset") {
-        defaultBranchRef {
-          target {
-            ... on Commit {
-              history (first: 1) {
-                totalCount
-                pageInfo
-                { endCursor }
-              }
+  ```gql
+  query {
+    repository(owner: "JetBrains-Research", name: "code-summarization-dataset") {
+      defaultBranchRef {
+        target {
+          ... on Commit {
+            history (first: 1) {
+              totalCount
+              pageInfo
+              { endCursor }
             }
           }
         }
       }
     }
-```
+  }
+  ```
 
 **contributors_count** - 1 [API v3](https://docs.github.com/en/free-pro-team@latest/rest) query with pagination hack (1 contributor per_page + number of pages):
-```
-https://api.github.com/repos/jetbrains/kotlin/contributors?per_page=1&anon=false
-```
+  ```
+  https://api.github.com/repos/jetbrains/kotlin/contributors?per_page=1&anon=false
+  ```
 **others** from repository summary **api/repos/owner/name** - 1 [API v3](https://docs.github.com/en/free-pro-team@latest/rest) query:
-```
-https://api.github.com/repos/jetbrains/kotlin
-```
+  ```
+  https://api.github.com/repos/jetbrains/kotlin
+  ```
 
 ## II. Repositories analysis (reposanalyzer module)
 
@@ -175,7 +175,7 @@ https://api.github.com/repos/jetbrains/kotlin
 
 analysis config is .json file with run parameters:
 
-```
+```json
 {
   "repos_dirs_list_path": "repos/repos.json",         // path to .json list with paths to local repositories
   "dump_dir_path" : "repos/analysis_results",         // path to dump directory
@@ -235,7 +235,8 @@ Two types of history processing depending on the type of commit:
 - import `AnalysisConfig`, `ReposAnalyzer` and `AnalysisRepository` classes
 - provide a path to `analysis_config.json`, initialize config and analyser
 - `submit` (or `submitAll`) any number of repositories for analysis
-  ```
+  
+  ```kotlin
   val analysisConfig = AnalysisConfig(configPath = analysisConfigPath, isDebug = true)
   val reposAnalyzer = ReposAnalyzer(config = analysisConfig)
   
@@ -254,14 +255,14 @@ Two types of history processing depending on the type of commit:
 
 #### 2.2 as separate module
 - write own entry point
-  ```
+  ```kotlin
   import reposanalyzer.utils.AnalyzerParser
   
   fun main(args: Array<String>) = AnalyzerParser().main(args)
   ```
 
 - run with script and command line arguments
-  ```
+  ```shell
   #!/bin/bash
   ./gradlew :run --args="--debug -s /path/to/analysis_config.json"
   ```
@@ -297,8 +298,10 @@ reposfinder + reposanalyzer modules
 
 run example with provided script `run_provider.sh`:
 
-    #!/bin/bash
-    ./gradlew :reposprovider:run --args="--debug -s ../repos/search_config.json -a ../repos/analysis_config.json"
+  ```shell
+  #!/bin/bash
+  ./gradlew :reposprovider:run --args="--debug -s ../repos/search_config.json -a ../repos/analysis_config.json"
+  ```
 
 arguments:
 
