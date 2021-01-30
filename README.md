@@ -188,6 +188,9 @@ analysis config is .json file with run parameters:
   "hide_methods_names": true,                         // hides methods names in methods bodies and AST's
   "exclude_constructors": true,                       // exclude constructors from summary
   "exclude_nodes": [],                                // unsupported
+  "max_paths": 1000,                                  // upper bound for number of retrived paths (code2seq) 
+  "max_path_width": 10,                               // path max width
+  "max_path_length": 10,                              // path max length (number of tokens) 
   "threads_count": 3,                                 // how many repositories are analyzed in parallel (thread pool size)  
   "log_dump_threshold": 200,                          // log messages dump to file threshold
   "summary_dump_threshold": 200,                      // methods summary dump threshold
@@ -275,8 +278,9 @@ Two types of history processing depending on the type of commit:
 In `dump_dir_path` appear 4 files:
   - `repo_info.json`    -- repository analysis summary 
   - `methods.jsonl`     -- all methods summary (one method per line)
+  - `paths.jsonl`       -- all retrieved paths for every method (one method per line) 
   - `commits_log.jsonl` -- all consecutive traversed commits pairs (one pair per line)
-  - 2 files with log
+  - `work_log.txt` -- log file
 
 
 ## III. Repositories filtering and analysis (module reposprovider)
