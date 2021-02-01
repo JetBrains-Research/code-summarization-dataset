@@ -56,7 +56,7 @@ class MethodSummaryStorage(
         if (contains(summary)) return false
         visited.add(MethodIdentity(summary.fullName, summary.filePath))
         data.add(summary)
-        methodsNumber++
+        summary.id = ++methodsNumber
         pathsNumber += summary.paths.size
         if (readyToDump()) dump()
         return true

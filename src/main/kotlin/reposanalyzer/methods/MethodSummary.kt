@@ -2,6 +2,7 @@ package reposanalyzer.methods
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.databind.node.ObjectNode
 import org.eclipse.jgit.revwalk.RevCommit
 import reposanalyzer.config.Language
 import reposanalyzer.git.toJSONMain
@@ -12,8 +13,9 @@ import reposanalyzer.utils.getObjectMapper
  */
 data class MethodSummary(
     var name: String,
-    var splittedName: String,
     var fullName: String,
+    var splittedName: String,
+    var id: Int? = null,
     var repoOwner: String? = null,
     var repoName: String? = null,
     var repoLicense: String? = null,
@@ -45,35 +47,36 @@ data class MethodSummary(
 
     fun toJSONMain(objectMapper: ObjectMapper? = null): JsonNode {
         val mapper = getObjectMapper(objectMapper)
-        val jsonNode = mapper.createObjectNode()
-        jsonNode.set<JsonNode>("name", mapper.valueToTree(name))
-        jsonNode.set<JsonNode>("spl_name", mapper.valueToTree(splittedName))
-        jsonNode.set<JsonNode>("full_name", mapper.valueToTree(fullName))
-        jsonNode.set<JsonNode>("file", mapper.valueToTree(filePath))
-        jsonNode.set<JsonNode>("repo", mapper.valueToTree("/$repoOwner/$repoName"))
-        jsonNode.set<JsonNode>("repo_license", mapper.valueToTree(repoLicense))
+        val jsonNode = toJSONCommon(mapper) as ObjectNode
+
         jsonNode.set<JsonNode>("url", mapper.valueToTree(createUrl()))
         jsonNode.set<JsonNode>("commit", commit?.toJSONMain(mapper))
-        jsonNode.set<JsonNode>("language", mapper.valueToTree(language.label))
         jsonNode.set<JsonNode>("doc", mapper.valueToTree(doc))
         jsonNode.set<JsonNode>("comment", mapper.valueToTree(comment))
         jsonNode.set<JsonNode>("body", mapper.valueToTree(body))
         jsonNode.set<JsonNode>("ast", ast?.toJSON(mapper))
-
         return jsonNode
     }
 
     fun toJSONPaths(objectMapper: ObjectMapper? = null): JsonNode {
         val mapper = getObjectMapper(objectMapper)
+        val jsonNode = toJSONCommon(mapper) as ObjectNode
+        jsonNode.set<JsonNode>("paths", mapper.valueToTree(paths))
+        return jsonNode
+    }
+
+    private fun toJSONCommon(objectMapper: ObjectMapper? = null): JsonNode {
+        val mapper = getObjectMapper(objectMapper)
         val jsonNode = mapper.createObjectNode()
+
+        id?.let { jsonNode.set<JsonNode>("id", mapper.valueToTree(id)) }
         jsonNode.set<JsonNode>("name", mapper.valueToTree(name))
         jsonNode.set<JsonNode>("spl_name", mapper.valueToTree(splittedName))
         jsonNode.set<JsonNode>("full_name", mapper.valueToTree(fullName))
+        jsonNode.set<JsonNode>("language", mapper.valueToTree(language.label))
         jsonNode.set<JsonNode>("file", mapper.valueToTree(filePath))
         jsonNode.set<JsonNode>("repo", mapper.valueToTree("/$repoOwner/$repoName"))
-        jsonNode.set<JsonNode>("language", mapper.valueToTree(language.label))
-        jsonNode.set<JsonNode>("paths", mapper.valueToTree(paths))
-
+        jsonNode.set<JsonNode>("repo_license", mapper.valueToTree(repoLicense))
         return jsonNode
     }
 }
