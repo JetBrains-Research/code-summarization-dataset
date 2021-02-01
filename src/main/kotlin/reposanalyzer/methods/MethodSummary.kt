@@ -45,7 +45,7 @@ data class MethodSummary(
             "$GIT_HUB/$repoOwner/$repoName/blob/${commit?.name}/$filePath#L$firstLineInFile-L$lastLineInFile"
         }
 
-    fun toJSONMain(objectMapper: ObjectMapper? = null): JsonNode {
+    fun toJSONMain(objectMapper: ObjectMapper? = null, isAstDotFormat: Boolean = false): JsonNode {
         val mapper = getObjectMapper(objectMapper)
         val jsonNode = toJSONCommon(mapper) as ObjectNode
 
@@ -54,7 +54,7 @@ data class MethodSummary(
         jsonNode.set<JsonNode>("doc", mapper.valueToTree(doc))
         jsonNode.set<JsonNode>("comment", mapper.valueToTree(comment))
         jsonNode.set<JsonNode>("body", mapper.valueToTree(body))
-        jsonNode.set<JsonNode>("ast", ast?.toJSON(mapper))
+        jsonNode.set<JsonNode>("ast", ast?.toJSON(mapper, isAstDotFormat))
         return jsonNode
     }
 

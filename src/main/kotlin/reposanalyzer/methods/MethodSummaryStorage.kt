@@ -24,6 +24,7 @@ data class MethodIdentity(
 )
 
 class MethodSummaryStorage(
+    private val isAstDumpDotFormat: Boolean,
     private val summaryDumpPath: String,
     private val pathsDumpPath: String,
     private val dumpThreshold: Int = 200,
@@ -72,7 +73,9 @@ class MethodSummaryStorage(
     private fun dumpToFile(file: File, isMain: Boolean = true) =
         FileOutputStream(file, true).bufferedWriter().use { writer ->
             data.forEach { summary ->
-                val node = if (isMain) summary.toJSONMain(objectMapper) else summary.toJSONPaths(objectMapper)
+                val node = if (isMain) {
+                    summary.toJSONMain(objectMapper, isAstDumpDotFormat)
+                } else summary.toJSONPaths(objectMapper)
                 val string = node.toString()
                 writer.appendLine(string)
             }

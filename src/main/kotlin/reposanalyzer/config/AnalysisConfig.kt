@@ -32,6 +32,7 @@ class AnalysisConfig(
         const val IS_ZIP = "gzip_files"
         const val REMOVE_AFTER_ZIP = "remove_after_gzip"
         const val DATA_DUMP_FOLDER = "data"
+        const val IS_DOT_FORMAT = "ast_dot_format"
 
         const val MAX_PATHS = "max_paths"
         const val MAX_PATH_WIDTH = "max_path_width"
@@ -52,7 +53,7 @@ class AnalysisConfig(
     private val stringFields = listOf(COMMITS_TYPE, TASK, GRANULARITY)
     private val boolFields = listOf(
         HIDE_METHODS_NAME, EXCLUDE_CONSTRUCTORS, REMOVE_AFTER,
-        IS_ZIP, REMOVE_AFTER_ZIP, COPY_DETECTION
+        IS_ZIP, REMOVE_AFTER_ZIP, COPY_DETECTION, IS_DOT_FORMAT
     )
     private val floatFields = listOf(MERGES_PART)
 
@@ -71,6 +72,7 @@ class AnalysisConfig(
     var commitsType: CommitsType = CommitsType.FIRST_PARENTS_INCLUDE_MERGES
     var minCommitsNumber: Int = 0
     var mergesPart: Float = 0.0f
+    var isAstDotFormat: Boolean = false
     var copyDetection: Boolean = false
     var hideMethodName: Boolean = false
     var excludeConstructors: Boolean = false
@@ -188,6 +190,7 @@ class AnalysisConfig(
             COPY_DETECTION -> copyDetection = value
             IS_ZIP -> zipFiles = value
             REMOVE_AFTER_ZIP -> removeAfterZip = value
+            IS_DOT_FORMAT -> isAstDotFormat = value
         }
     }
 

@@ -154,7 +154,7 @@ class RepoSummarizer(
         workLogger = WorkLogger(workLogPath, config.isDebug)
         commitsLogger = CommitsLogger(commitsLogPath, config.logDumpThreshold)
         summaryStorage = MethodSummaryStorage(
-            methodsSummaryPath, methodsPathsPath, config.summaryDumpThreshold, workLogger
+            config.isAstDotFormat, methodsSummaryPath, methodsPathsPath, config.summaryDumpThreshold, workLogger
         )
         methodParseProvider = MethodParseProvider(analysisRepo, summaryStorage, config)
     }

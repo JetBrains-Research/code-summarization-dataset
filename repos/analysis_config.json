@@ -13,6 +13,7 @@
   "hide_methods_names": true,
   "exclude_constructors": true,
   "exclude_nodes": [],
+  "ast_dot_format": false,
 
   "max_paths": 1000,
   "max_path_width": 10,

@@ -188,6 +188,7 @@ analysis config is .json file with run parameters:
   "hide_methods_names": true,                         // hides methods names in methods bodies and AST's
   "exclude_constructors": true,                       // exclude constructors from summary
   "exclude_nodes": [],                                // unsupported
+  "ast_dot_format": false,                            // ast dump format: dot or our version (dot with identifiers in nodes)
   "max_paths": 1000,                                  // upper bound for number of retrived paths (code2seq) 
   "max_path_width": 10,                               // path max width
   "max_path_length": 10,                              // path max length (number of tokens) 

@@ -19,29 +19,26 @@ data class MethodAST(
 
         val sortedTokens = description.sortedBy { it.id }
 
-        return when (dotVersion) {
-            false -> {
-                val tokensList = mutableListOf<JsonNode>()
-                sortedTokens.forEach { token ->
-                    val tokenNode = mapper.createObjectNode()
-                    tokenNode.set<JsonNode>("id", mapper.valueToTree(token.id))
-                    tokenNode.set<JsonNode>("token", mapper.valueToTree(token.name))
-                    tokenNode.set<JsonNode>("type", mapper.valueToTree(token.type))
-                    tokenNode.set<JsonNode>("children", mapper.valueToTree(graph[token.id]))
-                    tokensList.add(tokenNode)
-                }
-                mapper.valueToTree(tokensList)
+        return if (dotVersion) {
+            val jsonNode = mapper.createObjectNode()
+            val tokensMap = mutableMapOf<Long, Map<String, String>>()
+            sortedTokens.forEach {
+                tokensMap[it.id] = it.toMap()
             }
-            true -> {
-                val jsonNode = mapper.createObjectNode()
-                val tokensMap = mutableMapOf<Long, Map<String, String>>()
-                sortedTokens.forEach {
-                    tokensMap[it.id] = it.toMap()
-                }
-                jsonNode.set<JsonNode>("graph", mapper.valueToTree(graph))
-                jsonNode.set<JsonNode>("tokens", mapper.valueToTree(tokensMap))
-                jsonNode
+            jsonNode.set<JsonNode>("graph", mapper.valueToTree(graph))
+            jsonNode.set<JsonNode>("tokens", mapper.valueToTree(tokensMap))
+            jsonNode
+        } else {
+            val tokensList = mutableListOf<JsonNode>()
+            sortedTokens.forEach { token ->
+                val tokenNode = mapper.createObjectNode()
+                tokenNode.set<JsonNode>("id", mapper.valueToTree(token.id))
+                tokenNode.set<JsonNode>("token", mapper.valueToTree(token.name))
+                tokenNode.set<JsonNode>("type", mapper.valueToTree(token.type))
+                tokenNode.set<JsonNode>("children", mapper.valueToTree(graph[token.id]))
+                tokensList.add(tokenNode)
             }
+            mapper.valueToTree(tokensList)
         }
     }
 }
