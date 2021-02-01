@@ -81,8 +81,8 @@ class AnalysisConfig(
     var removeAfterZip: Boolean = false
 
     var maxPaths: Int = 0
-    var maxPathWidth: Int = 5
-    var maxPathLength: Int = 5
+    var maxPathWidth: Int = 0
+    var maxPathLength: Int = 0
     var isPathMining = false
 
     val filterPredicates = mutableListOf<MethodFilterPredicate>()

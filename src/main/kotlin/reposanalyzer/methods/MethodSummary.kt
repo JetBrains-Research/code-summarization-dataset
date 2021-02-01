@@ -6,7 +6,6 @@ import com.fasterxml.jackson.databind.node.ObjectNode
 import org.eclipse.jgit.revwalk.RevCommit
 import reposanalyzer.config.Language
 import reposanalyzer.git.toJSONMain
-import reposanalyzer.utils.getObjectMapper
 
 /*
  *  name and fullName are normalized names

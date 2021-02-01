@@ -103,6 +103,4 @@ class MethodSummaryStorage(
         visited.contains(MethodIdentity(normalizedFullName, filePath))
 
     fun notContains(summary: MethodSummary): Boolean = !contains(summary)
-
-    fun notContains(normalizedFullName: String, filePath: String): Boolean = !contains(normalizedFullName, filePath)
 }

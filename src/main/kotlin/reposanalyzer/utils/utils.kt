@@ -54,10 +54,6 @@ fun Map<Language, List<File>>.removePrefixPath(prefix: String): Map<Language, Li
     return newMap
 }
 
-fun getObjectMapper(objectMapper: ObjectMapper? = null) =
-    objectMapper ?: jacksonObjectMapper().enable(SerializationFeature.INDENT_OUTPUT)
-
-
 fun Calendar.getDateByMilliseconds(time: Long): String {
     this.timeInMillis = time
     val year = this.get(Calendar.YEAR)

@@ -14,7 +14,9 @@ internal class MethodSummaryStorageTest {
         File(System.getProperty("user.dir")).resolve("_method_summary_storage_test_tmp")
 
     private fun createMethodSummary(name: String, fullName: String, filePath: String) =
-        MethodSummary(name = name, fullName = fullName, filePath = filePath, language = Language.JAVA)
+        MethodSummary(
+            name = name, splittedName = name, fullName = fullName, filePath = filePath, language = Language.JAVA
+        )
 
     private val mName1 = "method1"
     private val mName2 = "method2"
@@ -40,8 +42,12 @@ internal class MethodSummaryStorageTest {
     @Test
     fun containsTest() {
         val file = testFolder.resolve("dump_test_file1.json")
+        val paths = testFolder.resolve("dump_test_paths1.json")
         file.createNewFile()
-        val mss = MethodSummaryStorage(file.absolutePath, 1000, null)
+        paths.createNewFile()
+        val mss = MethodSummaryStorage(
+            false, file.absolutePath, paths.absolutePath, 1000
+        )
 
         // notContains
         assertTrue(mss.notContains(ms1))
@@ -59,8 +65,12 @@ internal class MethodSummaryStorageTest {
     @Test
     fun containsAddedTest() {
         val file = testFolder.resolve("dump_test_file2.json")
+        val paths = testFolder.resolve("dump_test_paths2.json")
         file.createNewFile()
-        val mss = MethodSummaryStorage(file.absolutePath, 1000, null)
+        paths.createNewFile()
+        val mss = MethodSummaryStorage(
+            false, file.absolutePath, paths.absolutePath, 1000
+        )
 
         // contains added
         assertTrue(mss.add(ms1))
@@ -92,8 +102,12 @@ internal class MethodSummaryStorageTest {
     @Test
     fun containsAfterDump() {
         val file = testFolder.resolve("dump_test_file3.json")
+        val paths = testFolder.resolve("dump_test_paths3.json")
         file.createNewFile()
-        val mss = MethodSummaryStorage(file.absolutePath, 1000, null)
+        paths.createNewFile()
+        val mss = MethodSummaryStorage(
+            false, file.absolutePath, paths.absolutePath, 1000
+        )
 
         mss.add(ms1)
         mss.add(ms2)
@@ -112,8 +126,12 @@ internal class MethodSummaryStorageTest {
     @Test
     fun containsAfterClear() {
         val file = testFolder.resolve("dump_test_file4.json")
+        val paths = testFolder.resolve("dump_test_paths4.json")
         file.createNewFile()
-        val mss = MethodSummaryStorage(file.absolutePath, 1000, null)
+        paths.createNewFile()
+        val mss = MethodSummaryStorage(
+            false, file.absolutePath, paths.absolutePath, 1000
+        )
 
         mss.add(ms1)
         mss.add(ms2)
