@@ -14,6 +14,8 @@ data class MethodSummary(
     var name: String,
     var fullName: String,
     var splittedName: String,
+    var argsTypes: List<String> = emptyList(),
+    var returnType: String? = null,
     var id: Int? = null,
     var repoOwner: String? = null,
     var repoName: String? = null,
@@ -73,6 +75,8 @@ data class MethodSummary(
         jsonNode.set<JsonNode>("spl_name", mapper.valueToTree(splittedName))
         jsonNode.set<JsonNode>("full_name", mapper.valueToTree(fullName))
         jsonNode.set<JsonNode>("language", mapper.valueToTree(language.label))
+        jsonNode.set<JsonNode>("args_types", mapper.valueToTree(argsTypes))
+        jsonNode.set<JsonNode>("return_type", mapper.valueToTree(returnType))
         jsonNode.set<JsonNode>("file", mapper.valueToTree(filePath))
         jsonNode.set<JsonNode>("repo", mapper.valueToTree("/$repoOwner/$repoName"))
         jsonNode.set<JsonNode>("repo_license", mapper.valueToTree(repoLicense))

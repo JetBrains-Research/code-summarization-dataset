@@ -1,8 +1,5 @@
 package reposanalyzer.utils
 
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.databind.SerializationFeature
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import org.apache.commons.io.FileUtils
 import reposanalyzer.config.Language
 import java.io.File

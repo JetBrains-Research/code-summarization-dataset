@@ -42,6 +42,7 @@ class RepoSummarizer(
         const val REPO_INFO = "repo_info.json"
         const val METHODS_SUMMARY_FILE = "methods.jsonl"
         const val METHODS_PATHS_FILE = "paths.jsonl"
+        const val METHODS_VISITED_FILE = "visited.jsonl"
         const val COMMITS_LOG = "commits_log.jsonl"
         const val WORK_LOG = "work_log.txt"
         const val FIRST_HASH = 7
@@ -151,10 +152,12 @@ class RepoSummarizer(
         val commitsLogPath = File(dumpPath).resolve(COMMITS_LOG).absolutePath
         val methodsSummaryPath = File(dumpPath).resolve(METHODS_SUMMARY_FILE).absolutePath
         val methodsPathsPath = File(dumpPath).resolve(METHODS_PATHS_FILE).absolutePath
+        val methodsVisitedPath = File(dumpPath).resolve(METHODS_VISITED_FILE).absolutePath
         workLogger = WorkLogger(workLogPath, config.isDebug)
         commitsLogger = CommitsLogger(commitsLogPath, config.logDumpThreshold)
         summaryStorage = MethodSummaryStorage(
-            config.isAstDotFormat, methodsSummaryPath, methodsPathsPath, config.summaryDumpThreshold, workLogger
+            methodsSummaryPath, methodsPathsPath, methodsVisitedPath,
+            config.isAstDotFormat, config.summaryDumpThreshold, workLogger
         )
         methodParseProvider = MethodParseProvider(analysisRepo, summaryStorage, config)
     }
@@ -235,6 +238,7 @@ class RepoSummarizer(
         workLogger.add("> TOTAL DUMPS [${summaryStorage.methodsNumber} methods, ${summaryStorage.pathsNumber} paths]")
         dumpRepoSummary()
         summaryStorage.dump()
+        summaryStorage.dumpVisited()
         summaryStorage.clear()
         commitsLogger.dump()
         commitsLogger.clear()

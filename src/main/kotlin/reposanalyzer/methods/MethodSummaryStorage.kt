@@ -13,20 +13,33 @@ import java.io.FileOutputStream
  *      1. after dumpThreshold
  *      2. by explicit dumpData method call
  *
- *  Uniqueness checks through pair:
- *      [method normalized full name, filepath to file with method]
+ *  Uniqueness checks through:
+ *      [filepath to file with method, method normalized full name, types of arguments, method return type]
  *
  *  Visited methods storage (visited) does not clear at dumps
  */
 data class MethodIdentity(
+    val filePath: String,
     val methodNormalizedFullName: String,
-    val filePath: String
-)
+    val methodArgsTypes: List<String> = listOf(),
+    val methodReturnType: String? = null
+) {
+    fun toJSON(objectMapper: ObjectMapper? = null): JsonNode {
+        val mapper = getObjectMapper(objectMapper)
+        val jsonNode = mapper.createObjectNode()
+        jsonNode.set<JsonNode>("return_type", mapper.valueToTree(methodReturnType))
+        jsonNode.set<JsonNode>("full_name", mapper.valueToTree(methodNormalizedFullName))
+        jsonNode.set<JsonNode>("args_types", mapper.valueToTree(methodArgsTypes))
+        jsonNode.set<JsonNode>("file", mapper.valueToTree(filePath))
+        return jsonNode
+    }
+}
 
 class MethodSummaryStorage(
-    private val isAstDumpDotFormat: Boolean,
     private val summaryDumpPath: String,
     private val pathsDumpPath: String,
+    private val identityDumpPath: String,
+    private val isAstDumpDotFormat: Boolean,
     private val dumpThreshold: Int = 200,
     private val logger: WorkLogger? = null
 ) {
@@ -38,6 +51,7 @@ class MethodSummaryStorage(
     private val visited = mutableSetOf<MethodIdentity>()
     private val summaryDumpFile = File(summaryDumpPath)
     private val pathsDumpFile = File(pathsDumpPath)
+    private val identityDumpFile = File(identityDumpPath)
     private val objectMapper = jacksonObjectMapper()
 
     var methodsNumber: Int = 0
@@ -49,13 +63,15 @@ class MethodSummaryStorage(
     init {
         summaryDumpFile.createNewFile()
         pathsDumpFile.createNewFile()
+        identityDumpFile.createNewFile()
         summaryDumpFile.absolutePath.clearFile()
         pathsDumpFile.absolutePath.clearFile()
+        identityDumpFile.absolutePath.clearFile()
     }
 
     fun add(summary: MethodSummary): Boolean {
         if (contains(summary)) return false
-        visited.add(MethodIdentity(summary.fullName, summary.filePath))
+        visited.add(MethodIdentity(summary.filePath, summary.fullName, summary.argsTypes, summary.returnType))
         data.add(summary)
         summary.id = ++methodsNumber
         pathsNumber += summary.paths.size
@@ -68,6 +84,12 @@ class MethodSummaryStorage(
         dumpToFile(pathsDumpFile, isMain = false)
         logger?.add("> dumped [${data.size} methods, ${data.map { it.paths.size }.sum()} paths]")
         data.clear() // clear data after dump WITHOUT cleaning visited list
+    }
+
+    fun dumpVisited() = FileOutputStream(identityDumpFile).bufferedWriter().use { writer ->
+        visited.forEach {
+            writer.appendLine(it.toJSON(objectMapper).toString())
+        }
     }
 
     private fun dumpToFile(file: File, isMain: Boolean = true) =
@@ -91,16 +113,11 @@ class MethodSummaryStorage(
 
     fun getStats() = MethodSummaryStorageStats(visited, pathsNumber)
 
-    fun toJSON(objectMapper: ObjectMapper? = null): List<JsonNode> {
-        val mapper = objectMapper ?: jacksonObjectMapper()
-        return data.map { it.toJSONMain(mapper) }.toList()
-    }
-
     fun contains(summary: MethodSummary): Boolean =
-        contains(summary.fullName, summary.filePath)
+        contains(summary.filePath, summary.fullName, summary.argsTypes, summary.returnType)
 
-    fun contains(normalizedFullName: String, filePath: String): Boolean =
-        visited.contains(MethodIdentity(normalizedFullName, filePath))
+    fun contains(filePath: String, normalizedFullName: String, argsTypes: List<String>, returnType: String?): Boolean =
+        visited.contains(MethodIdentity(filePath, normalizedFullName, argsTypes, returnType))
 
     fun notContains(summary: MethodSummary): Boolean = !contains(summary)
 }

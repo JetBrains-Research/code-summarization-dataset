@@ -18,6 +18,7 @@ import reposanalyzer.logic.splitToParents
 import reposanalyzer.methods.MethodSummary
 import reposanalyzer.methods.MethodSummaryStorage
 import reposanalyzer.methods.summarizers.MethodSummarizersFactory
+import reposanalyzer.methods.summarizers.getMethodFullName
 import reposanalyzer.utils.readFileToString
 import java.io.File
 
@@ -48,8 +49,9 @@ class MethodParseProvider(
             normalizeParseResult(parseResult, true)
             val labeledParseResults = labelExtractor.toLabeledData(parseResult)
             labeledParseResults.forEach { (root, label) ->
-                val methodFullName = summarizer.getMethodFullName(root, label)
-                if (summaryStorage.contains(methodFullName, parseResult.filePath)) {
+                val methodFullName = root.getMethodFullName(label)
+                val (returnType, argsTypes) = summarizer.extractReturnTypeAndArgs(root)
+                if (summaryStorage.contains(parseResult.filePath, methodFullName, argsTypes, returnType)) {
                     return@forEach
                 }
                 val methodSummary = summarizer.summarize(
