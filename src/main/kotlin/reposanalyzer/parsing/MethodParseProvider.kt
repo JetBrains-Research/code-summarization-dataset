@@ -52,11 +52,6 @@ class MethodParseProvider(
                 if (summaryStorage.contains(methodFullName, parseResult.filePath)) {
                     return@forEach
                 }
-                root.preOrder().forEach { node ->
-                    config.excludeNodes.forEach {
-                        node.removeChildrenOfType(it)
-                    }
-                }
                 val methodSummary = summarizer.summarize(
                     root,
                     label,
@@ -64,6 +59,11 @@ class MethodParseProvider(
                     relativePath,
                     fileLinesStarts
                 )
+                root.preOrder().forEach { node ->
+                    config.excludeNodes.forEach {
+                        node.removeChildrenOfType(it)
+                    }
+                }
                 methodSummary.paths = retrievePaths(root)
                 addCommonInfo(methodSummary, currCommit)
                 summaryStorage.add(methodSummary)
@@ -73,6 +73,11 @@ class MethodParseProvider(
 
     fun <T : Node> retrievePaths(root: T): List<String> {
         if (!config.isPathMining) return emptyList()
+        root.preOrder().forEach { node ->
+            config.excludeNodes.forEach {
+                node.removeChildrenOfType(it)
+            }
+        }
         val paths = pathMiner.retrievePaths(root)
         val pathContexts = paths.map { toPathContext(it) }.shuffled().take(config.maxPaths)
         return pathContexts.map { pathContext ->

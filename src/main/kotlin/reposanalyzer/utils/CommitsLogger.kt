@@ -26,6 +26,7 @@ class CommitsLogger(
 
     init {
         dumpFile.createNewFile()
+        dumpFile.absolutePath.clearFile()
     }
 
     fun add(newCommit: RevCommit?, oldCommit: RevCommit?, filesByLang: Map<Language, List<String>>) {

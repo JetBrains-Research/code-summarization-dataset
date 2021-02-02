@@ -12,12 +12,12 @@
   "granularity": "method",
   "hide_methods_names": true,
   "exclude_constructors": true,
-  "exclude_nodes": [],
   "ast_dot_format": false,
 
   "max_paths": 1000,
-  "max_path_width": 10,
-  "max_path_length": 10,
+  "max_path_width": 2,
+  "max_path_length": 9,
+  "exclude_nodes": ["Javadoc"],
 
   "threads_count": 3,
   "log_dump_threshold": 200,

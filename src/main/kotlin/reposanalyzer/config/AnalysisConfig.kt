@@ -44,7 +44,7 @@ class AnalysisConfig(
     }
 
     private val pathFields = listOf(REPOS_DIRS_PATH, DUMP_DIR_PATH)
-    private val listFields = listOf(LANGUAGES)
+    private val listFields = listOf(LANGUAGES, EXCLUDE_NODES)
     private val intFields = listOf(
         THREADS_COUNT, LOG_DUMP_THRESHOLD,
         METHODS_DUMP_THRESHOLD, MIN_COMMITS_NUMBER,
@@ -62,7 +62,7 @@ class AnalysisConfig(
     lateinit var dataDumpFolder: String
 
     val languages: MutableList<Language> = mutableListOf()
-    val excludeNodes: List<String> = listOf()
+    val excludeNodes: MutableList<String> = mutableListOf()
 
     var threadsCount: Int = DEFAULT_THREADS_COUNT
     var logDumpThreshold: Int = DEFAULT_LOG_DUMP_THRESHOLD
@@ -118,7 +118,7 @@ class AnalysisConfig(
     private fun JsonNode.processListFields() = listFields.forEach { field ->
         when (field) {
             LANGUAGES -> this.get(field).processLanguages()
-            EXCLUDE_NODES -> this.get(field).processExcludeNodes() // TODO
+            EXCLUDE_NODES -> this.get(field).processExcludeNodes()
         }
     }
 
@@ -194,7 +194,7 @@ class AnalysisConfig(
         }
     }
 
-    private fun JsonNode.processExcludeNodes() = Unit // TODO
+    private fun JsonNode.processExcludeNodes() = this.forEach { excludeNodes.add(it.asText()) }
 
     private fun JsonNode.processLanguages() = this.forEach { maybeLang ->
         for (realLang in Language.values()) {
