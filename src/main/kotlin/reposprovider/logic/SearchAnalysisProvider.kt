@@ -63,6 +63,7 @@ class SearchAnalysisProvider(
         }
     }
 
-    private fun isFinderWorking() =
-        listOf(ReposFinder.Status.READY, ReposFinder.Status.WORKING).contains(reposFinder.status)
+    private fun isFinderWorking() = listOf(
+        ReposFinder.Status.READY, ReposFinder.Status.WORKING, ReposFinder.Status.LIMITS_WAITING
+    ).contains(reposFinder.status)
 }
