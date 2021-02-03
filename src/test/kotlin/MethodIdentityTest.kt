@@ -1,7 +1,9 @@
 import org.junit.Test
 import reposanalyzer.methods.MethodIdentity
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertNotEquals
+import kotlin.test.assertTrue
 
 class MethodIdentityTest {
 
@@ -46,5 +48,20 @@ class MethodIdentityTest {
         val id7 = MethodIdentity(path1, fName1, argsTypes1, "T1")
         val id8 = MethodIdentity(path1, fName1, argsTypes1, "T2")
         assertNotEquals(id7, id8)
+    }
+
+    @Test
+    fun listContains() {
+        val id1 = MethodIdentity(path1, fName1)
+        val id2 = MethodIdentity(path1, fName1)
+        val id3 = MethodIdentity(path1, fName1, argsTypes1)
+        val id4 = MethodIdentity(path2, fName1, argsTypes1)
+        val list = mutableListOf(id1)
+
+        assertTrue(list.contains(id1))
+        assertTrue(list.contains(id2))
+
+        assertFalse(list.contains(id3))
+        assertFalse(list.contains(id4))
     }
 }

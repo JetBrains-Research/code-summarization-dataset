@@ -51,7 +51,7 @@ class MethodParseProvider(
             labeledParseResults.forEach { (root, label) ->
                 val methodFullName = root.getMethodFullName(label)
                 val (returnType, argsTypes) = summarizer.extractReturnTypeAndArgs(root)
-                if (summaryStorage.contains(parseResult.filePath, methodFullName, argsTypes, returnType)) {
+                if (summaryStorage.contains(relativePath, methodFullName, argsTypes, returnType)) {
                     return@forEach
                 }
                 val methodSummary = summarizer.summarize(
