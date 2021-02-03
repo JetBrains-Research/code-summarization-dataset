@@ -29,10 +29,17 @@ fun Repository.getFirstParentHistory(startObjectId: ObjectId): List<RevCommit> {
     return history
 }
 
+data class MergeHistory(val isYoungestMerge: Boolean, val isOldestMerge: Boolean, val history: MutableList<RevCommit>) {
+    val mergeCommitsNumber: Int
+        get() = history.size - (if (isYoungestMerge) 0 else 1) - (if (isOldestMerge) 0 else 1)
+}
+
 /*
  *   git log --first-parent --merges branch
  */
-fun Repository.getMergeCommitsHistory(startObjectId: ObjectId, includeYoungest: Boolean = true): List<RevCommit> {
+fun Repository.getMergeCommitsHistory(startObjectId: ObjectId, includeYoungest: Boolean = true): MergeHistory {
+    var isYoungestMerge = true
+    var isOldestMerge = true
     val history = mutableListOf<RevCommit>()
     val revisionWalk = RevWalk(this)
     var currentCommit = revisionWalk.parseCommit(startObjectId)
@@ -40,6 +47,7 @@ fun Repository.getMergeCommitsHistory(startObjectId: ObjectId, includeYoungest: 
         // not oldest commit and not merge commit
         if (includeYoungest && currentCommit.parents != null && currentCommit.parentCount != 2) {
             history.add(currentCommit)
+            isYoungestMerge = false
         }
     }
     while (currentCommit != null) {
@@ -50,10 +58,11 @@ fun Repository.getMergeCommitsHistory(startObjectId: ObjectId, includeYoungest: 
             revisionWalk.parseCommit(currentCommit.getParent(0)) // loads first parent commit data
         } else {
             history.add(currentCommit) // oldest commit in branch -- hasn't parents
+            isOldestMerge = false
             null
         }
     }
-    return history
+    return MergeHistory(isYoungestMerge = isYoungestMerge, isOldestMerge = isOldestMerge, history)
 }
 
 /*

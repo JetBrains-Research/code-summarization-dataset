@@ -166,10 +166,11 @@ internal class MethodSummaryStorageTest {
     fun containsAfterClear() {
         val file = testFolder.resolve("dump_test_file4.json")
         val paths = testFolder.resolve("dump_test_paths4.json")
+        val id = testFolder.resolve("id4.json")
         file.createNewFile()
         paths.createNewFile()
         val mss = MethodSummaryStorage(
-            file.absolutePath, paths.absolutePath, "id.json", false, 1000
+            file.absolutePath, paths.absolutePath, id.absolutePath, false, 1000
         )
 
         val ms1 = createMethodSummary(fName1, path1, argsTypes1) //  method 1

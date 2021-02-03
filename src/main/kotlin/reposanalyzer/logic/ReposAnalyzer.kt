@@ -46,19 +46,19 @@ class ReposAnalyzer(
         File(config.dataDumpFolder).mkdirs()
         doneWorkersLogFile.createNewFile()
         doneWorkersLogFile.absolutePath.clearFile()
-        logger = WorkLogger(File(config.dumpFolder).resolve(LOG_FILE_NAME).absolutePath, config.isDebug)
+        logger = WorkLogger(File(config.dumpFolder).resolve(LOG_FILE_NAME).absolutePath, config.isDebugAnalyzer)
         for (lang in Language.values()) {
             parsers[lang] = GumTreeParserFactory.getParser(lang)
         }
         logger.add("> analyzer with ${config.threadsCount} threads loaded at ${Date(System.currentTimeMillis())}")
     }
 
-    fun submit(analysisRepository: AnalysisRepository): Boolean {
-        val worker = analysisRepository.constructSummarizer()
+    fun submit(analysisRepo: AnalysisRepository): Boolean {
+        val worker = analysisRepo.constructSummarizer()
         pool.submit(worker)
         workers.add(worker)
-        logger.add("> worker for $analysisRepository submitted at ${Date(System.currentTimeMillis())}")
-        goodPatches.add(analysisRepository)
+        logger.add("> worker START /${analysisRepo.owner}/${analysisRepo.name} at ${Date(System.currentTimeMillis())}")
+        goodPatches.add(analysisRepo)
         return true
     }
 
@@ -74,6 +74,10 @@ class ReposAnalyzer(
             val worker = iter.next()
             if (!runStatuses.contains(worker.status)) {
                 doneWorkers.add(worker)
+                logger.add(
+                    "> worker ${worker.status} /${worker.analysisRepo.owner}/${worker.analysisRepo.name} " +
+                        "at ${Date(System.currentTimeMillis())}"
+                )
                 iter.remove()
             }
         }

@@ -29,8 +29,22 @@ class AnalyzerParser : CliktCommand() {
         help = "Debug mode: log in console"
     ).flag(default = false)
 
+    private val isAnalyserDebug by option(
+        "--analysis-debug",
+        help = "Debug mode: analysis log in console"
+    ).flag(default = false)
+
+    private val isSummarizersDebug by option(
+        "--summary-debug",
+        help = "Debug mode: analysis log in console"
+    ).flag(default = false)
+
     override fun run() {
-        val analysisConfig = AnalysisConfig(configPath = analysisConfigPath, isDebug = true)
+        val analysisConfig = AnalysisConfig(
+            configPath = analysisConfigPath,
+            isDebugAnalyzer = isDebug || isAnalyserDebug,
+            isDebugSummarizers = isDebug || isSummarizersDebug
+        )
         val reposAnalyzer = ReposAnalyzer(config = analysisConfig)
         reposAnalyzer.submitAll(
             loadReposPatches(analysisConfig.reposUrlsPath).map { AnalysisRepository(it) }

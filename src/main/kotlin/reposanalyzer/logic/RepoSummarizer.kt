@@ -153,7 +153,7 @@ class RepoSummarizer(
         val methodsSummaryPath = File(dumpPath).resolve(METHODS_SUMMARY_FILE).absolutePath
         val methodsPathsPath = File(dumpPath).resolve(METHODS_PATHS_FILE).absolutePath
         val methodsVisitedPath = File(dumpPath).resolve(METHODS_VISITED_FILE).absolutePath
-        workLogger = WorkLogger(workLogPath, config.isDebug)
+        workLogger = WorkLogger(workLogPath, config.isDebugSummarizers)
         commitsLogger = CommitsLogger(commitsLogPath, config.logDumpThreshold)
         summaryStorage = MethodSummaryStorage(
             methodsSummaryPath, methodsPathsPath, methodsVisitedPath,
@@ -224,6 +224,7 @@ class RepoSummarizer(
         val stats = summaryStorage.getStats()
         val mapper = jacksonObjectMapper().enable(SerializationFeature.INDENT_OUTPUT)
         val jsonNode = analysisRepo.toJSON(mapper) as ObjectNode
+        jsonNode.set<JsonNode>("processed_commits", mapper.valueToTree(commitsHistory.size))
         jsonNode.set<JsonNode>("total_methods", mapper.valueToTree(stats.totalMethods))
         jsonNode.set<JsonNode>("total_uniq_full_names", mapper.valueToTree(stats.totalUniqMethodsFullNames))
         jsonNode.set<JsonNode>("total_paths", mapper.valueToTree(stats.pathsNumber))
@@ -257,7 +258,7 @@ class RepoSummarizer(
     private fun loadHistory(): Status {
         analysisRepo.loadCommitsHistory()
         when (config.commitsType) {
-            CommitsType.ONLY_MERGES -> commitsHistory.addAll(analysisRepo.mergeCommits)
+            CommitsType.ONLY_MERGES -> commitsHistory.addAll(analysisRepo.mergeHistory.history)
             CommitsType.FIRST_PARENTS_INCLUDE_MERGES -> commitsHistory.addAll(analysisRepo.firstParentsCommits)
         }
         commitsHistory.reverse() // reverse history == from oldest commit to newest
