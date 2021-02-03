@@ -168,6 +168,7 @@ In `dump_dir_path` appear 4 files and 2 folders:
 - function documentation or multiline comment
 - function body
 - function AST
+- function AST paths 
 - metadata (file path, commit info)
 
 
@@ -210,12 +211,12 @@ Repositories analysis based on git-history, analyzer:
 - for every consecutive pair of commits gets the diff list of files `git diff --name-only SHA1 SHA2`
 - filters supported languages (Java) files from diff list
 - if list of files for supported languages isn't empty - makes checkout to current commit `git checkout SHA`
-- extracts new methods summary from files if their (methods) pair `<source file path, full method name (nesting hierarchy)>` wasn't added before
+- extracts new methods summary from files if tuple `(source file path, full method name (nesting hierarchy), method args types list, method return type)` wasn't added before
 
 Two types of history processing depending on the type of commit:
 - `"commits_type": "merges"` - history includes merge commits `git log --first-parent --merges DEFAULT_BRANCH`
 - `"commits_type": "first_parents"` - history includes first-parents commits `git log --first-parent DEFAULT_BRANCH`
-- both history types include oldest and youngest commits
+- both history types include oldest and youngest commits (merge or not merge)
 - `"merges_part_in_history": 0.005` - this is an attempt to distinguish repositories using rebase-based history from merge-based history,
   e.g. for [Kotlin repository](https://github.com/JetBrains/Kotlin):
 
@@ -238,7 +239,9 @@ Two types of history processing depending on the type of commit:
 - `submit` (or `submitAll`) any number of repositories for analysis
   
   ```kotlin
-  val analysisConfig = AnalysisConfig(configPath = analysisConfigPath, isDebug = true)
+  val analysisConfig = AnalysisConfig(
+      configPath = analysisConfigPath, isDebugAnalyzer = isAnalyserDebug, isDebugSummarizers = isSummarizersDebug
+  )
   val reposAnalyzer = ReposAnalyzer(config = analysisConfig)
   
   // for already loaded repository
@@ -272,6 +275,8 @@ Two types of history processing depending on the type of commit:
   ```
   -a, --analysis    - path to analysis config .json file
   --debug           - flag, print all log messages to the console
+  --analysis-debug  - flag, print only submitted and done repositories names
+  --summary-debug   - flag, print messages from analysis of every repository
   ```
 
 
@@ -297,21 +302,44 @@ reposfinder + reposanalyzer modules
 
 ### 1. Run
 
-run example with provided script `run_provider.sh`:
+#### 1.1 as code in project
+
+  - import `SearchConfig`, `AnalysisConfig` and `SearchAnalysisProvider` classes 
+  - provide paths to `search_config.json` and `analysis_config.json`, initialize configs and provider
+
+    ```kotlin
+    val searchConfig = SearchConfig(configPath = searchConfigPath, isDebug = isSearchDebug)
+    val analysisConfig = AnalysisConfig(
+        configPath = analysisConfigPath, isDebugAnalyzer = isAnalyserDebug, isDebugSummarizers = isSummarizersDebug
+    )
+    val provider = SearchAnalysisProvider(searchConfig = searchConfig, analysisConfig = analysisConfig)
+    provider.run()
+    ```
+
+#### 1.2 as separate module
+- write own entry point
+  ```kotlin
+  import reposprovider.utils.ProviderParser
+  
+  fun main(args: Array<String>) = ProviderParser().main(args)
+  ```
+
+- run with script and command line arguments:
 
   ```shell
   #!/bin/bash
-  ./gradlew :reposprovider:run --args="--debug -s ../repos/search_config.json -a ../repos/analysis_config.json"
+  ./gradlew :reposprovider:run --args="--search-debug --analysis-debug -s repos/search_config.json -a repos/analysis_config.json"
   ```
 
-arguments:
-
-    -s, --search      - path to search config .json file
-    -a, --analysis    - path to analysis config .json file
-    --sd              - flag, print search log messages to the console
-    --ad              - flag, print analysis log messages to the console
-    --debug           - flag, print all log messages to the console
-
+- arguments:
+  ```
+  -s, --search      - path to search config .json file
+  -a, --analysis    - path to analysis config .json file
+  --debug           - flag, print all log messages to the console
+  --search-debug    - flag, print search log messages to the console
+  --analysis-debug  - flag, print only submitted and done repositories names
+  --summary-debug   - flag, print messages from analysis of every repository
+  ```
 ### 2. Results
 
 - output from reposfinder module
