@@ -6,7 +6,6 @@ import astminer.common.model.Parser
 import astminer.common.preOrder
 import astminer.paths.PathMiner
 import astminer.paths.PathRetrievalSettings
-import astminer.paths.toPathContext
 import org.eclipse.jgit.revwalk.RevCommit
 import reposanalyzer.config.AnalysisConfig
 import reposanalyzer.config.Granularity
@@ -81,7 +80,7 @@ class MethodParseProvider(
             }
         }
         val paths = pathMiner.retrievePaths(root)
-        val pathContexts = paths.map { toPathContext(it) }.shuffled().take(config.maxPaths)
+        val pathContexts = paths.map { toPathContextNormalizedToken(it) }.shuffled().take(config.maxPaths)
         return pathContexts.map { pathContext ->
             val nodePath = pathContext.orientedNodeTypes.map { node -> node.typeLabel }
             "${pathContext.startToken},${nodePath.joinToString("|")},${pathContext.endToken}"
