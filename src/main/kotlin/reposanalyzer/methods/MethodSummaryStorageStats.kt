@@ -4,15 +4,11 @@ import kotlin.streams.toList
 
 class MethodSummaryStorageStats(
     set: Set<MethodIdentity>,
+    val totalFiles: Int = 0,
     val pathsNumber: Int = 0
 ) {
-    val totalMethods: Int
-    val totalUniqMethodsFullNames: Int
-    val totalFiles: Int
-
-    init {
-        totalMethods = set.size
-        totalUniqMethodsFullNames = set.parallelStream().map { it.methodNormalizedFullName }.distinct().toList().size
-        totalFiles = set.parallelStream().map { it.filePath }.distinct().toList().size
-    }
+    val totalMethods: Int = set.size
+    val totalUniqMethodsFullNames: Int = set.parallelStream().map {
+        it.methodNormalizedFullName
+    }.distinct().toList().size
 }

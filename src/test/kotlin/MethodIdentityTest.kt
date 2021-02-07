@@ -18,44 +18,36 @@ class MethodIdentityTest {
 
     @Test
     fun equalsTest() {
-        val id1 = MethodIdentity(path1, fName1)
-        val id2 = MethodIdentity(path1, fName1)
+        val id1 = MethodIdentity(fName1)
+        val id2 = MethodIdentity(fName1)
         assertEquals(id1, id2)
 
-        val id3 = MethodIdentity(path1, fName1, argsTypes1)
-        val id4 = MethodIdentity(path1, fName1, argsTypes1)
+        val id3 = MethodIdentity(fName1, argsTypes1)
+        val id4 = MethodIdentity(fName1, argsTypes1)
         assertEquals(id3, id4)
 
-        val id5 = MethodIdentity(path1, fName1, argsTypes1, "T1")
-        val id6 = MethodIdentity(path1, fName1, argsTypes1, "T1")
+        val id5 = MethodIdentity(fName1, argsTypes1, "T1")
+        val id6 = MethodIdentity(fName1, argsTypes1, "T1")
         assertEquals(id5, id6)
     }
 
     @Test
     fun notEqualsTest() {
-        val id1 = MethodIdentity(path1, fName1)
-        val id2 = MethodIdentity(path2, fName1)
+        val id1 = MethodIdentity(fName1, argsTypes1)
+        val id2 = MethodIdentity(fName1, argsTypes2)
         assertNotEquals(id1, id2)
 
-        val id3 = MethodIdentity(path1, fName1)
-        val id4 = MethodIdentity(path1, fName2)
+        val id3 = MethodIdentity(fName1, argsTypes1, "T1")
+        val id4 = MethodIdentity(fName1, argsTypes1, "T2")
         assertNotEquals(id3, id4)
-
-        val id5 = MethodIdentity(path1, fName1, argsTypes1)
-        val id6 = MethodIdentity(path1, fName1, argsTypes2)
-        assertNotEquals(id5, id6)
-
-        val id7 = MethodIdentity(path1, fName1, argsTypes1, "T1")
-        val id8 = MethodIdentity(path1, fName1, argsTypes1, "T2")
-        assertNotEquals(id7, id8)
     }
 
     @Test
     fun listContains() {
-        val id1 = MethodIdentity(path1, fName1)
-        val id2 = MethodIdentity(path1, fName1)
-        val id3 = MethodIdentity(path1, fName1, argsTypes1)
-        val id4 = MethodIdentity(path2, fName1, argsTypes1)
+        val id1 = MethodIdentity(fName1)
+        val id2 = MethodIdentity(fName1)
+        val id3 = MethodIdentity(fName1, argsTypes1)
+        val id4 = MethodIdentity(fName1, argsTypes1)
         val list = mutableListOf(id1)
 
         assertTrue(list.contains(id1))

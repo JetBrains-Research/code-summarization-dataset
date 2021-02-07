@@ -14,12 +14,11 @@ import java.io.FileOutputStream
  *      2. by explicit dumpData method call
  *
  *  Uniqueness checks through:
- *      [filepath to file with method, method normalized full name, types of arguments, method return type]
+ *      [method normalized full name, types of arguments, method return type]
  *
  *  Visited methods storage (visited) does not clear at dumps
  */
 data class MethodIdentity(
-    val filePath: String,
     val methodNormalizedFullName: String,
     val methodArgsTypes: List<String> = listOf(),
     val methodReturnType: String? = null
@@ -30,7 +29,6 @@ data class MethodIdentity(
         jsonNode.set<JsonNode>("return_type", mapper.valueToTree(methodReturnType))
         jsonNode.set<JsonNode>("full_name", mapper.valueToTree(methodNormalizedFullName))
         jsonNode.set<JsonNode>("args_types", mapper.valueToTree(methodArgsTypes))
-        jsonNode.set<JsonNode>("file", mapper.valueToTree(filePath))
         return jsonNode
     }
 }
@@ -49,6 +47,7 @@ class MethodSummaryStorage(
 
     private val data = mutableSetOf<MethodSummary>()
     private val visited = mutableSetOf<MethodIdentity>()
+    private val visitedFiles = mutableSetOf<String>()
     private val summaryDumpFile = File(summaryDumpPath)
     private val pathsDumpFile = File(pathsDumpPath)
     private val identityDumpFile = File(identityDumpPath)
@@ -71,7 +70,8 @@ class MethodSummaryStorage(
 
     fun add(summary: MethodSummary): Boolean {
         if (contains(summary)) return false
-        visited.add(MethodIdentity(summary.filePath, summary.fullName, summary.argsTypes, summary.returnType))
+        visited.add(MethodIdentity(summary.fullName, summary.argsTypes, summary.returnType))
+        visitedFiles.add(summary.filePath)
         data.add(summary)
         summary.id = ++methodsNumber
         pathsNumber += summary.paths.size
@@ -111,13 +111,13 @@ class MethodSummaryStorage(
         visited.clear()
     }
 
-    fun getStats() = MethodSummaryStorageStats(visited, pathsNumber)
+    fun getStats() = MethodSummaryStorageStats(visited, visitedFiles.size, pathsNumber)
 
     fun contains(summary: MethodSummary): Boolean =
-        contains(summary.filePath, summary.fullName, summary.argsTypes, summary.returnType)
+        contains(summary.fullName, summary.argsTypes, summary.returnType)
 
-    fun contains(filePath: String, normalizedFullName: String, argsTypes: List<String>, returnType: String?): Boolean =
-        visited.contains(MethodIdentity(filePath, normalizedFullName, argsTypes, returnType))
+    fun contains(normalizedFullName: String, argsTypes: List<String>, returnType: String?): Boolean =
+        visited.contains(MethodIdentity(normalizedFullName, argsTypes, returnType))
 
     fun notContains(summary: MethodSummary): Boolean = !contains(summary)
 }

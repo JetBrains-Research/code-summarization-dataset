@@ -106,20 +106,15 @@ internal class MethodSummaryStorageTest {
         assertFalse(mss.add(ms2))
         assertEquals(1, mss.size)
 
-        // add with same name but different path
-        assertTrue(mss.add(ms3))
-        assertTrue(mss.contains(ms3))
-        assertEquals(2, mss.size)
-
         // add with different name same path
         assertTrue(mss.add(ms4))
         assertTrue(mss.contains(ms4))
-        assertEquals(3, mss.size)
+        assertEquals(2, mss.size)
 
         // add with different args with same name and path
         assertTrue(mss.add(ms5))
         assertTrue(mss.contains(ms5))
-        assertEquals(4, mss.size)
+        assertEquals(3, mss.size)
 
         // last contains
         assertTrue(mss.contains(ms1))
@@ -128,7 +123,7 @@ internal class MethodSummaryStorageTest {
         assertTrue(mss.contains(ms4))
         assertTrue(mss.contains(ms5))
         assertFalse(mss.contains(ms6))
-        assertEquals(4, mss.size)
+        assertEquals(3, mss.size)
     }
 
     @Test
