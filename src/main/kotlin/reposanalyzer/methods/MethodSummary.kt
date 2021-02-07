@@ -54,6 +54,7 @@ data class MethodSummary(
         jsonNode.set<JsonNode>("commit", commit?.toJSONMain(mapper))
         jsonNode.set<JsonNode>("doc", mapper.valueToTree(doc))
         jsonNode.set<JsonNode>("comment", mapper.valueToTree(comment))
+        jsonNode.set<JsonNode>("body_lines", mapper.valueToTree(getLinesNumber()))
         jsonNode.set<JsonNode>("body", mapper.valueToTree(body))
         jsonNode.set<JsonNode>("ast", ast?.toJSON(mapper, isAstDotFormat))
         return jsonNode
@@ -65,6 +66,11 @@ data class MethodSummary(
         jsonNode.set<JsonNode>("paths", mapper.valueToTree(paths))
         return jsonNode
     }
+
+    fun getLinesNumber() =
+        if (firstLineInFile != null && lastLineInFile != null) lastLineInFile!! - firstLineInFile!! + 1 else 0
+
+    fun toC2SPaths(): String? = if (paths.isEmpty()) null else splittedName + " " + paths.joinToString(" ")
 
     private fun toJSONCommon(objectMapper: ObjectMapper? = null): JsonNode {
         val mapper = getObjectMapper(objectMapper)

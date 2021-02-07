@@ -50,14 +50,8 @@ internal class MethodSummaryStorageTest {
 
     @Test
     fun containsTest() {
-        val file = testFolder.resolve("dump_test_file1.json")
-        val paths = testFolder.resolve("dump_test_paths1.json")
-        val id = testFolder.resolve("id1.json")
-        file.createNewFile()
-        paths.createNewFile()
-        id.createNewFile()
         val mss = MethodSummaryStorage(
-            file.absolutePath, paths.absolutePath, id.absolutePath, false, 1000
+            testFolder.absolutePath, false, isCode2SecDump = false, 1000
         )
 
         val ms1 = createMethodSummary(fName1, path1, argsTypes1) //  method 1
@@ -66,10 +60,10 @@ internal class MethodSummaryStorageTest {
         val ms4 = createMethodSummary(fName2, path1, argsTypes2) //  method 2
 
         // notContains
-        assertTrue(mss.notContains(ms1))
-        assertTrue(mss.notContains(ms2))
-        assertTrue(mss.notContains(ms3))
-        assertTrue(mss.notContains(ms4))
+        assertFalse(mss.contains(ms1))
+        assertFalse(mss.contains(ms2))
+        assertFalse(mss.contains(ms3))
+        assertFalse(mss.contains(ms4))
 
         // contains
         assertFalse(mss.contains(ms1))
@@ -80,14 +74,8 @@ internal class MethodSummaryStorageTest {
 
     @Test
     fun containsAddedTest() {
-        val file = testFolder.resolve("dump_test_file2.json")
-        val paths = testFolder.resolve("dump_test_paths2.json")
-        val id = testFolder.resolve("id2.json")
-        file.createNewFile()
-        paths.createNewFile()
-        id.createNewFile()
         val mss = MethodSummaryStorage(
-            file.absolutePath, paths.absolutePath, id.absolutePath, false, 1000
+            testFolder.absolutePath, false, isCode2SecDump = false, 1000
         )
 
         val ms1 = createMethodSummary(fName1, path1, argsTypes1) //  method 1
@@ -128,14 +116,8 @@ internal class MethodSummaryStorageTest {
 
     @Test
     fun containsAfterDump() {
-        val file = testFolder.resolve("dump_test_file3.json")
-        val paths = testFolder.resolve("dump_test_paths3.json")
-        val id = testFolder.resolve("id3.json")
-        file.createNewFile()
-        paths.createNewFile()
-        id.createNewFile()
         val mss = MethodSummaryStorage(
-            file.absolutePath, paths.absolutePath, id.absolutePath, false, 1000
+            testFolder.absolutePath, false, isCode2SecDump = false, 1000
         )
 
         val ms1 = createMethodSummary(fName1, path1, argsTypes1) //  method 1
@@ -159,13 +141,8 @@ internal class MethodSummaryStorageTest {
 
     @Test
     fun containsAfterClear() {
-        val file = testFolder.resolve("dump_test_file4.json")
-        val paths = testFolder.resolve("dump_test_paths4.json")
-        val id = testFolder.resolve("id4.json")
-        file.createNewFile()
-        paths.createNewFile()
         val mss = MethodSummaryStorage(
-            file.absolutePath, paths.absolutePath, id.absolutePath, false, 1000
+            testFolder.absolutePath, false, isCode2SecDump = false, 1000
         )
 
         val ms1 = createMethodSummary(fName1, path1, argsTypes1) //  method 1

@@ -57,7 +57,10 @@ class ReposAnalyzer(
         val worker = analysisRepo.constructSummarizer()
         pool.submit(worker)
         workers.add(worker)
-        logger.add("> worker START /${analysisRepo.owner}/${analysisRepo.name} at ${Date(System.currentTimeMillis())}")
+        logger.add(
+            "> worker SUBMITTED /${analysisRepo.owner}/${analysisRepo.name} " +
+                "at ${Date(System.currentTimeMillis())}"
+        )
         goodPatches.add(analysisRepo)
         return true
     }

@@ -34,54 +34,66 @@ data class MethodIdentity(
 }
 
 class MethodSummaryStorage(
-    private val summaryDumpPath: String,
-    private val pathsDumpPath: String,
-    private val identityDumpPath: String,
+    private val dumpFolder: String,
     private val isAstDumpDotFormat: Boolean,
+    private val isCode2SecDump: Boolean,
     private val dumpThreshold: Int = 200,
     private val logger: WorkLogger? = null
 ) {
     private companion object {
+        const val METHODS_SUMMARY_FILE = "methods.jsonl"
+        const val METHODS_PATHS_JSONL_FILE = "paths.jsonl"
+        const val METHODS_PATHS_C2S_FILE = "paths.c2s"
+        const val METHODS_VISITED_FILE = "visited.jsonl"
         const val PATHS_DUMP_THRESHOLD = 10_000
+    }
+
+    private enum class DumpType {
+        MAIN,
+        PATHS_JSON,
+        PATHS_C2S
     }
 
     private val data = mutableSetOf<MethodSummary>()
     private val visited = mutableSetOf<MethodIdentity>()
-    private val visitedFiles = mutableSetOf<String>()
-    private val summaryDumpFile = File(summaryDumpPath)
-    private val pathsDumpFile = File(pathsDumpPath)
-    private val identityDumpFile = File(identityDumpPath)
+    private val summaryDumpFile = File(dumpFolder).resolve(METHODS_SUMMARY_FILE)
+    private val pathsJSONDumpFile = File(dumpFolder).resolve(METHODS_PATHS_JSONL_FILE)
+    private val pathsC2SDumpFile = File(dumpFolder).resolve(METHODS_PATHS_C2S_FILE)
+    private val identityDumpFile = File(dumpFolder).resolve(METHODS_VISITED_FILE)
     private val objectMapper = jacksonObjectMapper()
 
-    var methodsNumber: Int = 0
-    var pathsNumber: Int = 0
+    val stats = MethodSummaryStorageStats()
 
     val size: Int
         get() = data.size
 
     init {
         summaryDumpFile.createNewFile()
-        pathsDumpFile.createNewFile()
+        pathsJSONDumpFile.createNewFile()
         identityDumpFile.createNewFile()
         summaryDumpFile.absolutePath.clearFile()
-        pathsDumpFile.absolutePath.clearFile()
+        pathsJSONDumpFile.absolutePath.clearFile()
         identityDumpFile.absolutePath.clearFile()
+        if (isCode2SecDump) {
+            pathsC2SDumpFile.createNewFile()
+            pathsC2SDumpFile.absolutePath.clearFile()
+        }
     }
 
     fun add(summary: MethodSummary): Boolean {
         if (contains(summary)) return false
         visited.add(MethodIdentity(summary.fullName, summary.argsTypes, summary.returnType))
-        visitedFiles.add(summary.filePath)
         data.add(summary)
-        summary.id = ++methodsNumber
-        pathsNumber += summary.paths.size
+        stats.registerMethod(summary)
+        summary.id = stats.totalMethods
         if (readyToDump()) dump()
         return true
     }
 
     fun dump() {
-        dumpToFile(summaryDumpFile, isMain = true)
-        dumpToFile(pathsDumpFile, isMain = false)
+        dumpJSONFile(summaryDumpFile, DumpType.MAIN)
+        dumpJSONFile(pathsJSONDumpFile, DumpType.PATHS_JSON)
+        dumpC2SFile(pathsC2SDumpFile)
         logger?.add("> dumped [${data.size} methods, ${data.map { it.paths.size }.sum()} paths]")
         data.clear() // clear data after dump WITHOUT cleaning visited list
     }
@@ -92,16 +104,28 @@ class MethodSummaryStorage(
         }
     }
 
-    private fun dumpToFile(file: File, isMain: Boolean = true) =
+    private fun dumpJSONFile(file: File, dumpType: DumpType) =
         FileOutputStream(file, true).bufferedWriter().use { writer ->
             data.forEach { summary ->
-                val node = if (isMain) {
-                    summary.toJSONMain(objectMapper, isAstDumpDotFormat)
-                } else summary.toJSONPaths(objectMapper)
+                val node = when (dumpType) {
+                    DumpType.MAIN -> summary.toJSONMain(objectMapper, isAstDumpDotFormat)
+                    DumpType.PATHS_JSON -> summary.toJSONPaths(objectMapper)
+                    else -> return
+                }
                 val string = node.toString()
                 writer.appendLine(string)
             }
         }
+
+    private fun dumpC2SFile(file: File) {
+        if (!isCode2SecDump) return
+        FileOutputStream(file, true).bufferedWriter().use { writer ->
+            data.forEach { summary ->
+                val string = summary.toC2SPaths() ?: return@forEach
+                writer.appendLine(string)
+            }
+        }
+    }
 
     private fun readyToDump(): Boolean =
         size >= dumpThreshold || data.map { it.paths.size }.sum() >= PATHS_DUMP_THRESHOLD
@@ -109,15 +133,12 @@ class MethodSummaryStorage(
     fun clear() {
         data.clear()
         visited.clear()
+        stats.clear()
     }
-
-    fun getStats() = MethodSummaryStorageStats(visited, visitedFiles.size, pathsNumber)
 
     fun contains(summary: MethodSummary): Boolean =
         contains(summary.fullName, summary.argsTypes, summary.returnType)
 
     fun contains(normalizedFullName: String, argsTypes: List<String>, returnType: String?): Boolean =
         visited.contains(MethodIdentity(normalizedFullName, argsTypes, returnType))
-
-    fun notContains(summary: MethodSummary): Boolean = !contains(summary)
 }

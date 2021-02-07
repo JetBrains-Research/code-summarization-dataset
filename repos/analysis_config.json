@@ -18,6 +18,7 @@
   "max_path_width": 2,
   "max_path_length": 9,
   "exclude_nodes": ["Javadoc"],
+  "code2sec_format_dump": true,
 
   "threads_count": 3,
   "log_dump_threshold": 200,

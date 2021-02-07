@@ -38,6 +38,7 @@ class AnalysisConfig(
         const val MAX_PATHS = "max_paths"
         const val MAX_PATH_WIDTH = "max_path_width"
         const val MAX_PATH_LENGTH = "max_path_length"
+        const val C2S_DUMP_FORMAT = "code2sec_format_dump"
 
         const val DEFAULT_THREADS_COUNT = 1
         const val DEFAULT_LOG_DUMP_THRESHOLD = 200
@@ -54,7 +55,7 @@ class AnalysisConfig(
     private val stringFields = listOf(COMMITS_TYPE, TASK, GRANULARITY)
     private val boolFields = listOf(
         HIDE_METHODS_NAME, EXCLUDE_CONSTRUCTORS, REMOVE_AFTER,
-        IS_ZIP, REMOVE_AFTER_ZIP, COPY_DETECTION, IS_DOT_FORMAT
+        IS_ZIP, REMOVE_AFTER_ZIP, COPY_DETECTION, IS_DOT_FORMAT, C2S_DUMP_FORMAT
     )
     private val floatFields = listOf(MERGES_PART)
 
@@ -85,6 +86,7 @@ class AnalysisConfig(
     var maxPathWidth: Int = 0
     var maxPathLength: Int = 0
     var isPathMining = false
+    var isCode2SeqDump = false
 
     val filterPredicates = mutableListOf<MethodFilterPredicate>()
     val supportedExtensions = mutableListOf<String>()
@@ -192,6 +194,7 @@ class AnalysisConfig(
             IS_ZIP -> zipFiles = value
             REMOVE_AFTER_ZIP -> removeAfterZip = value
             IS_DOT_FORMAT -> isAstDotFormat = value
+            C2S_DUMP_FORMAT -> isCode2SeqDump = value
         }
     }
 

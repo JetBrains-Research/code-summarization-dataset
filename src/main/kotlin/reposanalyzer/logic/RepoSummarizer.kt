@@ -40,9 +40,6 @@ class RepoSummarizer(
 
     private companion object {
         const val REPO_INFO = "repo_info.json"
-        const val METHODS_SUMMARY_FILE = "methods.jsonl"
-        const val METHODS_PATHS_FILE = "paths.jsonl"
-        const val METHODS_VISITED_FILE = "visited.jsonl"
         const val COMMITS_LOG = "commits_log.jsonl"
         const val WORK_LOG = "work_log.txt"
         const val FIRST_HASH = 7
@@ -150,14 +147,10 @@ class RepoSummarizer(
         File(dumpPath).mkdirs()
         val workLogPath = File(dumpPath).resolve(WORK_LOG).absolutePath
         val commitsLogPath = File(dumpPath).resolve(COMMITS_LOG).absolutePath
-        val methodsSummaryPath = File(dumpPath).resolve(METHODS_SUMMARY_FILE).absolutePath
-        val methodsPathsPath = File(dumpPath).resolve(METHODS_PATHS_FILE).absolutePath
-        val methodsVisitedPath = File(dumpPath).resolve(METHODS_VISITED_FILE).absolutePath
         workLogger = WorkLogger(workLogPath, config.isDebugSummarizers)
         commitsLogger = CommitsLogger(commitsLogPath, config.logDumpThreshold)
         summaryStorage = MethodSummaryStorage(
-            methodsSummaryPath, methodsPathsPath, methodsVisitedPath,
-            config.isAstDotFormat, config.summaryDumpThreshold, workLogger
+            dumpPath, config.isAstDotFormat, config.isCode2SeqDump, config.summaryDumpThreshold, workLogger
         )
         methodParseProvider = MethodParseProvider(analysisRepo, summaryStorage, config)
     }
@@ -221,13 +214,16 @@ class RepoSummarizer(
 
     private fun dumpRepoSummary() {
         val secondsSpent = (analysisEnd - analysisStart) / 1000L
-        val stats = summaryStorage.getStats()
+        val stats = summaryStorage.stats
         val mapper = jacksonObjectMapper().enable(SerializationFeature.INDENT_OUTPUT)
         val jsonNode = analysisRepo.toJSON(mapper) as ObjectNode
         jsonNode.set<JsonNode>("processed_commits", mapper.valueToTree(commitsHistory.size))
         jsonNode.set<JsonNode>("total_methods", mapper.valueToTree(stats.totalMethods))
         jsonNode.set<JsonNode>("total_uniq_full_names", mapper.valueToTree(stats.totalUniqMethodsFullNames))
         jsonNode.set<JsonNode>("total_paths", mapper.valueToTree(stats.pathsNumber))
+        jsonNode.set<JsonNode>("methods_with_doc", mapper.valueToTree(stats.methodsWithDoc))
+        jsonNode.set<JsonNode>("methods_with_comment", mapper.valueToTree(stats.methodsWithComment))
+        jsonNode.set<JsonNode>("mean_lines_length", mapper.valueToTree(stats.meanLinesLength))
         jsonNode.set<JsonNode>("processed_files", mapper.valueToTree(stats.totalFiles))
         jsonNode.set<JsonNode>("analysis_languages", mapper.valueToTree(config.languages))
         jsonNode.set<JsonNode>("process_end_status", mapper.valueToTree(status))
@@ -236,7 +232,10 @@ class RepoSummarizer(
     }
 
     private fun dump() {
-        workLogger.add("> TOTAL DUMPS [${summaryStorage.methodsNumber} methods, ${summaryStorage.pathsNumber} paths]")
+        workLogger.add(
+            "> TOTAL DUMPS [${summaryStorage.stats.totalMethods} methods," +
+                " ${summaryStorage.stats.pathsNumber} paths]"
+        )
         dumpRepoSummary()
         summaryStorage.dump()
         summaryStorage.dumpVisited()
