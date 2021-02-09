@@ -100,7 +100,7 @@ class RepoSummarizer(
         } catch (e: Exception) {
             workLogger.add("========= WORKER RUNNING ERROR FOR $analysisRepo =========")
             workLogger.add(e.stackTraceToString())
-            Status.WORK_ERROR
+            status = Status.WORK_ERROR
         } finally {
             try {
                 dump()
