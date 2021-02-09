@@ -80,7 +80,10 @@ class MethodParseProvider(
             }
         }
         val paths = pathMiner.retrievePaths(root)
-        val pathContexts = paths.map { toPathContextNormalizedToken(it) }.shuffled().take(config.maxPaths)
+        val pathContexts = paths.map { toPathContextNormalizedToken(it) }
+            .shuffled()
+            .filter { pathContext -> pathContext.startToken.isNotEmpty() && pathContext.endToken.isNotEmpty() }
+            .take(config.maxPaths)
         return pathContexts.map { pathContext ->
             val nodePath = pathContext.orientedNodeTypes.map { node -> node.typeLabel }
             "${pathContext.startToken},${nodePath.joinToString("|")},${pathContext.endToken}"
