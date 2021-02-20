@@ -22,7 +22,7 @@ class SearchAnalysisProvider(
     private val searchThread: Thread = Thread(reposFinder)
     private val reposQueue = reposFinder.reposStorage.goodReposQueue
 
-    @Volatile private var isInterrupted = false
+    @Volatile var isInterrupted = false
 
     override fun run() {
         searchThread.start()
@@ -36,10 +36,6 @@ class SearchAnalysisProvider(
         reposAnalyzer.submitAll(reposQueue.extractRepoInfos())
         waitWorkers()
         reposAnalyzer.interrupt()
-    }
-
-    fun interrupt() {
-        isInterrupted = true
     }
 
     private fun Queue<Repository>.extractRepoInfos(): List<AnalysisRepository> {
@@ -66,4 +62,8 @@ class SearchAnalysisProvider(
     private fun isFinderWorking() = listOf(
         ReposFinder.Status.READY, ReposFinder.Status.WORKING, ReposFinder.Status.LIMITS_WAITING
     ).contains(reposFinder.status)
+
+    fun interrupt() {
+        isInterrupted = true
+    }
 }

@@ -198,8 +198,7 @@ analysis config is .json file with run parameters:
   "summary_dump_threshold": 200,                      // methods summary dump threshold
   "remove_repo_after_analysis": false,                // whether the repository should be deleted after analysis
   "gzip_files": true,                                 // whether the repository should be gziped
-  "remove_after_gzip": false,                         // whether the all not gziped dump data should be deleted
-  "copy_detection": false                             // EXPERIMENTAL - not tested, maybe slow and incorrect
+  "remove_after_gzip": false                         // whether the all not gziped dump data should be deleted
 }
 ```
 

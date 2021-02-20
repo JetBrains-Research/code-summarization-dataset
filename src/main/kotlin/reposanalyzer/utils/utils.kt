@@ -5,9 +5,8 @@ import reposanalyzer.config.Language
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
-import java.util.Calendar
 
-fun String.clearFile() = FileOutputStream(this, false).bufferedWriter()
+fun File.clearFile() = FileOutputStream(this, false).bufferedWriter()
 
 fun String.readFileToString(): String {
     val file = File(this)
@@ -51,10 +50,3 @@ fun Map<Language, List<File>>.removePrefixPath(prefix: String): Map<Language, Li
     return newMap
 }
 
-fun Calendar.getDateByMilliseconds(time: Long): String {
-    this.timeInMillis = time
-    val year = this.get(Calendar.YEAR)
-    val month = this.get(Calendar.MONTH) + 1
-    val day = this.get(Calendar.DAY_OF_MONTH)
-    return "$year-$month-$day"
-}

@@ -185,7 +185,7 @@ class AnalysisConfig(
     }
 
     private fun JsonNode.processBoolFields() = boolFields.forEach { field ->
-        val value = this.get(field).asBoolean()
+        val value = this.get(field)?.asBoolean() ?: return@forEach
         when (field) {
             HIDE_METHODS_NAME -> hideMethodName = value
             EXCLUDE_CONSTRUCTORS -> excludeConstructors = value
@@ -214,7 +214,7 @@ class AnalysisConfig(
         badFields.addAll(pathFields.filter { !this.has(it) })
         badFields.addAll(listFields.filter { !this.has(it) })
         badFields.addAll(stringFields.filter { !this.has(it) })
-        badFields.addAll(boolFields.filter { !this.has(it) })
+        badFields.addAll(boolFields.filter { it != COPY_DETECTION && !this.has(it) })
         badFields.addAll(intFields.filter { !this.has(it) })
         if (badFields.isNotEmpty()) {
             throw AnalysisConfigException("no $badFields fields in config")

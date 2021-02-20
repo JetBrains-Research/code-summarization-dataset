@@ -20,7 +20,7 @@ internal class MethodSummaryStorageTest {
         returnType: String? = null
     ) = MethodSummary(
         name = "",
-        splittedName = "",
+        splitName = "",
         argsTypes = argsTypes,
         returnType = returnType,
         fullName = fullName,

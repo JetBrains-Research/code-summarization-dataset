@@ -19,8 +19,7 @@ class Logger(
 
     init {
         logFile.createNewFile()
-        logFile.absolutePath.clearFile()
-        clearFile()
+        logFile.clearFile()
     }
 
     fun add(message: String) {
@@ -38,6 +37,4 @@ class Logger(
             out.appendLine(messages.poll())
         }
     }
-
-    private fun clearFile() = FileOutputStream(logFile, false).bufferedWriter()
 }

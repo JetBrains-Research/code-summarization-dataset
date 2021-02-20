@@ -16,15 +16,15 @@ import reposanalyzer.logic.getFileLinesLength
 import reposanalyzer.logic.splitToParents
 import reposanalyzer.methods.MethodSummary
 import reposanalyzer.methods.MethodSummaryStorage
+import reposanalyzer.methods.extractors.getMethodFullName
 import reposanalyzer.methods.summarizers.MethodSummarizersFactory
-import reposanalyzer.methods.summarizers.getMethodFullName
 import reposanalyzer.utils.readFileToString
 import java.io.File
 
 class MethodParseProvider(
-    private val analysisRepo: AnalysisRepository,
     private val summaryStorage: MethodSummaryStorage,
-    private val config: AnalysisConfig
+    private val config: AnalysisConfig,
+    private val analysisRepo: AnalysisRepository? = null
 ) {
     private val pathMiner = PathMiner(PathRetrievalSettings(config.maxPathLength, config.maxPathWidth))
 
@@ -32,6 +32,7 @@ class MethodParseProvider(
         parser: Parser<out Node>,
         files: List<File>,
         language: Language,
+        rootPath: String,
         currCommit: RevCommit? = null
     ) {
         val labelExtractor = getLabelExtractor()
@@ -41,7 +42,7 @@ class MethodParseProvider(
             val fileContent = parseResult.filePath.readFileToString()
             val fileLinesStarts = parseResult.filePath.getFileLinesLength().calculateLinesStarts()
             val relativePath = parseResult.filePath
-                .removePrefix(analysisRepo.path + File.separator)
+                .removePrefix(rootPath + File.separator)
                 .splitToParents()
                 .joinToString("/")
 
@@ -72,7 +73,7 @@ class MethodParseProvider(
         }
     }
 
-    fun <T : Node> retrievePaths(root: T): List<String> {
+    private fun <T : Node> retrievePaths(root: T): List<String> {
         if (!config.isPathMining) return emptyList()
         root.preOrder().forEach { node ->
             config.excludeNodes.forEach {
@@ -90,13 +91,15 @@ class MethodParseProvider(
         }
     }
 
-    fun addCommonInfo(methodSummary: MethodSummary, currCommit: RevCommit? = null) {
+    private fun addCommonInfo(methodSummary: MethodSummary, currCommit: RevCommit? = null) {
         currCommit?.let {
             methodSummary.commit = it
         }
-        methodSummary.repoOwner = analysisRepo.owner
-        methodSummary.repoName = analysisRepo.name
-        methodSummary.repoLicense = analysisRepo.licence
+        analysisRepo?.let {
+            methodSummary.repoOwner = analysisRepo.owner
+            methodSummary.repoName = analysisRepo.name
+            methodSummary.repoLicense = analysisRepo.licence
+        }
     }
 
     private fun getLabelExtractor() = LabelExtractorFactory.getLabelExtractor(

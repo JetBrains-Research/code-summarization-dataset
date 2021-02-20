@@ -3,9 +3,9 @@ package reposfinder.logic
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import reposfinder.config.SearchConfig
 import reposfinder.utils.Logger
+import reposfinder.utils.prettyDate
 import java.io.File
 import java.lang.Integer.max
-import java.util.Date
 
 /*
  *  Input URLs format (exactly two slashes):
@@ -95,7 +95,7 @@ class ReposFinder(
                 logger.add("SEARCH WAS INTERRUPTED WITH STATUS $status")
                 break
             }
-            logger.add("> processing /${repo.owner}/${repo.name}")
+            logger.add("> searching /${repo.owner}/${repo.name}")
             val isCoreGood = repo.loadCore(config, limits, jsonMapper) && repo.isGood(config.coreFilters)
             val isGraphQLGood = repo.loadGraphQL(config, limits, jsonMapper) && repo.isGood(config.graphQLFilters)
             if (isCoreGood && isGraphQLGood) {
@@ -130,7 +130,7 @@ class ReposFinder(
         status = Status.LIMITS_WAITING
         logger.add("> per hour requests limits reached")
         logLimits()
-        logger.add("> waiting until " + Date(resetTime))
+        logger.add("> waiting until ${prettyDate(System.currentTimeMillis())}")
         // until not reset time or not interrupted
         while (System.currentTimeMillis() <= resetTime && status == Status.LIMITS_WAITING) {
             Thread.sleep(config.sleepRange) // sleep in milliseconds
@@ -142,7 +142,7 @@ class ReposFinder(
     }
 
     private fun logStartSummary() {
-        logger.add("> search started at " + Date(System.currentTimeMillis()))
+        logger.add("> search started ${prettyDate(System.currentTimeMillis())}")
         logger.add(
             "> token: ${config.token.substring(0, TOKEN_SHOW_LENGTH)}" +
                 "*".repeat(max(0, config.token.length - TOKEN_SHOW_LENGTH))
@@ -151,10 +151,7 @@ class ReposFinder(
         logger.add("> urls count [good: ${reposStorage.goodUrls.size}, bad: ${reposStorage.badUrls.size}]")
         val reposPerHour = config.reposPerHour()
         val totalHours = reposStorage.goodUrls.size.toFloat() / reposPerHour.toFloat()
-        logger.add(
-            "> estimated time [repos per hour: $reposPerHour, " +
-                "total hours: $totalHours] but not more than 2500 per hour (physical limits)"
-        )
+        logger.add("> estimated time [repos per hour: $reposPerHour, total hours: $totalHours]")
     }
 
     private fun logEndSummary() {

@@ -71,12 +71,12 @@ class MethodSummaryStorage(
         summaryDumpFile.createNewFile()
         pathsJSONDumpFile.createNewFile()
         identityDumpFile.createNewFile()
-        summaryDumpFile.absolutePath.clearFile()
-        pathsJSONDumpFile.absolutePath.clearFile()
-        identityDumpFile.absolutePath.clearFile()
+        summaryDumpFile.clearFile()
+        pathsJSONDumpFile.clearFile()
+        identityDumpFile.clearFile()
         if (isCode2SecDump) {
             pathsC2SDumpFile.createNewFile()
-            pathsC2SDumpFile.absolutePath.clearFile()
+            pathsC2SDumpFile.clearFile()
         }
     }
 

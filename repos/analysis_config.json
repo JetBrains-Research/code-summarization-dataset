@@ -26,7 +26,5 @@
 
   "gzip_files": true,
   "remove_after_gzip": false,
-  "remove_repo_after_analysis": true,
-
-  "copy_detection": false
+  "remove_repo_after_analysis": true
 }

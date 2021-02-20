@@ -25,10 +25,10 @@ import reposanalyzer.utils.deleteDirectory
 import reposanalyzer.utils.getAbsolutePatches
 import reposanalyzer.utils.getNotHiddenNotDirectoryFiles
 import reposanalyzer.utils.removePrefixPath
+import reposanalyzer.utils.prettyDate
 import reposanalyzer.zipper.Zipper
 import java.io.File
 import java.io.FileOutputStream
-import java.util.Date
 import java.util.concurrent.ConcurrentHashMap
 
 class RepoSummarizer(
@@ -88,12 +88,12 @@ class RepoSummarizer(
         }
         status = Status.RUNNING
         try {
-            workLogger.add("> search started at ${Date(System.currentTimeMillis())}")
+            workLogger.add("> search started at ${prettyDate(System.currentTimeMillis())}")
             processCommits()
             analysisEnd = System.currentTimeMillis()
             git.checkoutHashOrName(defaultBranchHead?.name) // back to normal head
             workLogger.add("> back to start HEAD: ${defaultBranchHead?.name}")
-            workLogger.add("> search ended at ${Date(System.currentTimeMillis())}")
+            workLogger.add("> search ended at ${prettyDate(System.currentTimeMillis())}")
             if (status == Status.RUNNING) {
                 status = Status.DONE
             }
@@ -152,12 +152,12 @@ class RepoSummarizer(
         summaryStorage = MethodSummaryStorage(
             dumpPath, config.isAstDotFormat, config.isCode2SeqDump, config.summaryDumpThreshold, workLogger
         )
-        methodParseProvider = MethodParseProvider(analysisRepo, summaryStorage, config)
+        methodParseProvider = MethodParseProvider(summaryStorage, config, analysisRepo)
     }
 
     private fun processCommits() {
         currCommit = commitsHistory.firstOrNull() ?: return // log must be not empty by init state
-        currCommit?.processCommit(currCommit, analysisRepo.path, filesPatches = listOf()) // process first commit
+        currCommit?.processCommit(currCommit, analysisRepo.path, filesPaths = listOf()) // process first commit
         for (i in 1 until commitsHistory.size) { // process others commits
             if (status != Status.RUNNING) break
             prevCommit = currCommit
@@ -165,16 +165,16 @@ class RepoSummarizer(
             val diff = git.getCommitsDiff(repository.newObjectReader(), currCommit, prevCommit)
             val processedDiff = diff.getDiffFiles(repository, config.copyDetection)
             val supportedFiles = processedDiff.getSupportedFiles(config.supportedExtensions)
-            val filesPatches = supportedFiles.getAbsolutePatches(analysisRepo.path) // supported extensions files
+            val filesPaths = supportedFiles.getAbsolutePatches(analysisRepo.path) // supported extensions files
             workLogger.add(
                 "> files diff [${prevCommit?.name?.substring(0, FIRST_HASH)}, " +
                     "${currCommit?.name?.substring(0, FIRST_HASH)}, " +
-                    "total: ${diff.size}, supported: ${filesPatches.size}]"
+                    "total: ${diff.size}, supported: ${filesPaths.size}]"
             )
-            if (filesPatches.isEmpty()) {
+            if (filesPaths.isEmpty()) {
                 commitsLogger.add(currCommit, prevCommit, mapOf()) // no files to parse => no checkout
             } else {
-                currCommit?.processCommit(prevCommit, filesPatches = filesPatches)
+                currCommit?.processCommit(prevCommit, filesPaths = filesPaths)
             }
         }
     }
@@ -182,14 +182,14 @@ class RepoSummarizer(
     private fun RevCommit.processCommit(
         prevCommit: RevCommit? = null,
         dirPath: String? = null,
-        filesPatches: List<String> = listOf()
+        filesPaths: List<String> = listOf()
     ) {
         workLogger.add("> checkout on [${this.name.substring(0, FIRST_HASH)}, ${this.shortMessage}]")
         git.checkoutCommit(this) // checkout
         val files = if (dirPath != null) {
             getNotHiddenNotDirectoryFiles(analysisRepo.path)
         } else {
-            getNotHiddenNotDirectoryFiles(filesPatches)
+            getNotHiddenNotDirectoryFiles(filesPaths)
         }
         val filesByLang = files.getFilesByLanguage(config.languages)
         filesByLang.parseFilesByLanguage()
@@ -209,7 +209,7 @@ class RepoSummarizer(
             workLogger.add("> unsupported language $language -- no parser")
             return
         }
-        methodParseProvider.parse(parser, this, language, currCommit)
+        methodParseProvider.parse(parser, this, language, analysisRepo.path, currCommit)
     }
 
     private fun dumpRepoSummary() {

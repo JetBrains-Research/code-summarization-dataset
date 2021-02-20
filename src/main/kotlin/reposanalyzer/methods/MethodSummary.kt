@@ -13,7 +13,7 @@ import reposanalyzer.git.toJSONMain
 data class MethodSummary(
     var name: String,
     var fullName: String,
-    var splittedName: String,
+    var splitName: String,
     var argsTypes: List<String> = emptyList(),
     var returnType: String? = null,
     var id: Int? = null,
@@ -46,6 +46,11 @@ data class MethodSummary(
             "$GIT_HUB/$repoOwner/$repoName/blob/${commit?.name}/$filePath#L$firstLineInFile-L$lastLineInFile"
         }
 
+    fun getLinesNumber() =
+        if (firstLineInFile != null && lastLineInFile != null) lastLineInFile!! - firstLineInFile!! + 1 else 0
+
+    fun toC2SPaths(): String? = if (paths.isEmpty()) null else splitName + " " + paths.joinToString(" ")
+
     fun toJSONMain(objectMapper: ObjectMapper? = null, isAstDotFormat: Boolean = false): JsonNode {
         val mapper = getObjectMapper(objectMapper)
         val jsonNode = toJSONCommon(mapper) as ObjectNode
@@ -67,18 +72,13 @@ data class MethodSummary(
         return jsonNode
     }
 
-    fun getLinesNumber() =
-        if (firstLineInFile != null && lastLineInFile != null) lastLineInFile!! - firstLineInFile!! + 1 else 0
-
-    fun toC2SPaths(): String? = if (paths.isEmpty()) null else splittedName + " " + paths.joinToString(" ")
-
     private fun toJSONCommon(objectMapper: ObjectMapper? = null): JsonNode {
         val mapper = getObjectMapper(objectMapper)
         val jsonNode = mapper.createObjectNode()
 
         id?.let { jsonNode.set<JsonNode>("id", mapper.valueToTree(id)) }
         jsonNode.set<JsonNode>("name", mapper.valueToTree(name))
-        jsonNode.set<JsonNode>("spl_name", mapper.valueToTree(splittedName))
+        jsonNode.set<JsonNode>("spl_name", mapper.valueToTree(splitName))
         jsonNode.set<JsonNode>("full_name", mapper.valueToTree(fullName))
         jsonNode.set<JsonNode>("language", mapper.valueToTree(language.label))
         jsonNode.set<JsonNode>("args_types", mapper.valueToTree(argsTypes))

@@ -7,7 +7,7 @@ import reposfinder.requests.getBody
 import reposfinder.requests.getRequest
 import reposfinder.requests.isOK
 import reposfinder.utils.Logger
-import java.util.Date
+import reposfinder.utils.prettyDate
 import kotlin.math.max
 import kotlin.math.min
 
@@ -47,7 +47,7 @@ class RateLimits(
         fun isRemaining(): Boolean = remaining > remainingMin
 
         override fun toString(): String {
-            return "[limit: $limit, used: $used, remaining: $remaining, reset: ${Date(resetTime)}$]"
+            return "[limit: $limit, used: $used, remaining: $remaining, reset: ${prettyDate(resetTime)}]"
         }
     }
 

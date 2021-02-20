@@ -9,8 +9,8 @@ import reposanalyzer.parsing.GumTreeParserFactory
 import reposanalyzer.utils.WorkLogger
 import reposanalyzer.utils.appendLines
 import reposanalyzer.utils.clearFile
+import reposanalyzer.utils.prettyDate
 import java.io.File
-import java.util.Date
 import java.util.LinkedList
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.Executors
@@ -45,12 +45,12 @@ class ReposAnalyzer(
     init {
         File(config.dataDumpFolder).mkdirs()
         doneWorkersLogFile.createNewFile()
-        doneWorkersLogFile.absolutePath.clearFile()
+        doneWorkersLogFile.clearFile()
         logger = WorkLogger(File(config.dumpFolder).resolve(LOG_FILE_NAME).absolutePath, config.isDebugAnalyzer)
         for (lang in Language.values()) {
             parsers[lang] = GumTreeParserFactory.getParser(lang)
         }
-        logger.add("> analyzer with ${config.threadsCount} threads loaded at ${Date(System.currentTimeMillis())}")
+        logger.add("> analyzer with ${config.threadsCount} threads loaded ${prettyDate(System.currentTimeMillis())}")
     }
 
     fun submit(analysisRepo: AnalysisRepository): Boolean {
@@ -58,8 +58,7 @@ class ReposAnalyzer(
         pool.submit(worker)
         workers.add(worker)
         logger.add(
-            "> worker SUBMITTED /${analysisRepo.owner}/${analysisRepo.name} " +
-                "at ${Date(System.currentTimeMillis())}"
+            "> worker SUBMITTED /${analysisRepo.owner}/${analysisRepo.name} ${prettyDate(System.currentTimeMillis())}"
         )
         goodPatches.add(analysisRepo)
         return true
@@ -79,7 +78,7 @@ class ReposAnalyzer(
                 doneWorkers.add(worker)
                 logger.add(
                     "> worker ${worker.status} /${worker.analysisRepo.owner}/${worker.analysisRepo.name} " +
-                        "at ${Date(System.currentTimeMillis())}"
+                        "at ${prettyDate(System.currentTimeMillis())}"
                 )
                 iter.remove()
             }

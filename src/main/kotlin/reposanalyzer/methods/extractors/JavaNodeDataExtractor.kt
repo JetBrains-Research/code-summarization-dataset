@@ -2,7 +2,6 @@ package reposanalyzer.methods.extractors
 
 import astminer.common.model.Node
 import reposanalyzer.methods.extractContent
-import reposanalyzer.methods.summarizers.getChildByTypeLabel
 import reposanalyzer.parsing.AstMinerTypeLabels
 import reposanalyzer.parsing.getNodeLength
 import reposanalyzer.parsing.getNodeStart

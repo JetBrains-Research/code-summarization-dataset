@@ -18,8 +18,8 @@ class WorkLogger(
 
     init {
         logFile.createNewFile()
-        logFile.absolutePath.clearFile()
-        add("> logger loaded at ${Date(System.currentTimeMillis())}")
+        logFile.clearFile()
+        add("> logger loaded at ${prettyDate(System.currentTimeMillis())}")
     }
 
     fun add(message: String) {

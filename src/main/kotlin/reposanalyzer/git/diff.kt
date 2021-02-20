@@ -56,7 +56,7 @@ fun List<DiffEntry>.getDiffFiles(repository: Repository, copyDetection: Boolean 
     }
     // EXPERIMENTAL (maybe very slow)
     if (copyDetection) { // new not copied/renamed files (ADD)
-        val copyEntries = repository.renameCopyDetection(addEntries, similarityScore = 100) // 100% similarity
+        val copyEntries = repository.renameCopyDetection(addEntries, similarityScore = 60) // 100% similarity
         val copiedFiles = copyEntries.map { it.newPath }
         val newFiles = addEntries.map { it.newPath }.filter { !copiedFiles.contains(it) }
         filePatches.addAll(newFiles)

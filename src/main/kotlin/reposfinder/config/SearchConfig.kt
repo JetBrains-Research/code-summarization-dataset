@@ -3,6 +3,7 @@ package reposfinder.config
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
+import org.apache.commons.io.FileUtils
 import reposfinder.filtering.BoolValueFilter
 import reposfinder.filtering.Field
 import reposfinder.filtering.Filter
@@ -19,7 +20,7 @@ class SearchConfig(
     private companion object {
         const val MILLIS_IN_HOUR = 3600000
         const val DEFAULT_DUMP_THRESHOLD = 50
-        const val DEFAULT_SLEEP_RANGE: Long = 5 * 60 * 1000 // N * 60 000 milliseconds == N * 60 seconds == N minutes
+        const val DEFAULT_SLEEP_RANGE: Long = 5 * 60 * 1000 // N minutes
         const val DEFAULT_WAIT_TIME: Long = 200 // milliseconds
 
         const val LOG_PATH = "log.txt"
@@ -28,6 +29,7 @@ class SearchConfig(
         const val REPOS_URLS_PATH = "repos_urls_path"
         const val DUMP_THRESHOLD = "dump_threshold"
     }
+
     val sleepRange: Long = DEFAULT_SLEEP_RANGE
 
     // dirs
@@ -61,7 +63,7 @@ class SearchConfig(
         jsonNode.processSearchPart()
         updateFlags()
         File(dumpDir).mkdirs()
-        logPath = dumpDir + File.separator + LOG_PATH
+        logPath = File(dumpDir).resolve(LOG_PATH).absolutePath
     }
 
     fun reposPerHour(): Long {

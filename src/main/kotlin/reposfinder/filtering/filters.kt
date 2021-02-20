@@ -35,7 +35,7 @@ class IntValueFilter(
                 repoValue = repoValue.toString(),
                 filterValueMin = value.toString(),
                 relation = relation,
-                result = result
+                isGood = result
             )
         )
         return result
@@ -60,7 +60,7 @@ class DateValueFilter(
                 repoValue = repoDate.toString(),
                 filterValueMin = date.toString(),
                 relation = relation,
-                result = result
+                isGood = result
             )
         )
         return result
@@ -84,7 +84,7 @@ class StringValueFilter(
                 repoValue = listOf(repoValue).toString(),
                 filterValueMin = values.toString(),
                 relation = relation,
-                result = result
+                isGood = result
             )
         )
         return result
@@ -132,7 +132,7 @@ class LicenseFilter(
                 repoValue = "[$repoValue]",
                 filterValueMin = filterValueMin,
                 relation = relation,
-                result = result
+                isGood = result
             )
         )
         return result
@@ -155,7 +155,7 @@ class BoolValueFilter(
                 repoValue = repoValue.toString(),
                 filterValueMin = value.toString(),
                 relation = Relation.EQ,
-                result = result
+                isGood = result
             )
         )
         return result
@@ -178,7 +178,7 @@ class IntRangeFilter(
                 repoValue = repoValue.toString(),
                 filterValueMin = range.first.toString(),
                 filterValueMax = range.last.toString(),
-                result = result
+                isGood = result
             )
         )
         return result
@@ -202,7 +202,7 @@ class DateRangeFilter(
                 repoValue = repoDate.toString(),
                 filterValueMin = dateRange.first.toString(),
                 filterValueMax = dateRange.second.toString(),
-                result = result
+                isGood = result
             )
         )
         return result

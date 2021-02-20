@@ -36,9 +36,9 @@ class AnalysisRepository(
 
     lateinit var git: Git
     lateinit var repository: Repository
-    var defaultBranchHead: Ref? = null
-
     lateinit var mergeHistory: MergeHistory
+
+    var defaultBranchHead: Ref? = null
     val firstParentsCommits = mutableListOf<RevCommit>()
 
     var mergeCommitsNumber: Int = 0

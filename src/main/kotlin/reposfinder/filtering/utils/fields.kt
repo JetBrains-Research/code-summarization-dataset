@@ -19,9 +19,11 @@ fun Field.parseFilter(jsonNode: JsonNode): Filter? {
     for (value in jsonNode.get(this.configName)) {
         values.add(value.asText())
     }
-    if (this == Field.LICENSES) {
-        return LicenseFilter(field = this, values = values)
+    val exceptionalFilter = this.parseExceptionalField(values)
+    if (exceptionalFilter != null) {
+        return exceptionalFilter
     }
+    // no filter values in json field list []
     if (values.isEmpty()) {
         return null
     }
@@ -40,6 +42,12 @@ fun Field.parseFilter(jsonNode: JsonNode): Filter? {
         else -> this.getIntFilter(relation, values)
     }
 }
+
+fun Field.parseExceptionalField(values: List<String>): Filter? =
+    when (this) {
+        Field.LICENSES -> LicenseFilter(field = this, values = values)
+        else -> null
+    }
 
 fun Field.getIntFilter(relation: Relation?, values: List<String>): Filter? =
     if (relation != null) {

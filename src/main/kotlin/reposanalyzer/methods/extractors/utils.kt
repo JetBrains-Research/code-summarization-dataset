@@ -1,4 +1,4 @@
-package reposanalyzer.methods.summarizers
+package reposanalyzer.methods.extractors
 
 import astminer.common.model.Node
 import reposanalyzer.methods.buildNormalizedFullName

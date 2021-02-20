@@ -7,6 +7,7 @@ import reposanalyzer.logic.whichLine
 import reposanalyzer.methods.MethodSummary
 import reposanalyzer.methods.buildNormalizedFullName
 import reposanalyzer.methods.extractors.JavaNodeDataExtractor
+import reposanalyzer.methods.extractors.getParents
 import reposanalyzer.methods.normalizeAstLabel
 
 class JavaMethodSummarizer : MethodSummarizer, JavaNodeDataExtractor {
@@ -32,7 +33,7 @@ class JavaMethodSummarizer : MethodSummarizer, JavaNodeDataExtractor {
         val ast = root.extractAST(normalizedLabel)
         return MethodSummary(
             name = normalizedLabel,
-            splittedName = splittedLabel,
+            splitName = splittedLabel,
             fullName = normalizedFullName,
             argsTypes = root.extractArgsTypes(),
             returnType = root.extractReturnType(),
