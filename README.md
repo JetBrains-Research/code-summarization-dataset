@@ -178,6 +178,7 @@ analysis config is .json file with run parameters:
 
 ```
 {
+  "HISTORY_MODE": true,                               // enable main feature of tool 
   "repos_dirs_list_path": "repos/repos.json",         // path to .json list with paths to local repositories
   "dump_dir_path" : "repos/analysis_results",         // path to dump directory
   "languages": ["Java"],                              // interesting languages
@@ -204,7 +205,7 @@ analysis config is .json file with run parameters:
 
 #### History processing
 
-Repositories analysis based on git-history, analyzer:
+Repositories analysis based on git-history if `"HISTORY_MODE": true`, analyzer:
 - loads commit history from default branch of repository
 - moves from the oldest (first) commit to the newest (last)
 - for every consecutive pair of commits gets the diff list of files `git diff --name-only SHA1 SHA2`
