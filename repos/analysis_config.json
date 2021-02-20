@@ -1,4 +1,6 @@
 {
+  "HISTORY_MODE": true,
+
   "repos_dirs_list_path": "repos/repos.json",
   "dump_dir_path" : "repos/analysis_results",
 

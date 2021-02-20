@@ -49,4 +49,3 @@ fun Map<Language, List<File>>.removePrefixPath(prefix: String): Map<Language, Li
     }
     return newMap
 }
-

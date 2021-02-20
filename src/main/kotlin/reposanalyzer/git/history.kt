@@ -29,7 +29,11 @@ fun Repository.getFirstParentHistory(startObjectId: ObjectId): List<RevCommit> {
     return history
 }
 
-data class MergeHistory(val isYoungestMerge: Boolean, val isOldestMerge: Boolean, val history: MutableList<RevCommit>) {
+data class MergeHistory(
+    val isYoungestMerge: Boolean,
+    val isOldestMerge: Boolean,
+    val history: MutableList<RevCommit>
+) {
     val mergeCommitsNumber: Int
         get() = history.size - (if (isYoungestMerge) 0 else 1) - (if (isOldestMerge) 0 else 1)
 }

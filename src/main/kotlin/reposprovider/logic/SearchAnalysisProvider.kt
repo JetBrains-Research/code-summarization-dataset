@@ -31,9 +31,9 @@ class SearchAnalysisProvider(
                 Thread.sleep(SLEEP_TIME)
             }
             reposAnalyzer.processDoneWorkers()
-            reposAnalyzer.submitAll(reposQueue.extractRepoInfos())
+            reposAnalyzer.submitAllRepos(reposQueue.extractRepoInfos())
         }
-        reposAnalyzer.submitAll(reposQueue.extractRepoInfos())
+        reposAnalyzer.submitAllRepos(reposQueue.extractRepoInfos())
         waitWorkers()
         reposAnalyzer.interrupt()
     }

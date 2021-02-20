@@ -25,7 +25,9 @@ class ReposAnalyzer(
     }
 
     private val runStatuses = listOf(
-        RepoSummarizer.Status.NOT_INITIALIZED, RepoSummarizer.Status.LOADED, RepoSummarizer.Status.RUNNING
+        SummarizerStatus.NOT_INITIALIZED,
+        SummarizerStatus.LOADED,
+        SummarizerStatus.RUNNING
     )
 
     private val doneWorkersLogFile = File(config.dumpFolder).resolve(DONE_LOG_FILE_NAME)
@@ -39,8 +41,8 @@ class ReposAnalyzer(
     private val logger: WorkLogger
 
     private val pool = Executors.newFixedThreadPool(config.threadsCount)
-    private val workers = LinkedList<RepoSummarizer>()
-    private val doneWorkers = LinkedList<RepoSummarizer>()
+    private val workers = LinkedList<Summarizer>()
+    private val doneWorkers = LinkedList<Summarizer>()
 
     init {
         File(config.dataDumpFolder).mkdirs()
@@ -58,13 +60,26 @@ class ReposAnalyzer(
         pool.submit(worker)
         workers.add(worker)
         logger.add(
-            "> worker SUBMITTED /${analysisRepo.owner}/${analysisRepo.name} ${prettyDate(System.currentTimeMillis())}"
+            "> worker SUBMITTED ${prettyDate(System.currentTimeMillis())} /${analysisRepo.owner}/${analysisRepo.name}"
         )
         goodPatches.add(analysisRepo)
         return true
     }
 
-    fun submitAll(repos: List<AnalysisRepository>) = repos.forEach { repo -> submit(repo) }
+    fun submitAllRepos(repos: List<AnalysisRepository>) = repos.forEach { repo -> submit(repo) }
+
+    fun submitAllDirs(dirs: List<File>) = dirs.forEach { dir ->
+        val dumpPath = File(config.dataDumpFolder)
+            .resolve(dir.absolutePath.substringAfterLast(File.separator)).absolutePath
+        val worker = NoHistorySummarizer(
+            analysisPath = dir.absolutePath, dumpPath = dumpPath, parsers = parsers, config = config
+        )
+        pool.submit(worker)
+        workers.add(worker)
+        logger.add(
+            "> worker SUBMITTED ${prettyDate(System.currentTimeMillis())} ${dir.absolutePath}"
+        )
+    }
 
     fun isAnyRunning(): Boolean {
         return workers.any { runStatuses.contains(it.status) }
@@ -76,25 +91,21 @@ class ReposAnalyzer(
             val worker = iter.next()
             if (!runStatuses.contains(worker.status)) {
                 doneWorkers.add(worker)
-                logger.add(
-                    "> worker ${worker.status} /${worker.analysisRepo.owner}/${worker.analysisRepo.name} " +
-                        "at ${prettyDate(System.currentTimeMillis())}"
-                )
+                logger.add("> worker ${worker.status} ${prettyDate(System.currentTimeMillis())} $worker")
                 iter.remove()
             }
         }
         val toDump = mutableListOf<String>()
         while (!doneWorkers.isEmpty()) {
             val worker = doneWorkers.poll()
-            val repo = worker.analysisRepo
-            toDump.add("${worker.status},${repo.owner}/${repo.name}")
+            toDump.add("${worker.status},${worker}")
         }
         doneWorkersLogFile.appendLines(toDump)
     }
 
     fun interrupt() {
         workers.forEach { worker ->
-            worker.status = RepoSummarizer.Status.INTERRUPTED
+            worker.status = SummarizerStatus.INTERRUPTED
         }
         pool.shutdown()
         dumpLog()
@@ -116,10 +127,13 @@ class ReposAnalyzer(
 
     private fun dumpLog() = logger.dump()
 
-    private fun AnalysisRepository.constructSummarizer(): RepoSummarizer {
+    private fun AnalysisRepository.constructSummarizer(): Summarizer {
         val repoDumpPath = this.constructDumpPath(config.dataDumpFolder)
         File(repoDumpPath).mkdirs()
-        return RepoSummarizer(this, repoDumpPath, parsers, config)
+        if (config.isHistoryMode) {
+            return HistorySummarizer(analysisRepo = this, dumpPath = repoDumpPath, parsers = parsers, config = config)
+        }
+        return NoHistorySummarizer(analysisRepo = this, dumpPath = repoDumpPath, parsers = parsers, config = config)
     }
 
     private fun AnalysisRepository.isRepoPathGood(): Boolean =

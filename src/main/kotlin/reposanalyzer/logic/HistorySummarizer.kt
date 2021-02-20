@@ -24,19 +24,19 @@ import reposanalyzer.utils.WorkLogger
 import reposanalyzer.utils.deleteDirectory
 import reposanalyzer.utils.getAbsolutePatches
 import reposanalyzer.utils.getNotHiddenNotDirectoryFiles
-import reposanalyzer.utils.removePrefixPath
 import reposanalyzer.utils.prettyDate
+import reposanalyzer.utils.removePrefixPath
 import reposanalyzer.zipper.Zipper
 import java.io.File
 import java.io.FileOutputStream
 import java.util.concurrent.ConcurrentHashMap
 
-class RepoSummarizer(
-    val analysisRepo: AnalysisRepository,
+class HistorySummarizer(
+    private val analysisRepo: AnalysisRepository,
     private val dumpPath: String,
     private val parsers: ConcurrentHashMap<Language, Parser<out Node>>,
     private val config: AnalysisConfig
-) : Runnable, Zipper {
+) : Zipper, Summarizer {
 
     private companion object {
         const val REPO_INFO = "repo_info.json"
@@ -45,22 +45,8 @@ class RepoSummarizer(
         const val FIRST_HASH = 7
     }
 
-    enum class Status {
-        NOT_INITIALIZED,
-        LOADED,
-        RUNNING,
-        DONE,
-        REPO_NOT_PRESENT,
-        INTERRUPTED,
-        EMPTY_HISTORY,
-        SMALL_COMMITS_NUMBER,
-        SMALL_MERGES_PART,
-        INIT_ERROR,
-        INIT_BAD_DEF_BRANCH_ERROR,
-        WORK_ERROR
-    }
-
-    @Volatile var status = Status.NOT_INITIALIZED
+    @Volatile
+    override var status = SummarizerStatus.NOT_INITIALIZED
 
     private var analysisStart: Long = 0
     private var analysisEnd: Long = 0
@@ -82,25 +68,25 @@ class RepoSummarizer(
         analysisStart = System.currentTimeMillis()
         init()
         dumpRepoSummary() // dump repo summary before running
-        if (status != Status.LOADED) {
+        if (status != SummarizerStatus.LOADED) {
             workLogger.add("> SUMMARIZER NOT LOADED: $status")
             return
         }
-        status = Status.RUNNING
+        status = SummarizerStatus.RUNNING
         try {
-            workLogger.add("> search started at ${prettyDate(System.currentTimeMillis())}")
+            workLogger.add("> analysis started ${prettyDate(System.currentTimeMillis())}")
             processCommits()
             analysisEnd = System.currentTimeMillis()
             git.checkoutHashOrName(defaultBranchHead?.name) // back to normal head
             workLogger.add("> back to start HEAD: ${defaultBranchHead?.name}")
-            workLogger.add("> search ended at ${prettyDate(System.currentTimeMillis())}")
-            if (status == Status.RUNNING) {
-                status = Status.DONE
+            workLogger.add("> analysis ended ${prettyDate(System.currentTimeMillis())}")
+            if (status == SummarizerStatus.RUNNING) {
+                status = SummarizerStatus.DONE
             }
         } catch (e: Exception) {
             workLogger.add("========= WORKER RUNNING ERROR FOR $analysisRepo =========")
             workLogger.add(e.stackTraceToString())
-            status = Status.WORK_ERROR
+            status = SummarizerStatus.WORK_ERROR
         } finally {
             try {
                 dump()
@@ -114,9 +100,9 @@ class RepoSummarizer(
         try {
             initStorageAndLogs()
             status = if (!analysisRepo.initRepository(dumpPath)) {
-                Status.REPO_NOT_PRESENT
+                SummarizerStatus.REPO_NOT_PRESENT
             } else if (!analysisRepo.loadDefaultBranchHead()) {
-                Status.INIT_BAD_DEF_BRANCH_ERROR
+                SummarizerStatus.INIT_BAD_DEF_BRANCH_ERROR
             } else {
                 git = analysisRepo.git
                 repository = analysisRepo.repository
@@ -129,15 +115,15 @@ class RepoSummarizer(
                     "first-parents: ${analysisRepo.firstParentsCommitsNumber}]"
             )
             when (status) {
-                Status.INIT_BAD_DEF_BRANCH_ERROR -> workLogger.add("> BAD DEFAULT BRANCH: $analysisRepo")
-                Status.EMPTY_HISTORY -> workLogger.add("> NO HISTORY FOR REPOSITORY: $analysisRepo")
-                Status.LOADED -> workLogger.add("> SUCCESSFUL LOADED: $analysisRepo")
+                SummarizerStatus.INIT_BAD_DEF_BRANCH_ERROR -> workLogger.add("> BAD DEFAULT BRANCH: $analysisRepo")
+                SummarizerStatus.EMPTY_HISTORY -> workLogger.add("> NO HISTORY FOR REPOSITORY: $analysisRepo")
+                SummarizerStatus.LOADED -> workLogger.add("> SUCCESSFUL LOADED: $analysisRepo")
                 else -> {} // ignore
             }
         } catch (e: Exception) {
             workLogger.add("========= WORKER INIT ERROR: $analysisRepo =========")
             workLogger.add(e.stackTraceToString())
-            status = Status.INIT_ERROR
+            status = SummarizerStatus.INIT_ERROR
         } finally {
             workLogger.dump()
         }
@@ -152,14 +138,14 @@ class RepoSummarizer(
         summaryStorage = MethodSummaryStorage(
             dumpPath, config.isAstDotFormat, config.isCode2SeqDump, config.summaryDumpThreshold, workLogger
         )
-        methodParseProvider = MethodParseProvider(summaryStorage, config, analysisRepo)
+        methodParseProvider = MethodParseProvider(parsers, summaryStorage, config, analysisRepo)
     }
 
     private fun processCommits() {
         currCommit = commitsHistory.firstOrNull() ?: return // log must be not empty by init state
         currCommit?.processCommit(currCommit, analysisRepo.path, filesPaths = listOf()) // process first commit
         for (i in 1 until commitsHistory.size) { // process others commits
-            if (status != Status.RUNNING) break
+            if (status != SummarizerStatus.RUNNING) break
             prevCommit = currCommit
             currCommit = commitsHistory[i]
             val diff = git.getCommitsDiff(repository.newObjectReader(), currCommit, prevCommit)
@@ -201,34 +187,25 @@ class RepoSummarizer(
 
     private fun Map<Language, List<File>>.parseFilesByLanguage() =
         this.filter { (_, files) -> files.isNotEmpty() }
-            .forEach { (lang, files) -> files.parseFiles(lang) }
-
-    private fun List<File>.parseFiles(language: Language) {
-        val parser = parsers[language]
-        if (parser == null) {
-            workLogger.add("> unsupported language $language -- no parser")
-            return
-        }
-        methodParseProvider.parse(parser, this, language, analysisRepo.path, currCommit)
-    }
+            .forEach { (lang, files) ->
+                if (!methodParseProvider.parse(files, lang, analysisRepo.path, currCommit)) {
+                    workLogger.add("> unsupported language $lang -- no parser")
+                }
+            }
 
     private fun dumpRepoSummary() {
         val secondsSpent = (analysisEnd - analysisStart) / 1000L
         val stats = summaryStorage.stats
         val mapper = jacksonObjectMapper().enable(SerializationFeature.INDENT_OUTPUT)
-        val jsonNode = analysisRepo.toJSON(mapper) as ObjectNode
-        jsonNode.set<JsonNode>("processed_commits", mapper.valueToTree(commitsHistory.size))
-        jsonNode.set<JsonNode>("total_methods", mapper.valueToTree(stats.totalMethods))
-        jsonNode.set<JsonNode>("total_uniq_full_names", mapper.valueToTree(stats.totalUniqMethodsFullNames))
-        jsonNode.set<JsonNode>("total_paths", mapper.valueToTree(stats.pathsNumber))
-        jsonNode.set<JsonNode>("methods_with_doc", mapper.valueToTree(stats.methodsWithDoc))
-        jsonNode.set<JsonNode>("methods_with_comment", mapper.valueToTree(stats.methodsWithComment))
-        jsonNode.set<JsonNode>("mean_lines_length", mapper.valueToTree(stats.meanLinesLength))
-        jsonNode.set<JsonNode>("processed_files", mapper.valueToTree(stats.totalFiles))
-        jsonNode.set<JsonNode>("analysis_languages", mapper.valueToTree(config.languages))
-        jsonNode.set<JsonNode>("process_end_status", mapper.valueToTree(status))
-        jsonNode.set<JsonNode>("seconds_spent", mapper.valueToTree(if (secondsSpent >= 0) secondsSpent else 0))
-        mapper.writeValue(FileOutputStream(File(dumpPath).resolve(REPO_INFO), false), jsonNode)
+        val repoNode = analysisRepo.toJSON(mapper) as ObjectNode
+        repoNode.set<JsonNode>("processed_commits", mapper.valueToTree(commitsHistory.size))
+        val statsNode = stats.toJSON(mapper)
+        val merged = mapper.readerForUpdating(repoNode)
+            .readValue<JsonNode>(statsNode) as ObjectNode
+        merged.set<JsonNode>("analysis_languages", mapper.valueToTree(config.languages))
+        merged.set<JsonNode>("process_end_status", mapper.valueToTree(status))
+        merged.set<JsonNode>("seconds_spent", mapper.valueToTree(if (secondsSpent >= 0) secondsSpent else 0))
+        mapper.writeValue(FileOutputStream(File(dumpPath).resolve(REPO_INFO), false), merged)
     }
 
     private fun dump() {
@@ -244,7 +221,7 @@ class RepoSummarizer(
         commitsLogger.clear()
         workLogger.dump()
         analysisRepo.clear()
-        if (status != Status.REPO_NOT_PRESENT) {
+        if (status != SummarizerStatus.REPO_NOT_PRESENT) {
             if (config.removeRepoAfterAnalysis) {
                 analysisRepo.path.deleteDirectory()
             }
@@ -254,7 +231,7 @@ class RepoSummarizer(
         }
     }
 
-    private fun loadHistory(): Status {
+    private fun loadHistory(): SummarizerStatus {
         analysisRepo.loadCommitsHistory()
         when (config.commitsType) {
             CommitsType.ONLY_MERGES -> commitsHistory.addAll(analysisRepo.mergeHistory.history)
@@ -263,13 +240,21 @@ class RepoSummarizer(
         commitsHistory.reverse() // reverse history == from oldest commit to newest
 
         return if (commitsHistory.isEmpty()) {
-            Status.EMPTY_HISTORY
+            SummarizerStatus.EMPTY_HISTORY
         } else if (commitsHistory.size < config.minCommitsNumber) {
-            Status.SMALL_COMMITS_NUMBER
+            SummarizerStatus.SMALL_COMMITS_NUMBER
         } else if (analysisRepo.mergesPart < config.mergesPart) {
-            Status.SMALL_MERGES_PART
+            SummarizerStatus.SMALL_MERGES_PART
         } else {
-            Status.LOADED
+            SummarizerStatus.LOADED
         }
+    }
+
+    @Override
+    override fun toString(): String {
+        if (analysisRepo.owner != null && analysisRepo.name != null) {
+            return "/${analysisRepo.owner}/${analysisRepo.name}"
+        }
+        return analysisRepo.path
     }
 }

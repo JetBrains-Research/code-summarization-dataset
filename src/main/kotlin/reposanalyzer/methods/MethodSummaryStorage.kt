@@ -91,11 +91,17 @@ class MethodSummaryStorage(
     }
 
     fun dump() {
-        dumpJSONFile(summaryDumpFile, DumpType.MAIN)
-        dumpJSONFile(pathsJSONDumpFile, DumpType.PATHS_JSON)
-        dumpC2SFile(pathsC2SDumpFile)
-        logger?.add("> dumped [${data.size} methods, ${data.map { it.paths.size }.sum()} paths]")
-        data.clear() // clear data after dump WITHOUT cleaning visited list
+        try {
+            dumpJSONFile(summaryDumpFile, DumpType.MAIN)
+            dumpJSONFile(pathsJSONDumpFile, DumpType.PATHS_JSON)
+            dumpC2SFile(pathsC2SDumpFile)
+        } catch (e: Exception) {
+            logger?.add("DUMP ERROR -- SUMMARY STORAGE")
+            logger?.add(e.toString())
+        } finally {
+            logger?.add("> dumped [${data.size} methods, ${data.map { it.paths.size }.sum()} paths]")
+            data.clear() // clear data after dump WITHOUT cleaning visited list
+        }
     }
 
     fun dumpVisited() = FileOutputStream(identityDumpFile).bufferedWriter().use { writer ->

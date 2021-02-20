@@ -20,21 +20,24 @@ import reposanalyzer.methods.extractors.getMethodFullName
 import reposanalyzer.methods.summarizers.MethodSummarizersFactory
 import reposanalyzer.utils.readFileToString
 import java.io.File
+import java.util.concurrent.ConcurrentHashMap
 
 class MethodParseProvider(
+    private val parsers: ConcurrentHashMap<Language, Parser<out Node>>,
     private val summaryStorage: MethodSummaryStorage,
     private val config: AnalysisConfig,
     private val analysisRepo: AnalysisRepository? = null
 ) {
+
     private val pathMiner = PathMiner(PathRetrievalSettings(config.maxPathLength, config.maxPathWidth))
 
     fun parse(
-        parser: Parser<out Node>,
         files: List<File>,
         language: Language,
         rootPath: String,
         currCommit: RevCommit? = null
-    ) {
+    ): Boolean {
+        val parser = parsers[language] ?: return false
         val labelExtractor = getLabelExtractor()
         val summarizer = getMethodSummarizer(language)
 
@@ -71,6 +74,8 @@ class MethodParseProvider(
                 summaryStorage.add(methodSummary)
             }
         }
+
+        return true
     }
 
     private fun <T : Node> retrievePaths(root: T): List<String> {

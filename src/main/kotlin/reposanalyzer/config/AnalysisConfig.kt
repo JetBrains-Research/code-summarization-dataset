@@ -14,6 +14,8 @@ class AnalysisConfig(
     val isDebugSummarizers: Boolean = false,
 ) {
     private companion object {
+        const val IS_HISTORY_MODE = "HISTORY_MODE"
+
         const val REPOS_DIRS_PATH = "repos_dirs_list_path"
         const val DUMP_DIR_PATH = "dump_dir_path"
         const val LANGUAGES = "languages"
@@ -54,6 +56,7 @@ class AnalysisConfig(
     )
     private val stringFields = listOf(COMMITS_TYPE, TASK, GRANULARITY)
     private val boolFields = listOf(
+        IS_HISTORY_MODE,
         HIDE_METHODS_NAME, EXCLUDE_CONSTRUCTORS, REMOVE_AFTER,
         IS_ZIP, REMOVE_AFTER_ZIP, COPY_DETECTION, IS_DOT_FORMAT, C2S_DUMP_FORMAT
     )
@@ -65,6 +68,8 @@ class AnalysisConfig(
 
     val languages: MutableList<Language> = mutableListOf()
     val excludeNodes: MutableList<String> = mutableListOf()
+
+    var isHistoryMode: Boolean = true
 
     var threadsCount: Int = DEFAULT_THREADS_COUNT
     var logDumpThreshold: Int = DEFAULT_LOG_DUMP_THRESHOLD
@@ -187,6 +192,7 @@ class AnalysisConfig(
     private fun JsonNode.processBoolFields() = boolFields.forEach { field ->
         val value = this.get(field)?.asBoolean() ?: return@forEach
         when (field) {
+            IS_HISTORY_MODE -> isHistoryMode = value
             HIDE_METHODS_NAME -> hideMethodName = value
             EXCLUDE_CONSTRUCTORS -> excludeConstructors = value
             REMOVE_AFTER -> removeRepoAfterAnalysis = value

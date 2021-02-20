@@ -46,7 +46,7 @@ class AnalyzerParser : CliktCommand() {
             isDebugSummarizers = isDebug || isSummarizersDebug
         )
         val reposAnalyzer = ReposAnalyzer(config = analysisConfig)
-        reposAnalyzer.submitAll(
+        reposAnalyzer.submitAllRepos(
             loadReposPatches(analysisConfig.reposUrlsPath).map { AnalysisRepository(it) }
         )
         reposAnalyzer.waitUntilAnyRunning()

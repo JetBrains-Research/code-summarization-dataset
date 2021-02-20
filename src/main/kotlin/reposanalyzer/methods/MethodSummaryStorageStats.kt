@@ -1,5 +1,10 @@
 package reposanalyzer.methods
 
+import com.fasterxml.jackson.databind.JsonNode
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.databind.SerializationFeature
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+
 class MethodSummaryStorageStats {
     private val fullNames = mutableSetOf<String>()
     private val visitedFiles = mutableSetOf<String>()
@@ -33,4 +38,19 @@ class MethodSummaryStorageStats {
         fullNames.clear()
         visitedFiles.clear()
     }
+
+    fun toJSON(objectMapper: ObjectMapper? = null): JsonNode {
+        val mapper = objectMapper ?: jacksonObjectMapper()
+            .enable(SerializationFeature.INDENT_OUTPUT)
+        val jsonNode = mapper.createObjectNode()
+        jsonNode.set<JsonNode>("total_methods", mapper.valueToTree(totalMethods))
+        jsonNode.set<JsonNode>("total_uniq_full_names", mapper.valueToTree(totalUniqMethodsFullNames))
+        jsonNode.set<JsonNode>("total_paths", mapper.valueToTree(pathsNumber))
+        jsonNode.set<JsonNode>("methods_with_doc", mapper.valueToTree(methodsWithDoc))
+        jsonNode.set<JsonNode>("methods_with_comment", mapper.valueToTree(methodsWithComment))
+        jsonNode.set<JsonNode>("mean_lines_length", mapper.valueToTree(meanLinesLength))
+        jsonNode.set<JsonNode>("processed_files", mapper.valueToTree(totalFiles))
+        return jsonNode
+    }
+
 }
