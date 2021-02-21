@@ -13,7 +13,7 @@ git clone https://github.com/JetBrains-Research/code-summarization-dataset.git
 
 **I. reposfinder** - filtering input repositories urls with specified filters (config - `repos/search_config.json`)
 
-**II. reposanalyzer** - methods summary extraction from loaded repository (config - `repos/analysis_config.json`)
+**II. reposanalyzer** - methods summary extraction from repository or local directory (config - `repos/analysis_config.json`)
 
 **III. reposprovider** - reposfinder + reposanalyzer = continuous filter end analysis of repositories
 
@@ -160,16 +160,18 @@ In `dump_dir_path` appear 4 files and 2 folders:
 
 ## II. Repositories analysis (reposanalyzer module)
 
-**Input:** repository and analysis config
+**Current supported languages:** Java
 
-**Output:** summary about all functions from repository for supported languages (Java):
+**Input:** repository or directory and analysis config
+
+**Output:** summary about all functions from repository or directory for supported languages:
 
 - function name and fullname
 - function documentation or multiline comment
 - function body
 - function AST
 - function AST paths 
-- metadata (file path, commit info)
+- metadata (file path, commit info, extraction statistics)
 
 
 ### 1. Analysis config
@@ -178,32 +180,50 @@ analysis config is .json file with run parameters:
 
 ```
 {
-  "HISTORY_MODE": true,                               // enable main feature of tool 
-  "repos_dirs_list_path": "repos/repos.json",         // path to .json list with paths to local repositories
-  "dump_dir_path" : "repos/analysis_results",         // path to dump directory
-  "languages": ["Java"],                              // interesting languages
+  "HISTORY_MODE": true,                               // main feature of tool (see below) 
+
+  "repos_urls_path": "repos/repos.json",              // path to .json list with urls (in format /{OWNER}/{NAME}) to GitHub repos 
+  "dirs_list_path": "repos/dirs.json",                // path to .json list with paths to local directories
+  "dump_dir_path" : "repos/analysis_results",         // path to tool dump directory
+
+  "threads_count": 3,                                 // how many workers in parallel (thread pool size)  
+  "log_dump_threshold": 200,                          // log messages dump to file threshold
+  "summary_dump_threshold": 200,                      // methods summary dump threshold
+
+  "gzip_files": true,                                 // whether the extracted data should be gziped
+  "remove_after_gzip": false                          // whether the all not gziped extracted data should be deleted
+  "remove_repo_after_analysis": false,                // whether the repository should be deleted after analysis
+  
   "commits_type": "merges",                           // commits type (merges or first_parents, see explanation below)
   "min_commits_number": 0,                            // minimum number of commits of selected type for analysis start
   "merges_part_in_history": 0.005,                    // part of merge commits in first_parents history (see below)
+  
+  "languages": ["Java"],                              // interesting languages
   "task": "name",                                     // current supported task - name extraction
   "granularity": "method",                            // current supported granularity - method
   "hide_methods_names": true,                         // hides methods names in methods bodies and AST's
   "exclude_constructors": true,                       // exclude constructors from summary
-  "exclude_nodes": [],                                // unsupported
-  "ast_dot_format": false,                            // ast dump format: dot or our version (dot with identifiers in nodes)
+
+  "min_body_lines_length": 3,                         // minimum lines length of method body 
+  "exclude_with_exact_name": ["name1", "name2"],      // methods with these names will not be collected
+  "exclude_with_name_prefix": ["test"],               // methods with these prefixes of methods name will not be collected
+
+  "JAVA_exclude_with_annotations": ["@Override"],     // Java methods with these annotations will not be collected
+
   "max_paths": 1000,                                  // upper bound for number of retrived paths (code2seq) 
   "max_path_width": 10,                               // path max width
   "max_path_length": 10,                              // path max length (number of tokens) 
-  "threads_count": 3,                                 // how many repositories are analyzed in parallel (thread pool size)  
-  "log_dump_threshold": 200,                          // log messages dump to file threshold
-  "summary_dump_threshold": 200,                      // methods summary dump threshold
-  "remove_repo_after_analysis": false,                // whether the repository should be deleted after analysis
-  "gzip_files": true,                                 // whether the repository should be gziped
-  "remove_after_gzip": false                         // whether the all not gziped dump data should be deleted
+  "exclude_nodes": ["Javadoc"],                       // exclude nodes from AST (see AST structure in extracted data)
+  "ast_dot_format": false,                            // ast dump format: dot or our version (dot with identifiers in nodes)
+  "code2sec_format_dump": true                        // dump AST in code2sec format 'method|name node,PATH,node'
 }
 ```
 
-#### History processing
+### History processing
+
+If `"HISTORY_MODE": false`:
+- data from repositories is extracted without git-history
+- data from directories is always extracted without git-history 
 
 Repositories analysis based on git-history if `"HISTORY_MODE": true`, analyzer:
 - loads commit history from default branch of repository
@@ -211,7 +231,7 @@ Repositories analysis based on git-history if `"HISTORY_MODE": true`, analyzer:
 - for every consecutive pair of commits gets the diff list of files `git diff --name-only SHA1 SHA2`
 - filters supported languages (Java) files from diff list
 - if list of files for supported languages isn't empty - makes checkout to current commit `git checkout SHA`
-- extracts new methods summary from files if tuple `(source file path, full method name (nesting hierarchy), method args types list, method return type)` wasn't added before
+- extracts new methods summary from files if tuple `(full method name (nesting hierarchy), method args types list, method return type)` wasn't added before
 
 Two types of history processing depending on the type of commit:
 - `"commits_type": "merges"` - history includes merge commits `git log --first-parent --merges DEFAULT_BRANCH`
@@ -236,7 +256,7 @@ Two types of history processing depending on the type of commit:
 #### 2.1 as code in project
 - import `AnalysisConfig`, `ReposAnalyzer` and `AnalysisRepository` classes
 - provide a path to `analysis_config.json`, initialize config and analyser
-- `submit` (or `submitAll`) any number of repositories for analysis
+- `submitRepo` (or `submitAllRepos`) any number of repositories for analysis
   
   ```kotlin
   val analysisConfig = AnalysisConfig(
@@ -245,16 +265,26 @@ Two types of history processing depending on the type of commit:
   val reposAnalyzer = ReposAnalyzer(config = analysisConfig)
   
   // for already loaded repository
-  reposAnalyzer.submit(
-      AnalysisRepository("path/to/loaded/repository")
+  reposAnalyzer.submitRepo(
+      AnalysisRepository(path = "path/to/loaded/repository")
   )
   
   // for repository that will be loaded from GitHub
-  reposAnalyzer.submit(
+  reposAnalyzer.submitRepo(
       AnalysisRepository(owner = "JetBrains-Research", name = "astminer")
   )
   
   reposAnalyzer.waitUntilAnyRunning()
+  ```
+- `submitDir` (or `submitAllDirs`) any number of local directories for analysis
+  ```kotlin
+  // for local directory
+  reposAnalyzer.submitDir(
+      File("path/to/directory")
+  )
+  // data for each directory 'dir' will be dumped into 'dump_dir_path/data/N_dirName' 
+  // where N - worker id, dirName = dir.substringAfterLast(File.separator);
+  ...
   ```
 
 #### 2.2 as separate module
@@ -264,6 +294,16 @@ Two types of history processing depending on the type of commit:
   
   fun main(args: Array<String>) = AnalyzerParser().main(args)
   ```
+- provide config paths
+  - `repos_urls_path` - path to .json repositories list in format `.../REPOOWNER/REPONAME` (**exactly 2 slashes**)
+    ```json
+      [ ".../OWNER1/REPONAME1", ".../OWNER2/REPONAME2" ]
+    ```
+  - `dirs_list_path` - path to .json list with local directories paths 
+  
+    ```json
+      [ "local/directory1", "local/directory2" ]
+    ```
 
 - run with script and command line arguments
   ```shell
