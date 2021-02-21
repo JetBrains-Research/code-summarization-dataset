@@ -3,7 +3,6 @@ package reposfinder.config
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
-import org.apache.commons.io.FileUtils
 import reposfinder.filtering.BoolValueFilter
 import reposfinder.filtering.Field
 import reposfinder.filtering.Filter

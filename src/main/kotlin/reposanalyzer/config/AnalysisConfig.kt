@@ -16,7 +16,8 @@ class AnalysisConfig(
     private companion object {
         const val IS_HISTORY_MODE = "HISTORY_MODE"
 
-        const val REPOS_DIRS_PATH = "repos_dirs_list_path"
+        const val REPOS_URLS_PATH = "repos_urls_path"
+        const val DIRS_LIST_PATH = "dirs_list_path"
         const val DUMP_DIR_PATH = "dump_dir_path"
         const val LANGUAGES = "languages"
         const val HIDE_METHODS_NAME = "hide_methods_names"
@@ -33,7 +34,7 @@ class AnalysisConfig(
         const val METHODS_DUMP_THRESHOLD = "summary_dump_threshold"
         const val COPY_DETECTION = "copy_detection"
         const val IS_ZIP = "gzip_files"
-        const val REMOVE_AFTER_ZIP = "remove_after_gzip"
+        const val REMOVE_AFTER_ZIP = "remove_files_after_gzip"
         const val DATA_DUMP_FOLDER = "data"
         const val IS_DOT_FORMAT = "ast_dot_format"
 
@@ -47,7 +48,7 @@ class AnalysisConfig(
         const val DEFAULT_METHOD_DUMP_THRESHOLD = 200
     }
 
-    private val pathFields = listOf(REPOS_DIRS_PATH, DUMP_DIR_PATH)
+    private val pathFields = listOf(REPOS_URLS_PATH, DIRS_LIST_PATH, DUMP_DIR_PATH)
     private val listFields = listOf(LANGUAGES, EXCLUDE_NODES)
     private val intFields = listOf(
         THREADS_COUNT, LOG_DUMP_THRESHOLD,
@@ -62,6 +63,7 @@ class AnalysisConfig(
     )
     private val floatFields = listOf(MERGES_PART)
 
+    lateinit var dirsListPath: String
     lateinit var reposUrlsPath: String
     lateinit var dumpFolder: String
     lateinit var dataDumpFolder: String
@@ -161,10 +163,12 @@ class AnalysisConfig(
     }
 
     private fun JsonNode.processPathFields() = pathFields.forEach { field ->
+        val value = this.get(field).asText()
         when (field) {
-            REPOS_DIRS_PATH -> reposUrlsPath = this.get(field).asText()
+            REPOS_URLS_PATH -> reposUrlsPath = value
+            DIRS_LIST_PATH -> dirsListPath = value
             DUMP_DIR_PATH -> {
-                dumpFolder = this.get(field).asText()
+                dumpFolder = value
                 dataDumpFolder = File(dumpFolder).resolve(DATA_DUMP_FOLDER).absolutePath
             }
         }

@@ -1,4 +1,4 @@
-package reposanalyzer.logic
+package reposanalyzer.logic.summarizers
 
 enum class SummarizerStatus {
     NOT_INITIALIZED,

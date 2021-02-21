@@ -23,13 +23,6 @@ fun String.deleteDirectory() =
         // ignore
     }
 
-fun File.appendLines(lines: List<String>) =
-    FileOutputStream(this, true).bufferedWriter().use { out ->
-        lines.forEach {
-            out.appendLine(it)
-        }
-    }
-
 fun getNotHiddenNotDirectoryFiles(dirPath: String): List<File> =
     File(dirPath).walkTopDown().filter { !it.isHidden && !it.isDirectory }.toList()
 

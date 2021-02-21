@@ -1,4 +1,4 @@
-package reposanalyzer.logic
+package reposanalyzer.logic.summarizers
 
 import astminer.common.model.Node
 import astminer.common.model.Parser
@@ -17,6 +17,9 @@ import reposanalyzer.git.checkoutCommit
 import reposanalyzer.git.checkoutHashOrName
 import reposanalyzer.git.getCommitsDiff
 import reposanalyzer.git.getDiffFiles
+import reposanalyzer.logic.AnalysisRepository
+import reposanalyzer.logic.getFilesByLanguage
+import reposanalyzer.logic.getSupportedFiles
 import reposanalyzer.methods.MethodSummaryStorage
 import reposanalyzer.parsing.MethodParseProvider
 import reposanalyzer.utils.CommitsLogger
@@ -88,11 +91,8 @@ class HistorySummarizer(
             workLogger.add(e.stackTraceToString())
             status = SummarizerStatus.WORK_ERROR
         } finally {
-            try {
-                dump()
-            } catch (e: Exception) {
-                // ignore
-            }
+            dump()
+            workLogger.dump()
         }
     }
 
@@ -133,7 +133,7 @@ class HistorySummarizer(
         File(dumpPath).mkdirs()
         val workLogPath = File(dumpPath).resolve(WORK_LOG).absolutePath
         val commitsLogPath = File(dumpPath).resolve(COMMITS_LOG).absolutePath
-        workLogger = WorkLogger(workLogPath, config.isDebugSummarizers)
+        workLogger = WorkLogger(workLogPath, isDebug = config.isDebugSummarizers)
         commitsLogger = CommitsLogger(commitsLogPath, config.logDumpThreshold)
         summaryStorage = MethodSummaryStorage(
             dumpPath, config.isAstDotFormat, config.isCode2SeqDump, config.summaryDumpThreshold, workLogger
@@ -209,25 +209,30 @@ class HistorySummarizer(
     }
 
     private fun dump() {
-        workLogger.add(
-            "> TOTAL DUMPS [${summaryStorage.stats.totalMethods} methods," +
-                " ${summaryStorage.stats.pathsNumber} paths]"
-        )
-        dumpRepoSummary()
-        summaryStorage.dump()
-        summaryStorage.dumpVisited()
-        summaryStorage.clear()
-        commitsLogger.dump()
-        commitsLogger.clear()
-        workLogger.dump()
-        analysisRepo.clear()
-        if (status != SummarizerStatus.REPO_NOT_PRESENT) {
-            if (config.removeRepoAfterAnalysis) {
-                analysisRepo.path.deleteDirectory()
+        try {
+            dumpRepoSummary()
+            summaryStorage.dump()
+            summaryStorage.dumpVisited()
+            summaryStorage.clear()
+            workLogger.add(
+                "> TOTAL DUMPS [${summaryStorage.stats.totalMethods} methods, " +
+                        "${summaryStorage.stats.pathsNumber} paths]"
+            )
+            commitsLogger.dump()
+            commitsLogger.clear()
+            analysisRepo.clear()
+            if (status != SummarizerStatus.REPO_NOT_PRESENT) {
+                if (config.removeRepoAfterAnalysis) {
+                    analysisRepo.path.deleteDirectory()
+                }
+                if (config.zipFiles) {
+                    compressFolder(File(dumpPath), listOf(REPO_INFO, WORK_LOG), config.removeAfterZip)
+                }
             }
-            if (config.zipFiles) {
-                compressFolder(File(dumpPath), listOf(REPO_INFO, WORK_LOG), config.removeAfterZip)
-            }
+        } catch (e: Exception) {
+            workLogger.add("========= WORKER DUMP ERROR: $analysisRepo =========")
+            workLogger.add(e.stackTraceToString())
+            workLogger.dump()
         }
     }
 

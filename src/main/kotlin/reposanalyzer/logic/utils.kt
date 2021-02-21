@@ -1,30 +1,7 @@
 package reposanalyzer.logic
 
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import com.fasterxml.jackson.module.kotlin.readValue
 import reposanalyzer.config.Language
 import java.io.File
-
-fun loadJSONList(path: String): List<String> {
-    val objectMapper = jacksonObjectMapper()
-    return objectMapper.readValue(File(path))
-}
-
-fun loadReposPatches(path: String): List<String> {
-    if (!File(path).exists()) {
-        throw IllegalArgumentException("Path to repos dirs doesn't exist: $path")
-    }
-    val paths = loadJSONList(path)
-    val goodPaths = mutableSetOf<String>()
-    for (repoPath in paths) {
-        if (File(repoPath).exists()) {
-            goodPaths.add(repoPath)
-        } else {
-            println("Repository path incorrect: $repoPath")
-        }
-    }
-    return goodPaths.toList()
-}
 
 fun List<File>.getFilesByLanguage(languages: List<Language>): Map<Language, List<File>> {
     val filesByLang = mutableMapOf<Language, MutableList<File>>()

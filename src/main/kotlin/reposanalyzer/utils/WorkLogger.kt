@@ -2,11 +2,11 @@ package reposanalyzer.utils
 
 import java.io.File
 import java.io.FileOutputStream
-import java.util.Date
 import java.util.concurrent.ConcurrentLinkedQueue
 
 class WorkLogger(
     private val pathToLogFile: String,
+    private val dumpEveryNMessages: Int = DUMP_EVERY_N_MESSAGES,
     private val isDebug: Boolean = false
 ) {
     companion object {
@@ -31,6 +31,8 @@ class WorkLogger(
             dump()
         }
     }
+
+    fun addAll(messageList: List<String>) = messageList.forEach { add(it) }
 
     fun dump() = FileOutputStream(logFile, true).bufferedWriter().use { out ->
         while (!messages.isEmpty()) {

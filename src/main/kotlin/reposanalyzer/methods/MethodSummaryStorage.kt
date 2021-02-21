@@ -45,7 +45,7 @@ class MethodSummaryStorage(
         const val METHODS_PATHS_JSONL_FILE = "paths.jsonl"
         const val METHODS_PATHS_C2S_FILE = "paths.c2s"
         const val METHODS_VISITED_FILE = "visited.jsonl"
-        const val PATHS_DUMP_THRESHOLD = 10_000
+        const val PATHS_DUMP_THRESHOLD = 20_000
     }
 
     private enum class DumpType {

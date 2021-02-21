@@ -1,7 +1,9 @@
 {
   "HISTORY_MODE": true,
 
-  "repos_dirs_list_path": "repos/repos.json",
+  "repos_urls_path": "repos/repos.json",
+  "dirs_list_path": "repos/dirs.json",
+
   "dump_dir_path" : "repos/analysis_results",
 
   "languages": ["Java"],
@@ -27,6 +29,6 @@
   "summary_dump_threshold": 200,
 
   "gzip_files": true,
-  "remove_after_gzip": false,
+  "remove_files_after_gzip": false,
   "remove_repo_after_analysis": true
 }
