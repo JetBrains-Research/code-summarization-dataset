@@ -5,6 +5,7 @@ import astminer.cli.MethodFilterPredicate
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
+import reposanalyzer.methods.filter.MethodSummaryFilterConfig
 import reposanalyzer.utils.AnalysisConfigException
 import java.io.File
 
@@ -79,6 +80,7 @@ class AnalysisConfig(
     var task: Task = Task.NAME
     var granularity: Granularity = Granularity.METHOD
     var commitsType: CommitsType = CommitsType.FIRST_PARENTS_INCLUDE_MERGES
+    var minBodyLinesLength: Int = 0
     var minCommitsNumber: Int = 0
     var mergesPart: Float = 0.0f
     var isAstDotFormat: Boolean = false
@@ -97,6 +99,7 @@ class AnalysisConfig(
 
     val filterPredicates = mutableListOf<MethodFilterPredicate>()
     val supportedExtensions = mutableListOf<String>()
+    val summaryFilterConfig = MethodSummaryFilterConfig()
 
     init {
         val file = File(configPath)
@@ -121,6 +124,9 @@ class AnalysisConfig(
         }
         if (excludeConstructors) {
             filterPredicates.add(ConstructorFilterPredicate())
+        }
+        summaryFilterConfig.apply {
+            this@processAllFields.parseFields()
         }
         supportedExtensions.addAll(languages.flatMap { it.extensions })
     }

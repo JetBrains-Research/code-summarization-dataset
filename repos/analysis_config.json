@@ -3,32 +3,37 @@
 
   "repos_urls_path": "repos/repos.json",
   "dirs_list_path": "repos/dirs.json",
-
   "dump_dir_path" : "repos/analysis_results",
 
-  "languages": ["Java"],
-
-  "commits_type": "merges",
-  "min_commits_number": 0,
-  "merges_part_in_history": 0.0,
-
-  "task": "name",
-  "granularity": "method",
-  "hide_methods_names": true,
-  "exclude_constructors": true,
-  "ast_dot_format": false,
-
-  "max_paths": 1000,
-  "max_path_width": 2,
-  "max_path_length": 9,
-  "exclude_nodes": ["Javadoc"],
-  "code2sec_format_dump": true,
-
-  "threads_count": 3,
+  "threads_count": 5,
   "log_dump_threshold": 200,
   "summary_dump_threshold": 200,
 
   "gzip_files": true,
   "remove_files_after_gzip": false,
-  "remove_repo_after_analysis": true
+  "remove_repo_after_analysis": true,
+
+  "commits_type": "merges",
+  "min_commits_number": 0,
+  "merges_part_in_history": 0.0,
+
+  "languages": ["Java"],
+
+  "task": "name",
+  "granularity": "method",
+  "hide_methods_names": true,
+  "exclude_constructors": true,
+
+  "min_body_lines_length": 3,
+  "exclude_with_exact_name": ["exactName1", "exactName2"],
+  "exclude_with_name_prefix": ["test"],
+
+  "JAVA_exclude_with_annotations": ["@Override"],
+
+  "max_paths": 1000,
+  "max_path_width": 2,
+  "max_path_length": 9,
+  "exclude_nodes": ["Javadoc"],
+  "ast_dot_format": false,
+  "code2sec_format_dump": true
 }

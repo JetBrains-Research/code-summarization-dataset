@@ -15,6 +15,7 @@ import reposanalyzer.logic.calculateLinesStarts
 import reposanalyzer.logic.getFileLinesLength
 import reposanalyzer.logic.splitToParents
 import reposanalyzer.methods.MethodSummary
+import reposanalyzer.methods.filter.MethodSummaryFilter
 import reposanalyzer.methods.MethodSummaryStorage
 import reposanalyzer.methods.extractors.getMethodFullName
 import reposanalyzer.methods.summarizers.MethodSummarizersFactory
@@ -29,6 +30,7 @@ class MethodParseProvider(
     private val analysisRepo: AnalysisRepository? = null
 ) {
 
+    private val methodsFilter = MethodSummaryFilter(config.summaryFilterConfig)
     private val pathMiner = PathMiner(PathRetrievalSettings(config.maxPathLength, config.maxPathWidth))
 
     fun parse(
@@ -71,7 +73,11 @@ class MethodParseProvider(
                 }
                 methodSummary.paths = retrievePaths(root)
                 addCommonInfo(methodSummary, currCommit)
-                summaryStorage.add(methodSummary)
+
+                // methods filtering
+                if (methodsFilter.isSummaryGood(methodSummary)) {
+                    summaryStorage.add(methodSummary)
+                }
             }
         }
 
