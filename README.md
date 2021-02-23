@@ -27,7 +27,7 @@ git clone https://github.com/JetBrains-Research/code-summarization-dataset.git
 ### 1. Search config
 
 search config is .json file with all search filters and run parameters:
-```
+```json
 {
     "token_path" : "repos/token.txt",            // path to GitHub token
     "dump_dir_path" : "repos/search_results",    // dump directory path
@@ -53,10 +53,18 @@ search config is .json file with all search filters and run parameters:
 
 **GitHub token**:
 - search requires a [GitHub API personal access token](https://docs.github.com/en/free-pro-team@latest/github/authenticating-to-github/creating-a-personal-access-token) without any special permissions
-- token is 40 symbols code that must be located in a separate file on the first line without additional data, e.g.
-  ```text
+- token is 40 symbols code that must be located in a separate file on the first line without additional data
+- file with path `token_path` must contain this token
+  ```json
+  file: search_config.json
+  
+  ...
+  "token_path": token.txt
+  ...
+  ```
+  ```json
   file: token.txt
-        
+  
   496**********************************4cf
   ```
 
@@ -87,6 +95,23 @@ search config is .json file with all search filters and run parameters:
 - ```"updated_at": ["2010-01-01", "2015-01-01"] --> 2010.01.01 <= repository update date <= 2015.01.01```
 
 ### 2. Run
+
+
+- in .json file `repos_urls_path` add any GitHub repositories in format `.../REPOOWNER/REPONAME` (exactly 2 slashes)
+  ```json
+  file: search_config.json
+  
+  ...
+  "repos_urls_path": repos_urls.json
+  ...
+  ```
+  ```json
+  file: repos_urls.json
+  
+  [ "/JetBrains/Kotlin", "/JetBrains/intellij-community"] 
+  or 
+  ["https://github.com/JetBrains/Kotlin", "https://github.com/JetBrains/intellij-community"] 
+  ```  
 
 #### 2.1 as code in project
 - import `SearchConfig` and `ReposFinder` classes
@@ -178,7 +203,7 @@ In `dump_dir_path` appear 4 files and 2 folders:
 
 analysis config is .json file with run parameters:
 
-```
+```json
 {
   "HISTORY_MODE": true,                               // main feature of tool (see below) 
 
@@ -288,22 +313,37 @@ Two types of history processing depending on the type of commit:
   ```
 
 #### 2.2 as separate module
+- provide config paths
+  ```json
+  file: analysis_config.json
+
+  ...
+  "repos_urls_path": repos_urls.json
+  "dirs_list_path": dirs.json
+  ...
+  ```
+  - `repos_urls_path` path to .json GitHub repositories list in format `.../REPOOWNER/REPONAME` (**exactly 2 slashes**)
+    ```json
+    file: repos_urls.json
+    
+    [ "/JetBrains/Kotlin", "/JetBrains/intellij-community"] 
+    or
+    ["https://github.com/JetBrains/Kotlin", "https://github.com/JetBrains/intellij-community"] 
+    ```
+  - `dirs_list_path` - path to .json list with local directories paths
+
+    ```json
+    file: dirs.json
+    
+    [ "local/directory1", "local/directory2" ]
+    ```
+
 - write own entry point
   ```kotlin
   import reposanalyzer.utils.AnalyzerParser
   
   fun main(args: Array<String>) = AnalyzerParser().main(args)
   ```
-- provide config paths
-  - `repos_urls_path` - path to .json repositories list in format `.../REPOOWNER/REPONAME` (**exactly 2 slashes**)
-    ```json
-      [ ".../OWNER1/REPONAME1", ".../OWNER2/REPONAME2" ]
-    ```
-  - `dirs_list_path` - path to .json list with local directories paths 
-  
-    ```json
-      [ "local/directory1", "local/directory2" ]
-    ```
 
 - run with script and command line arguments
   ```shell
@@ -341,6 +381,19 @@ reposfinder + reposanalyzer modules
 2. for each 'good' repository all summary information extracted with reposanalyzer module
 
 ### 1. Run
+
+- prepare two .json configs `search_config.json` and `analysis_config.json`
+- prepare list of GitHub repositories `repos_urls_path` in `search_config.json` **(see I, 2)**
+- files with repositories and directories paths lists from `analysis_config.json` 
+  in `repos_urls_path` and `dirs_list_path` will be ignored
+  
+##### Workflow
+- tool takes repository from file provided in `repos_urls_path` from `search_config.json`
+- tool applies filters to the repository from `search_config.json`
+- if all filters are successful
+  - repository url is sent to analysis module 
+  - analysis module downloads repository and retrieves all necessary data with parameters from `analysis_config.json`
+  - for each repository tool stores all data in repository folder in `dump_dir_path` from `analysis_config.json`  
 
 #### 1.1 as code in project
 
