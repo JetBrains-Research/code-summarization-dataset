@@ -2,6 +2,7 @@ package reposanalyzer.config
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
+import reposanalyzer.utils.AnalysisConfigException
 import java.io.File
 
 fun loadJSONList(path: String): List<String> {
@@ -36,4 +37,19 @@ fun List<String>.parseRepoUrls(splitSize: Int = 2, ownerPos: Int = 2, namePos: I
         }
     }
     return urls
+}
+
+fun checkFileExists(path: String, isFile: Boolean = true, message: String? = null) {
+    val file = File(path)
+    if (!file.exists()) {
+        val errMsg = (if (message != null) "$message: " else "") + "file doesn't exist: $path"
+        throw AnalysisConfigException(errMsg)
+    }
+    if (isFile && !file.isFile) {
+        val errMsg = (if (message != null) "$message: " else "") + "not file: $path"
+        throw AnalysisConfigException(errMsg)
+    } else if (!isFile && !file.isDirectory) {
+        val errMsg = (if (message != null) "$message: " else "") + "not directory: $path"
+        throw AnalysisConfigException(errMsg)
+    }
 }

@@ -171,8 +171,14 @@ class AnalysisConfig(
     private fun JsonNode.processPathFields() = pathFields.forEach { field ->
         val value = this.get(field).asText()
         when (field) {
-            REPOS_URLS_PATH -> reposUrlsPath = value
-            DIRS_LIST_PATH -> dirsListPath = value
+            REPOS_URLS_PATH -> {
+                reposUrlsPath = value
+                checkFileExists(reposUrlsPath, isFile = true, REPOS_URLS_PATH)
+            }
+            DIRS_LIST_PATH -> {
+                dirsListPath = value
+                checkFileExists(dirsListPath, isFile = true, DIRS_LIST_PATH)
+            }
             DUMP_DIR_PATH -> {
                 dumpFolder = value
                 dataDumpFolder = File(dumpFolder).resolve(DATA_DUMP_FOLDER).absolutePath
