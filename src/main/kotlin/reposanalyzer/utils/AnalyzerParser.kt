@@ -5,12 +5,9 @@ import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.required
 import com.github.ajalt.clikt.parameters.options.validate
-import reposanalyzer.logic.ReposAnalyzer
+import reposanalyzer.config.*
 import reposanalyzer.logic.AnalysisRepository
-import reposanalyzer.config.AnalysisConfig
-import reposanalyzer.config.loadJSONList
-import reposanalyzer.config.loadPaths
-import reposanalyzer.config.parseRepoUrls
+import reposanalyzer.logic.ReposAnalyzer
 import java.io.File
 
 class AnalyzerParser : CliktCommand() {
@@ -47,12 +44,11 @@ class AnalyzerParser : CliktCommand() {
             isDebugAnalyzer = isDebug || isAnalyserDebug,
             isDebugSummarizers = isDebug || isSummarizersDebug
         )
-        val reposAnalyzer = ReposAnalyzer(config = analysisConfig)
-
         val reposUrls = loadJSONList(analysisConfig.reposUrlsPath).parseRepoUrls()
-        reposAnalyzer.submitAllRepos(reposUrls.map { AnalysisRepository(owner = it.first, name = it.second) })
-
         val dirsPaths = loadPaths(analysisConfig.dirsListPath).map { File(it) }
+
+        val reposAnalyzer = ReposAnalyzer(config = analysisConfig)
+        reposAnalyzer.submitAllRepos(reposUrls.map { AnalysisRepository(owner = it.first, name = it.second) })
         reposAnalyzer.submitAllDirs(dirsPaths)
 
         reposAnalyzer.waitUntilAnyRunning()
