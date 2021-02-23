@@ -41,15 +41,15 @@ fun List<String>.parseRepoUrls(splitSize: Int = 2, ownerPos: Int = 2, namePos: I
 
 fun checkFileExists(path: String, isFile: Boolean = true, message: String? = null) {
     val file = File(path)
+    var errMsg: String? = null
     if (!file.exists()) {
-        val errMsg = (if (message != null) "$message: " else "") + "file doesn't exist: $path"
-        throw AnalysisConfigException(errMsg)
-    }
-    if (isFile && !file.isFile) {
-        val errMsg = (if (message != null) "$message: " else "") + "not file: $path"
-        throw AnalysisConfigException(errMsg)
+        errMsg = (if (message != null) "$message: " else "") + "file doesn't exist: $path"
+    } else if (isFile && !file.isFile) {
+        errMsg = (if (message != null) "$message: " else "") + "not file: $path"
     } else if (!isFile && !file.isDirectory) {
-        val errMsg = (if (message != null) "$message: " else "") + "not directory: $path"
+        errMsg = (if (message != null) "$message: " else "") + "not directory: $path"
+    }
+    errMsg?.let {
         throw AnalysisConfigException(errMsg)
     }
 }
