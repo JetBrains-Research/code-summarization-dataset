@@ -27,7 +27,7 @@ git clone https://github.com/JetBrains-Research/code-summarization-dataset.git
 ### 1. Search config
 
 search config is .json file with all search filters and run parameters:
-```json
+```
 {
     "token_path" : "repos/token.txt",            // path to GitHub token
     "dump_dir_path" : "repos/search_results",    // dump directory path
@@ -203,7 +203,7 @@ In `dump_dir_path` appear 4 files and 2 folders:
 
 analysis config is .json file with run parameters:
 
-```json
+```
 {
   "HISTORY_MODE": true,                               // main feature of tool (see below) 
 
