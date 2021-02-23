@@ -5,7 +5,10 @@ import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.required
 import com.github.ajalt.clikt.parameters.options.validate
-import reposanalyzer.config.*
+import reposanalyzer.config.AnalysisConfig
+import reposanalyzer.config.loadJSONList
+import reposanalyzer.config.loadPaths
+import reposanalyzer.config.parseRepoUrls
 import reposanalyzer.logic.AnalysisRepository
 import reposanalyzer.logic.ReposAnalyzer
 import java.io.File
