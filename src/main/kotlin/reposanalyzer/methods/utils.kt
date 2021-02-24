@@ -1,5 +1,9 @@
 package reposanalyzer.methods
 
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.databind.SerializationFeature
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+
 /*
  *  From astminer sources
  */
@@ -25,3 +29,7 @@ fun extractContent(content: String, pos: Int, length: Int): String? {
     }
     return null
 }
+
+fun getObjectMapper(objectMapper: ObjectMapper? = null) =
+    objectMapper ?: jacksonObjectMapper().enable(SerializationFeature.INDENT_OUTPUT)
+

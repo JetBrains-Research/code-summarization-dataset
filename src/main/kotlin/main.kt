@@ -1,3 +1,3 @@
-import reposanalyzer.utils.AnalyzerParser
+import reposprovider.utils.ProviderParser
 
-fun main(args: Array<String>) = AnalyzerParser().main(args)
+fun main(args: Array<String>) = ProviderParser().main(args)

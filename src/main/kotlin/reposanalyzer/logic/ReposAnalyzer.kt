@@ -4,102 +4,164 @@ import astminer.common.model.Node
 import astminer.common.model.Parser
 import reposanalyzer.config.AnalysisConfig
 import reposanalyzer.config.Language
+import reposanalyzer.logic.summarizers.HistorySummarizer
+import reposanalyzer.logic.summarizers.NoHistorySummarizer
+import reposanalyzer.logic.summarizers.Summarizer
+import reposanalyzer.logic.summarizers.SummarizerStatus
 import reposanalyzer.parsing.GumTreeParserFactory
 import reposanalyzer.utils.WorkLogger
-import reposanalyzer.utils.isDotGitPresent
+import reposanalyzer.utils.prettyDate
 import java.io.File
-import java.util.Date
+import java.util.LinkedList
 import java.util.concurrent.ConcurrentHashMap
-import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.concurrent.Executors
+import java.util.concurrent.atomic.AtomicInteger
 
 class ReposAnalyzer(
     val config: AnalysisConfig
 ) {
     private companion object {
-        const val SLEEP_TIME_WAITING = 30 * 1000L
-        const val LOG_FILE_NAME = "main_log.txt"
+        const val SLEEP_TIME_WAITING = 15 * 1000L
+        const val LOG_FILE_NAME = "work_log.txt"
+        const val DONE_LOG_FILE_NAME = "done_log.txt"
     }
 
-    private var allPatches = mutableListOf<AnalysisRepository>()
-    private var goodPatches = mutableListOf<AnalysisRepository>()
-    private var badPatches = mutableListOf<AnalysisRepository>()
+    private val runStatuses = listOf(
+        SummarizerStatus.NOT_INITIALIZED,
+        SummarizerStatus.LOADED,
+        SummarizerStatus.RUNNING
+    )
+
+    @Volatile var isInterrupted = false
+        private set
+
+    private var repoWorkerId = AtomicInteger(0)
+    private var dirWorkerId = AtomicInteger(0)
+
+    private val workLogger: WorkLogger
+    private val doneLogger: WorkLogger
+
+    private var visitedRepos = mutableListOf<Pair<String?, String?>>()
+    private val visitedPaths = mutableSetOf<String>()
 
     private val parsers = ConcurrentHashMap<Language, Parser<out Node>>()
 
-    private val logger: WorkLogger
-
     private val pool = Executors.newFixedThreadPool(config.threadsCount)
-    private val workers = ConcurrentLinkedQueue<RepoSummarizer>()
+    private val workers = LinkedList<Summarizer>()
+    private val doneWorkers = LinkedList<Summarizer>()
 
     init {
-        File(config.dumpFolder).mkdirs()
-        logger = WorkLogger(File(config.dumpFolder).resolve(LOG_FILE_NAME).absolutePath, config.isDebug)
+        File(config.dataDumpFolder).mkdirs()
+        workLogger = WorkLogger(
+            File(config.dumpFolder).resolve(LOG_FILE_NAME).absolutePath, isDebug = config.isDebugAnalyzer
+        )
+        doneLogger = WorkLogger(
+            File(config.dumpFolder).resolve(DONE_LOG_FILE_NAME).absolutePath, isDebug = false
+        )
         for (lang in Language.values()) {
             parsers[lang] = GumTreeParserFactory.getParser(lang)
         }
-        logger.add("> analyzer with ${config.threadsCount} threads loaded at ${Date(System.currentTimeMillis())}")
+        workLogger.add("> ANALYZER THREADS=${config.threadsCount} loaded ${prettyDate(System.currentTimeMillis())}")
+        workLogger.add("> DUMP FOLDER ${config.dataDumpFolder}")
     }
 
-    fun submit(analysisRepository: AnalysisRepository): Boolean {
-        val worker = analysisRepository.constructSummarizer()
+    fun submitRepo(analysisRepo: AnalysisRepository): Boolean {
+        if (isInterrupted) {
+            workLogger.add("CAN'T SUBMIT REPO -- ANALYZER IS INTERRUPTED")
+            return false
+        }
+        if (visitedRepos.contains(Pair(analysisRepo.owner, analysisRepo.name))) {
+            workLogger.add("> repo already added $analysisRepo")
+            return false
+        }
+        val id = repoWorkerId.incrementAndGet()
+        val worker = analysisRepo.constructRepoSummarizer()
         pool.submit(worker)
         workers.add(worker)
-        logger.add("> worker for $analysisRepository submitted at ${Date(System.currentTimeMillis())}")
-        goodPatches.add(analysisRepository)
+        workLogger.add(
+            "> REPO WORKER $id SUBMITTED " +
+                "${prettyDate(System.currentTimeMillis())} /${analysisRepo.owner}/${analysisRepo.name}"
+        )
+        visitedRepos.add(Pair(analysisRepo.owner, analysisRepo.name))
         return true
     }
 
-    fun submitAll(repos: List<AnalysisRepository>) = repos.forEach { repo -> submit(repo) }
-
-    fun isAnyRunning(): Boolean {
-        val statuses = listOf(
-            RepoSummarizer.Status.NOT_INITIALIZED, RepoSummarizer.Status.LOADED,
-            RepoSummarizer.Status.RUNNING
-        )
-        while (workers.peek() != null && !statuses.contains(workers.peek().status)) {
-            workers.poll()
+    fun submitDir(dir: File): Boolean {
+        if (isInterrupted) {
+            workLogger.add("CAN'T SUBMIT DIR -- ANALYZER IS INTERRUPTED")
+            return false
         }
-        return workers.any { statuses.contains(it.status) }
+        if (visitedPaths.contains(dir.absolutePath)) {
+            workLogger.add("> dir already added ${dir.absolutePath} ")
+            return false
+        }
+        val id = dirWorkerId.incrementAndGet()
+        val dumpPath = File(config.dataDumpFolder)
+            .resolve("${id}_" + dir.absolutePath.substringAfterLast(File.separator)).absolutePath
+        val worker = NoHistorySummarizer(
+            analysisPath = dir.absolutePath, dumpPath = dumpPath, parsers = parsers, config = config
+        )
+        pool.submit(worker)
+        workers.add(worker)
+        workLogger.add("> DIR WORKER $id SUBMITTED ${prettyDate(System.currentTimeMillis())} ${dir.absolutePath}")
+        visitedPaths.add(dir.absolutePath)
+        return true
+    }
+
+    fun submitAllRepos(repos: List<AnalysisRepository>) = repos.forEach { repo -> submitRepo(repo) }
+
+    fun submitAllDirs(dirs: List<File>) = dirs.forEach { dir -> submitDir(dir) }
+
+    fun isAnyRunning(): Boolean = workers.any { runStatuses.contains(it.status) }
+
+    fun processDoneWorkers() {
+        val iter = workers.iterator()
+        while (iter.hasNext()) {
+            val worker = iter.next()
+            if (!runStatuses.contains(worker.status)) {
+                doneWorkers.add(worker)
+                workLogger.add("> WORKER ${worker.status} ${prettyDate(System.currentTimeMillis())} $worker")
+                iter.remove()
+            }
+        }
+        val toDump = mutableListOf<String>()
+        while (!doneWorkers.isEmpty()) {
+            val worker = doneWorkers.poll()
+            toDump.add("${worker.status},$worker")
+        }
+        doneLogger.addAll(toDump)
+        doneLogger.dump()
     }
 
     fun interrupt() {
+        isInterrupted = true
         workers.forEach { worker ->
-            worker.status = RepoSummarizer.Status.INTERRUPTED
+            worker.status = SummarizerStatus.INTERRUPTED
         }
         pool.shutdown()
-        dumpLog()
+        workLogger.dump()
     }
 
     fun waitUntilAnyRunning() {
         try {
             while (isAnyRunning()) {
+                processDoneWorkers()
                 Thread.sleep(SLEEP_TIME_WAITING)
             }
+            processDoneWorkers()
         } catch (e: InterruptedException) {
-            // ignore
+            workLogger.add("============ANALYZER WAS INTERRUPTED============")
         } finally {
             interrupt()
         }
     }
 
-    fun dumpLog() = logger.dump()
-
-    private fun AnalysisRepository.constructSummarizer(): RepoSummarizer {
-        val repoDumpPath = this.constructDumpPath(config.dumpFolder)
+    private fun AnalysisRepository.constructRepoSummarizer(): Summarizer {
+        val repoDumpPath = this.constructDumpPath(config.dataDumpFolder)
         File(repoDumpPath).mkdirs()
-        return RepoSummarizer(this, repoDumpPath, parsers, config)
-    }
-
-    private fun AnalysisRepository.isRepoPathGood(): Boolean =
-        if (allPatches.contains(this)) {
-            logger.add("> path already added: $this")
-            false
-        } else if (!this.path.isDotGitPresent()) {
-            logger.add("> repo path hasn't .git folder: $this")
-            false
-        } else {
-            logger.add("> path is good: $this")
-            true
+        if (config.isHistoryMode) {
+            return HistorySummarizer(analysisRepo = this, dumpPath = repoDumpPath, parsers = parsers, config = config)
         }
+        return NoHistorySummarizer(analysisRepo = this, dumpPath = repoDumpPath, parsers = parsers, config = config)
+    }
 }

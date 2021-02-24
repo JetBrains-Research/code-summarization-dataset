@@ -9,21 +9,23 @@ import org.eclipse.jgit.api.Git
 import org.eclipse.jgit.lib.Ref
 import org.eclipse.jgit.lib.Repository
 import org.eclipse.jgit.revwalk.RevCommit
+import reposanalyzer.git.MergeHistory
 import reposanalyzer.git.constructRepoLoadUrl
 import reposanalyzer.git.getDefaultBranch
 import reposanalyzer.git.getFirstParentHistory
 import reposanalyzer.git.getMergeCommitsHistory
+import reposanalyzer.git.isDotGitPresent
 import reposanalyzer.git.isRepoCloned
 import reposanalyzer.git.openRepositoryByDotGitDir
 import reposanalyzer.git.tryCloneRepositoryNTimes
-import reposanalyzer.utils.isDotGitPresent
 import java.io.File
 import java.io.FileOutputStream
 
 class AnalysisRepository(
     var path: String = "",
     var owner: String? = null,
-    var name: String? = null
+    var name: String? = null,
+    var licence: String? = null
 ) {
     private companion object {
         const val CLONE_TRIES_NUMBER = 2
@@ -34,9 +36,9 @@ class AnalysisRepository(
 
     lateinit var git: Git
     lateinit var repository: Repository
-    var defaultBranchHead: Ref? = null
+    lateinit var mergeHistory: MergeHistory
 
-    val mergeCommits = mutableListOf<RevCommit>()
+    var defaultBranchHead: Ref? = null
     val firstParentsCommits = mutableListOf<RevCommit>()
 
     var mergeCommitsNumber: Int = 0
@@ -86,8 +88,8 @@ class AnalysisRepository(
 
     fun loadCommitsHistory() {
         defaultBranchHead?.let {
-            mergeCommits.addAll(repository.getMergeCommitsHistory(it.objectId, includeYoungest = true))
-            mergeCommitsNumber = mergeCommits.size
+            mergeHistory = repository.getMergeCommitsHistory(it.objectId, includeYoungest = true)
+            mergeCommitsNumber = mergeHistory.mergeCommitsNumber
             firstParentsCommits.addAll(repository.getFirstParentHistory(it.objectId))
             firstParentsCommitsNumber = firstParentsCommits.size
         }
@@ -101,7 +103,7 @@ class AnalysisRepository(
     }
 
     fun clear() {
-        mergeCommits.clear()
+        mergeHistory.history.clear()
         firstParentsCommits.clear()
         git.close()
     }
@@ -118,7 +120,10 @@ class AnalysisRepository(
         val jsonNode = mapper.createObjectNode()
         jsonNode.set<JsonNode>("owner", mapper.valueToTree(owner))
         jsonNode.set<JsonNode>("name", mapper.valueToTree(name))
+        jsonNode.set<JsonNode>("license", mapper.valueToTree(licence))
         jsonNode.set<JsonNode>("default_branch", mapper.valueToTree(defaultBranchHead?.name))
+        jsonNode.set<JsonNode>("is_oldest_merge", mapper.valueToTree(mergeHistory.isOldestMerge))
+        jsonNode.set<JsonNode>("is_youngest_merge", mapper.valueToTree(mergeHistory.isYoungestMerge))
         jsonNode.set<JsonNode>("merge_commits_cnt", mapper.valueToTree(mergeCommitsNumber))
         jsonNode.set<JsonNode>("first_parents_commits_cnt", mapper.valueToTree(firstParentsCommitsNumber))
         jsonNode.set<JsonNode>("merges_part", mapper.valueToTree(mergesPart))
