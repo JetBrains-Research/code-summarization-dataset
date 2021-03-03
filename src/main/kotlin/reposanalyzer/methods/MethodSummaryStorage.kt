@@ -23,11 +23,17 @@ data class MethodIdentity(
     val methodArgsTypes: List<String> = listOf(),
     val methodReturnType: String? = null
 ) {
+
+    var id: Int? = null
+    var isDoc: Boolean? = null
+
     fun toJSON(objectMapper: ObjectMapper? = null): JsonNode {
         val mapper = getObjectMapper(objectMapper)
         val jsonNode = mapper.createObjectNode()
-        jsonNode.set<JsonNode>("return_type", mapper.valueToTree(methodReturnType))
+        jsonNode.set<JsonNode>("id", mapper.valueToTree(id))
+        jsonNode.set<JsonNode>("is_doc", mapper.valueToTree(isDoc))
         jsonNode.set<JsonNode>("full_name", mapper.valueToTree(methodNormalizedFullName))
+        jsonNode.set<JsonNode>("return_type", mapper.valueToTree(methodReturnType))
         jsonNode.set<JsonNode>("args_types", mapper.valueToTree(methodArgsTypes))
         return jsonNode
     }
@@ -82,10 +88,13 @@ class MethodSummaryStorage(
 
     fun add(summary: MethodSummary): Boolean {
         if (contains(summary)) return false
-        visited.add(MethodIdentity(summary.fullName, summary.argsTypes, summary.returnType))
+        val identity = MethodIdentity(summary.fullName, summary.argsTypes, summary.returnType)
+        visited.add(identity)
         data.add(summary)
         stats.registerMethod(summary)
         summary.id = stats.totalMethods
+        identity.id = summary.id
+        identity.isDoc = summary.doc != null
         if (readyToDump()) dump()
         return true
     }

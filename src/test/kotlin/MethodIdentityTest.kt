@@ -56,4 +56,17 @@ class MethodIdentityTest {
         assertFalse(list.contains(id3))
         assertFalse(list.contains(id4))
     }
+
+    @Test
+    fun otherFieldsNoEffect() {
+        val id1 = MethodIdentity(fName1, argsTypes1)
+        val id2 = MethodIdentity(fName1, argsTypes1)
+        assertEquals(id1, id2)
+        id1.id = 42
+        id2.id = 17
+        assertEquals(id1, id2)
+        id1.isDoc = true
+        id2.isDoc = false
+        assertEquals(id1, id2)
+    }
 }
