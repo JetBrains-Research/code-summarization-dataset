@@ -134,6 +134,10 @@ class NoHistorySummarizer(
         val stats = summaryStorage.stats
         val mapper = jacksonObjectMapper().enable(SerializationFeature.INDENT_OUTPUT)
         val statsNode = stats.toJSON(mapper) as ObjectNode
+        analysisRepo?.let {
+            statsNode.set<JsonNode>("owner", mapper.valueToTree(it.owner))
+            statsNode.set<JsonNode>("name", mapper.valueToTree(it.name))
+        }
         statsNode.set<JsonNode>("analysis_languages", mapper.valueToTree(config.languages))
         statsNode.set<JsonNode>("process_end_status", mapper.valueToTree(status))
         statsNode.set<JsonNode>("seconds_spent", mapper.valueToTree(if (secondsSpent >= 0) secondsSpent else 0))
