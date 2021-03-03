@@ -130,7 +130,7 @@ class ReposFinder(
         status = Status.LIMITS_WAITING
         logger.add("> per hour requests limits reached")
         logLimits()
-        logger.add("> waiting until ${prettyDate(System.currentTimeMillis())}")
+        logger.add("> waiting until ${prettyDate(resetTime)}")
         // until not reset time or not interrupted
         while (System.currentTimeMillis() <= resetTime && status == Status.LIMITS_WAITING) {
             Thread.sleep(config.sleepRange) // sleep in milliseconds
