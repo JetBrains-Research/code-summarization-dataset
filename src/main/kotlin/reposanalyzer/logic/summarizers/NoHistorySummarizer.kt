@@ -39,10 +39,11 @@ class NoHistorySummarizer(
     private var analysisStart: Long = 0
     private var analysisEnd: Long = 0
 
-    private lateinit var analysisDir: File
     private lateinit var methodParseProvider: MethodParseProvider
     private lateinit var summaryStorage: MethodSummaryStorage
     private lateinit var workLogger: WorkLogger
+
+    private var analysisDirPath: String? = null
 
     override fun run() {
         analysisStart = System.currentTimeMillis()
@@ -91,7 +92,7 @@ class NoHistorySummarizer(
 
     private fun initRepo(): SummarizerStatus =
         if (analysisRepo != null && analysisRepo.initRepository(dumpPath)) {
-            analysisDir = File(analysisRepo.path)
+            analysisDirPath = analysisRepo.path
             SummarizerStatus.LOADED
         } else {
             SummarizerStatus.REPO_NOT_PRESENT
@@ -99,7 +100,7 @@ class NoHistorySummarizer(
 
     private fun initDir() =
         if (analysisPath != null && File(analysisPath).isDirectory) {
-            analysisDir = File(analysisPath)
+            analysisDirPath = analysisPath
             SummarizerStatus.LOADED
         } else {
             SummarizerStatus.BAD_DIR
@@ -115,19 +116,22 @@ class NoHistorySummarizer(
         methodParseProvider = MethodParseProvider(parsers, summaryStorage, config, analysisRepo)
     }
 
-    private fun processFiles() = analysisDir.walkTopDown()
-        .filter { !it.isHidden && !it.isDirectory }
-        .toList()
-        .getFilesByLanguage(config.languages)
-        .parseFilesByLanguage()
+    private fun processFiles() = analysisDirPath?.let { path ->
+        File(path).walkTopDown()
+            .filter { !it.isHidden && !it.isDirectory }
+            .toList()
+            .getFilesByLanguage(config.languages)
+            .parseFilesByLanguage()
+    }
 
-    private fun Map<Language, List<File>>.parseFilesByLanguage() =
+    private fun Map<Language, List<File>>.parseFilesByLanguage() = analysisDirPath?.let { path ->
         this.filter { (_, files) -> files.isNotEmpty() }
             .forEach { (lang, files) ->
-                if (!methodParseProvider.parse(files, lang, analysisDir.absolutePath)) {
+                if (!methodParseProvider.parse(files, lang, path)) {
                     workLogger.add("> unsupported language $lang -- no parser")
                 }
             }
+    }
 
     private fun dumpSummary() {
         val secondsSpent = (analysisEnd - analysisStart) / 1000L
@@ -173,9 +177,10 @@ class NoHistorySummarizer(
 
     @Override
     override fun toString(): String {
+        val dir = analysisDirPath?.removePrefix(dumpPath) ?: "dir is null"
         if (analysisRepo?.owner != null && analysisRepo.name != null) {
-            return "/${analysisRepo.owner}/${analysisRepo.name} ${analysisDir.absolutePath}"
+            return "/${analysisRepo.owner}/${analysisRepo.name}"
         }
-        return analysisDir.absolutePath
+        return dir
     }
 }
