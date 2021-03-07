@@ -1,5 +1,8 @@
 import org.junit.Test
+import reposanalyzer.config.IdentityConfig
+import reposanalyzer.config.IdentityParameters
 import reposanalyzer.config.Language
+import reposanalyzer.methods.MethodIdentity
 import reposanalyzer.methods.MethodSummary
 import reposanalyzer.methods.MethodSummaryStorage
 import java.io.File
@@ -10,33 +13,35 @@ import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 internal class MethodSummaryStorageTest {
-    private val testFolder =
-        File(System.getProperty("user.dir")).resolve("_method_summary_storage_test_tmp")
+    private val testFolder = File(System.getProperty("user.dir")).resolve(".method_summary_storage_test_tmp")
 
-    private fun createMethodSummary(
-        fullName: String,
-        filePath: String,
-        argsTypes: List<String> = emptyList(),
-        returnType: String? = null
-    ) = MethodSummary(
-        name = "",
-        splitName = "",
-        argsTypes = argsTypes,
-        returnType = returnType,
-        fullName = fullName,
-        filePath = filePath,
-        language = Language.JAVA
-    )
+    private fun genName(n: Int) = "method$n"
+    private fun genPath(n: Int) = "path$n"
+    private fun genFullName(n: Int) = "full_name.method$n"
+    private fun genArgsTypes(n: Int) = (0 until n).map { "ARG$it" }.toList()
+    private fun genReturnType(n: Int) = "T$n"
+    private fun genIdentityConfig(params: List<IdentityParameters>): IdentityConfig = IdentityConfig(params)
 
-    private val mName1 = "method1"
-    private val mName2 = "method2"
-    private val fName1 = "full_name.$mName1"
-    private val fName2 = "full_name.$mName2"
-    private val path1 = "path1"
-    private val path2 = "path2"
-    private val argsTypes1 = listOf("int", "String")
-    private val argsTypes2 = listOf("String", "int")
-    private val argsTypes3 = listOf("Type")
+    private fun genIdentityConfigWithIds(paramsIds: List<Int>): IdentityConfig {
+        val params = IdentityParameters.values()
+        return genIdentityConfig(paramsIds.map { n -> params[n] }.toList())
+    }
+
+    private fun genMethodSummary(pathId: Int, nameId: Int, argsId: Int, rtId: Int, config: IdentityConfig): MethodSummary {
+        val methodSummary = MethodSummary(
+            filePath = "", name = "", fullName = "", splitName = "", language = Language.JAVA
+        )
+        for (param in config.parameters) {
+            when (param) {
+                IdentityParameters.NAME -> methodSummary.name = genName(nameId)
+                IdentityParameters.FULL_NAME -> methodSummary.fullName = genFullName(nameId)
+                IdentityParameters.RETURN_TYPE -> methodSummary.returnType = genReturnType(rtId)
+                IdentityParameters.ARGS_TYPES -> methodSummary.argsTypes = genArgsTypes(argsId)
+                IdentityParameters.FILE -> methodSummary.filePath = genPath(pathId)
+            }
+        }
+        return methodSummary
+    }
 
     @BeforeTest
     fun createFolder() {
@@ -49,117 +54,207 @@ internal class MethodSummaryStorageTest {
     }
 
     @Test
-    fun containsTest() {
+    fun basicsWithIdentity() {
+        val params = listOf(IdentityParameters.FULL_NAME, IdentityParameters.ARGS_TYPES)
+        val config = IdentityConfig(params)
         val mss = MethodSummaryStorage(
-            testFolder.absolutePath, false, isCode2SecDump = false, 1000
+            config, testFolder.absolutePath, isAstDumpDotFormat = false, isCode2SecDump = false
         )
-
-        val ms1 = createMethodSummary(fName1, path1, argsTypes1) //  method 1
-        val ms2 = createMethodSummary(fName1, path1, argsTypes1) //  method 1
-        val ms3 = createMethodSummary(fName1, path2, argsTypes1) //  method 1 with other path
-        val ms4 = createMethodSummary(fName2, path1, argsTypes2) //  method 2
-
-        // notContains
-        assertFalse(mss.contains(ms1))
-        assertFalse(mss.contains(ms2))
-        assertFalse(mss.contains(ms3))
-        assertFalse(mss.contains(ms4))
-
-        // contains
-        assertFalse(mss.contains(ms1))
-        assertFalse(mss.contains(ms2))
-        assertFalse(mss.contains(ms3))
-        assertFalse(mss.contains(ms4))
-    }
-
-    @Test
-    fun containsAddedTest() {
-        val mss = MethodSummaryStorage(
-            testFolder.absolutePath, false, isCode2SecDump = false, 1000
-        )
-
-        val ms1 = createMethodSummary(fName1, path1, argsTypes1) //  method 1
-        val ms2 = createMethodSummary(fName1, path1, argsTypes1) //  method 1
-        val ms3 = createMethodSummary(fName1, path2, argsTypes1) //  method 1 with other path
-        val ms4 = createMethodSummary(fName2, path1, argsTypes2) //  method 2
-        val ms5 = createMethodSummary(fName2, path1, argsTypes3) //  method 3
-        val ms6 = createMethodSummary(fName1, path1, argsTypes3) //  method 4
-
-        // contains added
+        val ms1 = genMethodSummary(0, 1, 3, 0, config)
+        val ms2 = genMethodSummary(0, 1, 3, 0, config)
+        val ms3 = genMethodSummary(0, 1, 4, 0, config)
+        val ms4 = genMethodSummary(0, 2, 3, 0, config)
         assertTrue(mss.add(ms1))
         assertTrue(mss.contains(ms1))
         assertEquals(1, mss.size)
 
-        // duplicates add false
         assertFalse(mss.add(ms2))
         assertEquals(1, mss.size)
-
-        // add with different name same path
-        assertTrue(mss.add(ms4))
-        assertTrue(mss.contains(ms4))
-        assertEquals(2, mss.size)
-
-        // add with different args with same name and path
-        assertTrue(mss.add(ms5))
-        assertTrue(mss.contains(ms5))
-        assertEquals(3, mss.size)
-
-        // last contains
-        assertTrue(mss.contains(ms1))
         assertTrue(mss.contains(ms2))
-        assertTrue(mss.contains(ms3))
-        assertTrue(mss.contains(ms4))
-        assertTrue(mss.contains(ms5))
-        assertFalse(mss.contains(ms6))
-        assertEquals(3, mss.size)
-    }
-
-    @Test
-    fun containsAfterDump() {
-        val mss = MethodSummaryStorage(
-            testFolder.absolutePath, false, isCode2SecDump = false, 1000
+        assertTrue(
+            mss.contains(
+                MethodIdentity(
+                    name = ms2.name,
+                    fullName = ms2.fullName,
+                    filePath = ms2.filePath,
+                    argsTypes = ms2.argsTypes,
+                    returnType = ms2.returnType
+                )
+            )
         )
 
-        val ms1 = createMethodSummary(fName1, path1, argsTypes1) //  method 1
-        val ms2 = createMethodSummary(fName1, path1, argsTypes1) //  method 1
-        val ms3 = createMethodSummary(fName1, path2, argsTypes1) //  method 1 with other path
-        val ms4 = createMethodSummary(fName2, path1, argsTypes2) //  method 2
+        assertFalse(mss.contains(ms3))
+        assertTrue(mss.add(ms3))
+        assertEquals(2, mss.size)
 
-        mss.add(ms1)
-        mss.add(ms2)
-        mss.add(ms3)
-        mss.add(ms4)
-
-        // contains visited after dump
-        mss.dump()
-        assertTrue(mss.contains(ms1))
-        assertTrue(mss.contains(ms2))
-        assertTrue(mss.contains(ms3))
-        assertTrue(mss.contains(ms4))
+        assertFalse(mss.contains(ms4))
+        assertTrue(mss.add(ms4))
+        assertEquals(3, mss.size)
+        mss.clear()
         assertEquals(0, mss.size)
     }
 
     @Test
-    fun containsAfterClear() {
+    fun basicsNoIdentity() {
+        val config = IdentityConfig(emptyList())
         val mss = MethodSummaryStorage(
-            testFolder.absolutePath, false, isCode2SecDump = false, 1000
+            config, testFolder.absolutePath, isAstDumpDotFormat = false, isCode2SecDump = false
         )
-
-        val ms1 = createMethodSummary(fName1, path1, argsTypes1) //  method 1
-        val ms2 = createMethodSummary(fName1, path1, argsTypes1) //  method 1
-        val ms3 = createMethodSummary(fName1, path2, argsTypes1) //  method 1 with other path
-        val ms4 = createMethodSummary(fName2, path1, argsTypes2) //  method 2
-
-        mss.add(ms1)
-        mss.add(ms2)
-        mss.add(ms3)
-        mss.add(ms4)
-
-        // not contains after clear
-        mss.clear()
+        val ms1 = genMethodSummary(0, 1, 3, 0, config)
+        val ms2 = genMethodSummary(0, 1, 3, 0, config)
+        val ms3 = genMethodSummary(0, 1, 4, 0, config)
+        val ms4 = genMethodSummary(0, 2, 3, 0, config)
+        assertTrue(mss.add(ms1))
+        assertEquals(1, mss.size)
         assertFalse(mss.contains(ms1))
-        assertFalse(mss.contains(ms2))
+
+        assertFalse(mss.contains(ms2)) // no contains because no identity to check
+        assertTrue(mss.add(ms2))
+        assertEquals(2, mss.size)
+        assertFalse(mss.contains(ms2)) // no contains because no identity to check
+
+        assertFalse(
+            mss.contains(
+                MethodIdentity(
+                    name = ms2.name,
+                    fullName = ms2.fullName,
+                    filePath = ms2.filePath,
+                    argsTypes = ms2.argsTypes,
+                    returnType = ms2.returnType
+                )
+            )
+        )
         assertFalse(mss.contains(ms3))
+        assertTrue(mss.add(ms3))
+        assertEquals(3, mss.size)
+        assertFalse(mss.contains(ms3))
+
         assertFalse(mss.contains(ms4))
+        assertTrue(mss.add(ms4))
+        assertEquals(4, mss.size)
+        assertFalse(mss.contains(ms3))
+
+        mss.clear()
+        assertEquals(0, mss.size)
+    }
+
+    @Test
+    fun noIdentityStress() {
+        val config = IdentityConfig(emptyList())
+        val mss = MethodSummaryStorage(
+            config, testFolder.absolutePath, isAstDumpDotFormat = false, isCode2SecDump = false, dumpThreshold = 100000
+        )
+        val ssAdded = mutableListOf<MethodSummary>()
+        for (n in 0..20) {
+            for (k in 0 until 20) {
+                val summary = genMethodSummary(k, k, 5, k, config)
+                ssAdded.add(summary)
+                assertFalse(mss.contains(summary))
+                assertTrue(mss.add(summary))
+                assertEquals(ssAdded.size, mss.size)
+            }
+        }
+        mss.clear()
+        assertEquals(0, mss.size)
+    }
+
+    @Test
+    fun containsWithMinimumOneIdentityParameter() {
+        val k = IdentityParameters.values().size
+        for (i in 0 until k) {
+            val paramsIds = (0..i).toList()
+            val identityConfig = genIdentityConfigWithIds(paramsIds)
+            val mss = MethodSummaryStorage(
+                identityConfig, testFolder.absolutePath, isAstDumpDotFormat = false, isCode2SecDump = false
+            )
+            val ssAdded = mutableListOf<MethodSummary>()
+            for (n in 1..50) {
+                val summary = genMethodSummary(n, n, 5, n, identityConfig)
+                ssAdded.add(summary)
+                assertFalse(mss.contains(summary))
+                assertTrue(mss.add(summary))
+                assertEquals(ssAdded.size, mss.size)
+            }
+            ssAdded.forEach { summary ->
+                assertTrue(mss.contains(summary))
+                assertFalse(mss.add(summary))
+            }
+            val ssNotAdded = mutableListOf<MethodSummary>()
+            for (n in 51..100) {
+                val summary = genMethodSummary(n, n, 5, n, identityConfig)
+                ssNotAdded.add(summary)
+                assertFalse(mss.contains(summary))
+                assertEquals(ssAdded.size, mss.size)
+            }
+            ssNotAdded.forEach { summary ->
+                assertFalse(mss.contains(summary))
+                assertTrue(mss.add(summary))
+                assertTrue(mss.contains(summary))
+            }
+        }
+    }
+
+    @Test
+    fun containsAfterDump() {
+        val dumpThreshold = 20
+        val params = listOf(IdentityParameters.FULL_NAME, IdentityParameters.ARGS_TYPES)
+        val config = IdentityConfig(params)
+        val mss = MethodSummaryStorage(
+            config,
+            testFolder.absolutePath,
+            isAstDumpDotFormat = false,
+            isCode2SecDump = false,
+            dumpThreshold = dumpThreshold
+        )
+        for (k in 1..dumpThreshold) {
+            val summary = genMethodSummary(k, k, 5, k, config)
+            assertFalse(mss.contains(summary))
+            assertTrue(mss.add(summary))
+        }
+        for (n in 0..10) {
+            val ssAdded = mutableListOf<MethodSummary>()
+            for (k in 1..dumpThreshold) {
+                val summary = genMethodSummary(k, k, 5, k, config)
+                ssAdded.add(summary)
+                assertTrue(mss.contains(summary)) // because visited not dumped
+                assertFalse(mss.add(summary))
+            }
+            assertEquals(0, mss.size)
+            assertEquals(dumpThreshold, ssAdded.size)
+            ssAdded.forEach {
+                assertTrue(mss.contains(it)) // because visited not dumped
+            }
+        }
+    }
+
+    @Test
+    fun containsAfterClear() {
+        val dumpThreshold = 20
+        val params = listOf(IdentityParameters.FULL_NAME, IdentityParameters.ARGS_TYPES)
+        val config = IdentityConfig(params)
+        val mss = MethodSummaryStorage(
+            config,
+            testFolder.absolutePath,
+            isAstDumpDotFormat = false,
+            isCode2SecDump = false,
+            dumpThreshold = dumpThreshold
+        )
+        for (k in 1..dumpThreshold) {
+            val summary = genMethodSummary(k, k, 5, k, config)
+            assertFalse(mss.contains(summary))
+            assertTrue(mss.add(summary))
+        }
+        for (k in 1..dumpThreshold) {
+            val summary = genMethodSummary(k, k, 5, k, config)
+            assertTrue(mss.contains(summary)) // because visited not dumped
+            assertFalse(mss.add(summary))
+        }
+        mss.clear()
+        assertEquals(0, mss.size)
+        for (k in 1..dumpThreshold) {
+            val summary = genMethodSummary(k, k, 5, k, config)
+            assertFalse(mss.contains(summary)) // because visited dumped
+            assertTrue(mss.add(summary))
+        }
     }
 }

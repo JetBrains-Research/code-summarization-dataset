@@ -111,7 +111,12 @@ class NoHistorySummarizer(
         val workLogPath = File(dumpPath).resolve(WORK_LOG).absolutePath
         workLogger = WorkLogger(workLogPath, isDebug = config.isDebugSummarizers)
         summaryStorage = MethodSummaryStorage(
-            dumpPath, config.isAstDotFormat, config.isCode2SeqDump, config.summaryDumpThreshold, workLogger
+            config.identityConfig,
+            dumpPath,
+            config.isAstDotFormat,
+            config.isCode2SeqDump,
+            config.summaryDumpThreshold,
+            workLogger
         )
         methodParseProvider = MethodParseProvider(parsers, summaryStorage, config, analysisRepo)
     }

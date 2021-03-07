@@ -136,7 +136,12 @@ class HistorySummarizer(
         workLogger = WorkLogger(workLogPath, isDebug = config.isDebugSummarizers)
         commitsLogger = CommitsLogger(commitsLogPath, config.logDumpThreshold)
         summaryStorage = MethodSummaryStorage(
-            dumpPath, config.isAstDotFormat, config.isCode2SeqDump, config.summaryDumpThreshold, workLogger
+            config.identityConfig,
+            dumpPath,
+            config.isAstDotFormat,
+            config.isCode2SeqDump,
+            config.summaryDumpThreshold,
+            workLogger
         )
         methodParseProvider = MethodParseProvider(parsers, summaryStorage, config, analysisRepo)
     }
@@ -216,7 +221,7 @@ class HistorySummarizer(
             summaryStorage.clear()
             workLogger.add(
                 "> TOTAL DUMPS [${summaryStorage.stats.totalMethods} methods, " +
-                        "${summaryStorage.stats.pathsNumber} paths]"
+                    "${summaryStorage.stats.pathsNumber} paths]"
             )
             commitsLogger.dump()
             commitsLogger.clear()

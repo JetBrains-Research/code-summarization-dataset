@@ -226,6 +226,9 @@ analysis config is .json file with run parameters:
   "languages": ["Java"],                              // interesting languages
   "task": "name",                                     // current supported task - name extraction
   "granularity": "method",                            // current supported granularity - method
+  
+  "method_uniqueness": ["full_name", "return_type", "args_types"] // how to check method uniqueness
+  
   "hide_methods_names": true,                         // hides methods names in methods bodies and AST's
   "exclude_constructors": true,                       // exclude constructors from summary
 
@@ -256,7 +259,13 @@ Repositories analysis based on git-history if `"HISTORY_MODE": true`, analyzer:
 - for every consecutive pair of commits gets the diff list of files `git diff --name-only SHA1 SHA2`
 - filters supported languages (Java) files from diff list
 - if list of files for supported languages isn't empty - makes checkout to current commit `git checkout SHA`
-- extracts new methods summary from files if tuple `(full method name (nesting hierarchy), method args types list, method return type)` wasn't added before
+- extracts new methods summary from files if tuple `"method_uniqueness": [...]` wasn't added before, parameters of tuple:
+  - `"name"` - method name, e.g. `foo`, `bar`
+  - `"full_name"` - method fullname (nesting hierarchy: all parents classes and functions), e.g. `MyClass.foo`, `foo.bar`
+  - `"return_type"` - method return type
+  - `"args_types"` - types of methods arguments (if possible to extract)
+  - `"file"` - path to file with method
+  - if `"method_uniqueness": []` - tool extracts all methods without uniqueness check
 
 Two types of history processing depending on the type of commit:
 - `"commits_type": "merges"` - history includes merge commits `git log --first-parent --merges DEFAULT_BRANCH`
