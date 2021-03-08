@@ -1,8 +1,7 @@
 package reposanalyzer.methods
 
-import com.fasterxml.jackson.databind.JsonNode
-import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import reposanalyzer.config.IdentityConfig
 import reposanalyzer.utils.WorkLogger
 import reposanalyzer.utils.clearFile
 import java.io.File
@@ -18,28 +17,8 @@ import java.io.FileOutputStream
  *
  *  Visited methods storage (visited) does not clear at dumps
  */
-data class MethodIdentity(
-    val methodNormalizedFullName: String,
-    val methodArgsTypes: List<String> = listOf(),
-    val methodReturnType: String? = null
-) {
-
-    var id: Int? = null
-    var isDoc: Boolean? = null
-
-    fun toJSON(objectMapper: ObjectMapper? = null): JsonNode {
-        val mapper = getObjectMapper(objectMapper)
-        val jsonNode = mapper.createObjectNode()
-        jsonNode.set<JsonNode>("id", mapper.valueToTree(id))
-        jsonNode.set<JsonNode>("is_doc", mapper.valueToTree(isDoc))
-        jsonNode.set<JsonNode>("full_name", mapper.valueToTree(methodNormalizedFullName))
-        jsonNode.set<JsonNode>("return_type", mapper.valueToTree(methodReturnType))
-        jsonNode.set<JsonNode>("args_types", mapper.valueToTree(methodArgsTypes))
-        return jsonNode
-    }
-}
-
 class MethodSummaryStorage(
+    private val identityConfig: IdentityConfig,
     private val dumpFolder: String,
     private val isAstDumpDotFormat: Boolean,
     private val isCode2SecDump: Boolean,
@@ -56,8 +35,7 @@ class MethodSummaryStorage(
 
     private enum class DumpType {
         MAIN,
-        PATHS_JSON,
-        PATHS_C2S
+        PATHS_JSON
     }
 
     private val data = mutableSetOf<MethodSummary>()
@@ -74,6 +52,7 @@ class MethodSummaryStorage(
         get() = data.size
 
     init {
+        stats.identityConfig = identityConfig
         summaryDumpFile.createNewFile()
         pathsJSONDumpFile.createNewFile()
         identityDumpFile.createNewFile()
@@ -88,13 +67,10 @@ class MethodSummaryStorage(
 
     fun add(summary: MethodSummary): Boolean {
         if (contains(summary)) return false
-        val identity = MethodIdentity(summary.fullName, summary.argsTypes, summary.returnType)
-        visited.add(identity)
-        data.add(summary)
         stats.registerMethod(summary)
         summary.id = stats.totalMethods
-        identity.id = summary.id
-        identity.isDoc = summary.doc != null
+        visited.add(MethodIdentity.create(summary, identityConfig))
+        data.add(summary)
         if (readyToDump()) dump()
         return true
     }
@@ -125,7 +101,6 @@ class MethodSummaryStorage(
                 val node = when (dumpType) {
                     DumpType.MAIN -> summary.toJSONMain(objectMapper, isAstDumpDotFormat)
                     DumpType.PATHS_JSON -> summary.toJSONPaths(objectMapper)
-                    else -> return
                 }
                 val string = node.toString()
                 writer.appendLine(string)
@@ -151,9 +126,9 @@ class MethodSummaryStorage(
         stats.clear()
     }
 
-    fun contains(summary: MethodSummary): Boolean =
-        contains(summary.fullName, summary.argsTypes, summary.returnType)
+    fun contains(summary: MethodSummary): Boolean = if (identityConfig.isNoIdentity) false
+    else visited.contains(MethodIdentity.create(summary = summary, config = identityConfig))
 
-    fun contains(normalizedFullName: String, argsTypes: List<String>, returnType: String?): Boolean =
-        visited.contains(MethodIdentity(normalizedFullName, argsTypes, returnType))
+    fun contains(realId: MethodIdentity): Boolean = if (identityConfig.isNoIdentity) false
+    else visited.contains(MethodIdentity.create(realId = realId, config = identityConfig))
 }

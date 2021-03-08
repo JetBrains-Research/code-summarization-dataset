@@ -38,6 +38,7 @@ class AnalysisConfig(
         const val REMOVE_AFTER_ZIP = "remove_files_after_gzip"
         const val DATA_DUMP_FOLDER = "data"
         const val IS_DOT_FORMAT = "ast_dot_format"
+        const val METHOD_UNIQUENESS = "method_uniqueness"
 
         const val MAX_PATHS = "max_paths"
         const val MAX_PATH_WIDTH = "max_path_width"
@@ -50,7 +51,7 @@ class AnalysisConfig(
     }
 
     private val pathFields = listOf(REPOS_URLS_PATH, DIRS_LIST_PATH, DUMP_DIR_PATH)
-    private val listFields = listOf(LANGUAGES, EXCLUDE_NODES)
+    private val listFields = listOf(LANGUAGES, EXCLUDE_NODES, METHOD_UNIQUENESS)
     private val intFields = listOf(
         THREADS_COUNT, LOG_DUMP_THRESHOLD,
         METHODS_DUMP_THRESHOLD, MIN_COMMITS_NUMBER,
@@ -74,6 +75,7 @@ class AnalysisConfig(
 
     var isHistoryMode: Boolean = true
 
+    var identityConfig: IdentityConfig = IdentityConfig(emptyList())
     var threadsCount: Int = DEFAULT_THREADS_COUNT
     var logDumpThreshold: Int = DEFAULT_LOG_DUMP_THRESHOLD
     var summaryDumpThreshold: Int = DEFAULT_METHOD_DUMP_THRESHOLD
@@ -135,6 +137,9 @@ class AnalysisConfig(
         when (field) {
             LANGUAGES -> this.get(field).processLanguages()
             EXCLUDE_NODES -> this.get(field).processExcludeNodes()
+            METHOD_UNIQUENESS -> {
+                identityConfig = IdentityConfig.createFromJson(this.get(field))
+            }
         }
     }
 

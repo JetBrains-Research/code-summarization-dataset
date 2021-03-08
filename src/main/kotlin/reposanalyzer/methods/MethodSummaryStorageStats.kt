@@ -4,11 +4,13 @@ import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import reposanalyzer.config.IdentityConfig
 
 class MethodSummaryStorageStats {
     private val fullNames = mutableSetOf<String>()
     private val visitedFiles = mutableSetOf<String>()
 
+    var identityConfig = IdentityConfig(emptyList())
     var totalMethods: Int = 0
     var methodsWithDoc: Int = 0
     var methodsWithComment: Int = 0
@@ -43,6 +45,10 @@ class MethodSummaryStorageStats {
         val mapper = objectMapper ?: jacksonObjectMapper()
             .enable(SerializationFeature.INDENT_OUTPUT)
         val jsonNode = mapper.createObjectNode()
+        jsonNode.set<JsonNode>(
+            "method_uniqueness_params",
+            mapper.valueToTree(identityConfig.parameters.map { it.label })
+        )
         jsonNode.set<JsonNode>("total_methods", mapper.valueToTree(totalMethods))
         jsonNode.set<JsonNode>("total_uniq_full_names", mapper.valueToTree(totalUniqMethodsFullNames))
         jsonNode.set<JsonNode>("total_paths", mapper.valueToTree(pathsNumber))
@@ -52,5 +58,4 @@ class MethodSummaryStorageStats {
         jsonNode.set<JsonNode>("processed_files", mapper.valueToTree(totalFiles))
         return jsonNode
     }
-
 }

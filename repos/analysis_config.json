@@ -21,6 +21,9 @@
 
   "task": "name",
   "granularity": "method",
+
+  "method_uniqueness": ["full_name", "name", "file", "return_type", "args_types"],
+
   "hide_methods_names": true,
   "exclude_constructors": true,
 
