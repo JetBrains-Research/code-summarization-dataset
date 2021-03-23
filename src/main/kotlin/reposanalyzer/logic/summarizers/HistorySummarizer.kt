@@ -194,7 +194,6 @@ class HistorySummarizer(
     private fun Map<Language, List<File>>.parseFilesByLanguage() =
         this.filter { (_, files) -> files.isNotEmpty() }
             .forEach { (lang, files) ->
-                println(lang)
                 if (!methodParseProvider.parse(files, lang, analysisRepo.path, currCommit)) {
                     workLogger.add("> unsupported language $lang -- no parser")
                 }
