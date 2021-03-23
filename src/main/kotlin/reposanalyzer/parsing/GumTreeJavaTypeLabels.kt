@@ -1,6 +1,6 @@
 package reposanalyzer.parsing
 
-object AstMinerTypeLabels {
+object GumTreeJavaTypeLabels {
     const val SIMPLE_NAME = "SimpleName"
     const val JAVA_DOC = "Javadoc"
     const val ARRAY_TYPE = "ArrayType"

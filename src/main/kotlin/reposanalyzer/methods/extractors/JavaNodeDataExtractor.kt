@@ -2,11 +2,20 @@ package reposanalyzer.methods.extractors
 
 import astminer.common.model.Node
 import reposanalyzer.methods.extractContent
-import reposanalyzer.parsing.AstMinerTypeLabels
+import reposanalyzer.parsing.GumTreeJavaTypeLabels
 import reposanalyzer.parsing.getNodeLength
 import reposanalyzer.parsing.getNodeStart
 
 interface JavaNodeDataExtractor : NodeDataExtractor {
+
+    companion object {
+        val TYPES = listOf(
+            GumTreeJavaTypeLabels.ARRAY_TYPE,
+            GumTreeJavaTypeLabels.PRIMITIVE_TYPE,
+            GumTreeJavaTypeLabels.SIMPLE_TYPE,
+            GumTreeJavaTypeLabels.PARAMETERIZED_TYPE
+        )
+    }
 
     override fun <T : Node> T.extractBody(
         label: String,
@@ -15,7 +24,7 @@ interface JavaNodeDataExtractor : NodeDataExtractor {
     ): Triple<Int, Int, String?> {
         var pos = this.getNodeStart()
         var length = this.getNodeLength()
-        this.getChildByTypeLabel(AstMinerTypeLabels.JAVA_DOC)?.let { child ->
+        this.getChildByTypeLabel(GumTreeJavaTypeLabels.JAVA_DOC)?.let { child ->
             val docLength = child.getNodeLength()
             pos += docLength
             length -= docLength
@@ -30,7 +39,7 @@ interface JavaNodeDataExtractor : NodeDataExtractor {
     override fun <T : Node> T.extractDoc(fileContent: String): String? {
         var docPos = 0
         var docLength = 0
-        this.getChildByTypeLabel(AstMinerTypeLabels.JAVA_DOC)?.let { child ->
+        this.getChildByTypeLabel(GumTreeJavaTypeLabels.JAVA_DOC)?.let { child ->
             docPos = child.getNodeStart()
             docLength = child.getNodeLength()
         }
@@ -49,5 +58,31 @@ interface JavaNodeDataExtractor : NodeDataExtractor {
             }
         }
         return comment
+    }
+
+    override fun <T : Node> T.extractArgsTypes(fileContent: String): List<String> = this.extractArgsTypes()
+
+    override fun <T : Node> T.extractArgsTypes(): List<String> {
+        val types = mutableListOf<String>()
+        this.getChildrenOfType(GumTreeJavaTypeLabels.SINGLE_VAR_DECL).forEach { argNode ->
+            argNode.getChildren().forEach { type ->
+                val typeLabel = type.getTypeLabel()
+                if (TYPES.contains(typeLabel)) {
+                    types.add(type.getToken())
+                }
+            }
+        }
+        return types
+    }
+
+    override fun <T : Node> T.extractReturnType(): String? {
+        var type: String? = null
+        for (child in this.getChildren()) {
+            if (TYPES.contains(child.getTypeLabel())) {
+                type = child.getToken()
+                break
+            }
+        }
+        return type
     }
 }

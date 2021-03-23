@@ -9,6 +9,7 @@ import reposanalyzer.logic.summarizers.NoHistorySummarizer
 import reposanalyzer.logic.summarizers.Summarizer
 import reposanalyzer.logic.summarizers.SummarizerStatus
 import reposanalyzer.parsing.GumTreeParserFactory
+import reposanalyzer.parsing.SafeParser
 import reposanalyzer.utils.WorkLogger
 import reposanalyzer.utils.prettyDate
 import java.io.File
@@ -44,7 +45,7 @@ class ReposAnalyzer(
     private var visitedRepos = mutableListOf<Pair<String?, String?>>()
     private val visitedPaths = mutableSetOf<String>()
 
-    private val parsers = ConcurrentHashMap<Language, Parser<out Node>>()
+    private val parsers = ConcurrentHashMap<Language, SafeParser<out Node>>()
 
     private val pool = Executors.newFixedThreadPool(config.threadsCount)
     private val workers = LinkedList<Summarizer>()

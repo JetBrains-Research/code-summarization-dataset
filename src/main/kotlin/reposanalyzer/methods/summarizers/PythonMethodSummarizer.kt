@@ -6,13 +6,13 @@ import reposanalyzer.config.Language
 import reposanalyzer.logic.whichLine
 import reposanalyzer.methods.MethodSummary
 import reposanalyzer.methods.buildNormalizedFullName
-import reposanalyzer.methods.extractors.JavaNodeDataExtractor
+import reposanalyzer.methods.extractors.PythonNodeDataExtractor
 import reposanalyzer.methods.extractors.getParents
 import reposanalyzer.methods.normalizeAstLabel
 
-class JavaMethodSummarizer : MethodSummarizer, JavaNodeDataExtractor {
+class PythonMethodSummarizer : MethodSummarizer, PythonNodeDataExtractor {
 
-    override val language = Language.JAVA
+    override val language = Language.PYTHON
     override var hideMethodName: Boolean = true
     override var hiddenMethodName: String = MethodSummarizer.DEFAULT_HIDDEN_NAME
 
@@ -35,15 +35,15 @@ class JavaMethodSummarizer : MethodSummarizer, JavaNodeDataExtractor {
             name = normalizedLabel,
             splitName = splitLabel,
             fullName = normalizedFullName,
-            argsTypes = root.extractArgsTypes(),
-            returnType = root.extractReturnType(),
+            argsTypes = root.extractArgsTypes(fileContent),
+            returnType = null, // python parser doesn't support extraction of explicitly provided methods type
             filePath = filePath,
             language = language,
             doc = doc,
             comment = comment,
             posInFile = pos,
             length = length,
-            firstLineInFile = fileLinesStarts?.whichLine(pos + if (doc != null) 1 else 0),
+            firstLineInFile = fileLinesStarts?.whichLine(pos),
             lastLineInFile = fileLinesStarts?.whichLine(pos + length - 1),
             body = body,
             ast = ast,

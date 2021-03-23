@@ -7,6 +7,7 @@ import astminer.common.model.Node
 import astminer.common.model.OrientedNodeType
 import astminer.common.model.PathContext
 import astminer.parse.java.GumTreeJavaNode
+import astminer.parse.python.GumTreePythonNode
 
 /*
  * generic for other GumTreeNodes languages
@@ -14,6 +15,7 @@ import astminer.parse.java.GumTreeJavaNode
 fun <T : Node> T.getNodeLabel(): String {
     return when (this) {
         is GumTreeJavaNode -> this.wrappedNode.label
+        is GumTreePythonNode -> this.wrappedNode.label
         else -> throw NotImplementedError() // TODO
     }
 }
@@ -21,6 +23,7 @@ fun <T : Node> T.getNodeLabel(): String {
 fun <T : Node> T.getNodeStart(): Int {
     return when (this) {
         is GumTreeJavaNode -> this.wrappedNode.pos
+        is GumTreePythonNode -> this.wrappedNode.pos
         else -> throw NotImplementedError() // TODO
     }
 }
@@ -28,6 +31,7 @@ fun <T : Node> T.getNodeStart(): Int {
 fun <T : Node> T.getNodeLength(): Int {
     return when (this) {
         is GumTreeJavaNode -> this.wrappedNode.length
+        is GumTreePythonNode -> this.wrappedNode.length
         else -> throw NotImplementedError() // TODO
     }
 }

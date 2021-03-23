@@ -7,5 +7,9 @@ enum class Language(
     JAVA(
         "Java",
         listOf(".java")
+    ),
+    PYTHON(
+        "python",
+        listOf(".py")
     )
 }

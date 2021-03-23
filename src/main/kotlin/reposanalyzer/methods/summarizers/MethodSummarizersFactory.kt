@@ -12,6 +12,7 @@ interface MethodSummarizersFactory {
         ): MethodSummarizer {
             val methodSummarizer = when (language) {
                 Language.JAVA -> JavaMethodSummarizer()
+                Language.PYTHON -> PythonMethodSummarizer()
             }
             methodSummarizer.hideMethodName = hideMethodName
             methodSummarizer.hiddenMethodName = hiddenMethodName

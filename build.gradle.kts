@@ -24,7 +24,7 @@ dependencies {
     // reflect
     implementation("org.jetbrains.kotlin", "kotlin-reflect", "1.4.10")
     // astminer
-    implementation("io.github.vovak.astminer", "astminer", "0.6")
+    implementation("io.github.vovak.astminer", "astminer-dev", "1.373")
     // fuel - requests
     implementation("com.github.kittinunf.fuel", "fuel", "2.3.0")
     // clikt - cli
@@ -37,6 +37,8 @@ dependencies {
     implementation("org.apache.commons", "commons-compress", "1.20")
     // json
     implementation("com.fasterxml.jackson.module", "jackson-module-kotlin", "2.11.3")
+
+    implementation("org.slf4j", "slf4j-nop", "1.7.30")
 }
 
 detekt {

@@ -22,6 +22,7 @@ import reposanalyzer.logic.getFilesByLanguage
 import reposanalyzer.logic.getSupportedFiles
 import reposanalyzer.methods.MethodSummaryStorage
 import reposanalyzer.parsing.MethodParseProvider
+import reposanalyzer.parsing.SafeParser
 import reposanalyzer.utils.CommitsLogger
 import reposanalyzer.utils.WorkLogger
 import reposanalyzer.utils.deleteDirectory
@@ -37,7 +38,7 @@ import java.util.concurrent.ConcurrentHashMap
 class HistorySummarizer(
     private val analysisRepo: AnalysisRepository,
     private val dumpPath: String,
-    private val parsers: ConcurrentHashMap<Language, Parser<out Node>>,
+    private val parsers: ConcurrentHashMap<Language, SafeParser<out Node>>,
     private val config: AnalysisConfig
 ) : Zipper, Summarizer {
 
@@ -193,6 +194,7 @@ class HistorySummarizer(
     private fun Map<Language, List<File>>.parseFilesByLanguage() =
         this.filter { (_, files) -> files.isNotEmpty() }
             .forEach { (lang, files) ->
+                println(lang)
                 if (!methodParseProvider.parse(files, lang, analysisRepo.path, currCommit)) {
                     workLogger.add("> unsupported language $lang -- no parser")
                 }

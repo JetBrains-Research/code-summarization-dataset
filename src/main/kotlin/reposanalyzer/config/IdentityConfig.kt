@@ -1,9 +1,6 @@
 package reposanalyzer.config
 
 import com.fasterxml.jackson.databind.JsonNode
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.databind.SerializationFeature
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import reposanalyzer.utils.BadMethodUniquenessConfigParameter
 
 enum class IdentityParameters(val label: String) {

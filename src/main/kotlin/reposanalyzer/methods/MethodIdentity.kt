@@ -4,18 +4,20 @@ import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import reposanalyzer.config.IdentityConfig
 import reposanalyzer.config.IdentityParameters
+import reposanalyzer.config.Language
 
 data class MethodIdentity(
     var name: String? = null,
     var fullName: String? = null,
     var returnType: String? = null,
     var argsTypes: List<String> = listOf(),
-    var filePath: String? = null
+    var filePath: String? = null,
+    val language: Language
 ) {
 
     companion object {
         fun create(summary: MethodSummary, config: IdentityConfig): MethodIdentity {
-            val id = MethodIdentity()
+            val id = MethodIdentity(language = summary.language)
             id.config = config
             id.id = summary.id
             id.isDoc = summary.doc != null
@@ -32,7 +34,7 @@ data class MethodIdentity(
         }
 
         fun create(realId: MethodIdentity, config: IdentityConfig): MethodIdentity {
-            val id = MethodIdentity()
+            val id = MethodIdentity(language = realId.language)
             id.config = config
             for (param in config.parameters) {
                 when (param) {
