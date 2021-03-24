@@ -110,15 +110,19 @@ class MethodParseProvider(
         }
     }
 
-    private fun <T : Node> T.excludeNodes(language: Language) = when (language) {
-        Language.PYTHON -> {
-            this.excludeNodes(config.excludeNodes)
-            if (config.excludeDocNode) this.excludePythonDocNode() else {}
-        }
-        Language.JAVA -> if (config.excludeDocNode) {
-            this.excludeNodes(listOf(GumTreeJavaTypeLabels.JAVA_DOC) + config.excludeNodes)
-        } else {
-            this.excludeNodes(config.excludeNodes)
+    private fun <T : Node> T.excludeNodes(language: Language) {
+        when (language) {
+            Language.PYTHON -> {
+                this.excludeNodes(config.excludeNodes)
+                if (config.excludeDocNode) {
+                    this.excludePythonDocNode()
+                }
+            }
+            Language.JAVA -> if (config.excludeDocNode) {
+                this.excludeNodes(listOf(GumTreeJavaTypeLabels.JAVA_DOC) + config.excludeNodes)
+            } else {
+                this.excludeNodes(config.excludeNodes)
+            }
         }
     }
 
