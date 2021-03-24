@@ -36,7 +36,8 @@
   "max_paths": 1000,
   "max_path_width": 2,
   "max_path_length": 9,
-  "exclude_nodes": ["Javadoc"],
+  "exclude_nodes": [],
+  "exclude_doc_node": false,
   "ast_dot_format": false,
   "code2sec_format_dump": true
 }

@@ -241,7 +241,8 @@ analysis config is .json file with run parameters:
   "max_paths": 1000,                                  // upper bound for number of retrived paths (code2seq) 
   "max_path_width": 10,                               // path max width
   "max_path_length": 10,                              // path max length (number of tokens) 
-  "exclude_nodes": ["Javadoc"],                       // exclude nodes from AST (see AST structure in extracted data)
+  "exclude_nodes": [],                                // exclude AST nodes for code2sec paths generation (not for summary dump)
+  "exclude_doc_node": true,                           // exclude AST documentation node for code2sec paths generation 
   "ast_dot_format": false,                            // ast dump format: dot or our version (dot with identifiers in nodes)
   "code2sec_format_dump": true                        // dump AST in code2sec format 'method|name node,PATH,node'
 }

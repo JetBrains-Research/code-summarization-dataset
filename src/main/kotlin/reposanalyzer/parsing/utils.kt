@@ -6,8 +6,11 @@ import astminer.common.model.Direction
 import astminer.common.model.Node
 import astminer.common.model.OrientedNodeType
 import astminer.common.model.PathContext
+import astminer.common.preOrder
 import astminer.parse.java.GumTreeJavaNode
 import astminer.parse.python.GumTreePythonNode
+import reposanalyzer.methods.extractors.getChildByTypeLabel
+import reposanalyzer.methods.extractors.getFirstChildByTypeLabelOrNull
 
 /*
  * generic for other GumTreeNodes languages
@@ -35,6 +38,22 @@ fun <T : Node> T.getNodeLength(): Int {
         else -> throw NotImplementedError() // TODO
     }
 }
+
+fun <T : Node> T.excludeNodes(typeLabels: List<String>) = this.preOrder().forEach { node ->
+    typeLabels.forEach {
+        node.removeChildrenOfType(it)
+    }
+}
+
+fun <T : Node> T.excludePythonDocNode() = this.getChildByTypeLabel(GumTreePythonTypeLabels.BODY)
+    ?.getFirstChildByTypeLabelOrNull(GumTreePythonTypeLabels.EXPRESSION)
+    ?.let { expressionNode ->
+        expressionNode.getChildren().firstOrNull()?.let { maybeDocNode ->
+            if (maybeDocNode.getTypeLabel() == GumTreePythonTypeLabels.CONSTANT_STR) {
+                (expressionNode.getChildren() as MutableList<Node>).removeFirst()
+            }
+        }
+    }
 
 fun toPathContextNormalizedToken(path: ASTPath): PathContext {
     val startToken = path.upwardNodes.first().getNormalizedToken()

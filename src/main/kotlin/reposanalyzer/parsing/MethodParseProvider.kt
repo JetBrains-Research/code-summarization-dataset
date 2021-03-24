@@ -3,7 +3,6 @@ package reposanalyzer.parsing
 import astminer.cli.LabeledParseResult
 import astminer.cli.normalizeParseResult
 import astminer.common.model.Node
-import astminer.common.preOrder
 import astminer.paths.PathMiner
 import astminer.paths.PathRetrievalSettings
 import org.eclipse.jgit.revwalk.RevCommit
@@ -98,12 +97,10 @@ class MethodParseProvider(
                 relativePath,
                 fileLinesStarts
             )
-            root.preOrder().forEach { node ->
-                config.excludeNodes.forEach {
-                    node.removeChildrenOfType(it)
-                }
-            }
-            methodSummary.paths = retrievePaths(root)
+            // 1. excluding nodes from ast for C2S paths generation
+            root.excludeNodes(language)
+            // 2. retrieving paths
+            methodSummary.paths = root.retrievePaths()
             addCommonInfo(methodSummary, currCommit)
 
             // methods filtering
@@ -113,14 +110,21 @@ class MethodParseProvider(
         }
     }
 
-    private fun <T : Node> retrievePaths(root: T): List<String> {
-        if (!config.isPathMining) return emptyList()
-        root.preOrder().forEach { node ->
-            config.excludeNodes.forEach {
-                node.removeChildrenOfType(it)
-            }
+    private fun <T : Node> T.excludeNodes(language: Language) = when (language) {
+        Language.PYTHON -> {
+            this.excludeNodes(config.excludeNodes)
+            if (config.excludeDocNode) this.excludePythonDocNode() else {}
         }
-        val paths = pathMiner.retrievePaths(root)
+        Language.JAVA -> if (config.excludeDocNode) {
+            this.excludeNodes(listOf(GumTreeJavaTypeLabels.JAVA_DOC) + config.excludeNodes)
+        } else {
+            this.excludeNodes(config.excludeNodes)
+        }
+    }
+
+    private fun <T : Node> T.retrievePaths(): List<String> {
+        if (!config.isPathMining) return emptyList()
+        val paths = pathMiner.retrievePaths(this)
         val pathContexts = paths.map { toPathContextNormalizedToken(it) }
             .shuffled()
             .filter { pathContext -> pathContext.startToken.isNotEmpty() && pathContext.endToken.isNotEmpty() }
