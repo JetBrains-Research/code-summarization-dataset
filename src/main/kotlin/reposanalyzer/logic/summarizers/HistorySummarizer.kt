@@ -1,7 +1,6 @@
 package reposanalyzer.logic.summarizers
 
 import astminer.common.model.Node
-import astminer.common.model.Parser
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.databind.node.ObjectNode
@@ -261,7 +260,6 @@ class HistorySummarizer(
         }
     }
 
-    @Override
     override fun toString(): String {
         if (analysisRepo.owner != null && analysisRepo.name != null) {
             return "/${analysisRepo.owner}/${analysisRepo.name}"
