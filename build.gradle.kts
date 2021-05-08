@@ -1,3 +1,5 @@
+import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
+
 group = "org.jetbrains.research.code-summarization-dataset"
 version = "0.0"
 
@@ -5,10 +7,17 @@ plugins {
     application
     kotlin("jvm") version "1.4.10"
     id("io.gitlab.arturbosch.detekt") version "1.14.2"
+    id("com.github.johnrengelman.shadow") version "5.2.0"
 }
 
 application {
     mainClassName = "MainKt"
+}
+
+tasks.withType<ShadowJar>() {
+    manifest {
+        attributes["Main-Class"] = "MainKt"
+    }
 }
 
 repositories {
