@@ -19,7 +19,9 @@ interface LabelExtractorFactory {
                 Task.NAME -> when (granularity) {
                     Granularity.METHOD -> MethodNameExtractor(
                         hideMethodNames = hideMethodName,
-                        filterPredicates = filterPredicates
+                        filterPredicates = filterPredicates,
+                        javaParser = "gumtree",
+                        pythonParser = "gumtree"
                     )
                     // TODO
                 }

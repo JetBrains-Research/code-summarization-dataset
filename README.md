@@ -32,7 +32,7 @@ search config is .json file with all search filters and run parameters:
     "token_path" : "repos/token.txt",            // path to GitHub token
     "dump_dir_path" : "repos/search_results",    // dump directory path
     "repos_urls_path": "repos/urls.json",        // path to repos URLs
-    "languages": ["Java", "Kotlin"],             // list of languages
+    "languages": ["Java", "Python"],             // list of languages
     "stars_count": [">=", 10],                   // relations with integers
     "is_fork": [false],                          // boolean flag
     "is_license": [true],
@@ -185,7 +185,7 @@ In `dump_dir_path` appear 4 files and 2 folders:
 
 ## II. Repositories analysis (reposanalyzer module)
 
-**Current supported languages:** Java
+**Currently supported languages:** Java, Python
 
 **Input:** repository or directory and analysis config
 
@@ -223,7 +223,7 @@ analysis config is .json file with run parameters:
   "min_commits_number": 0,                            // minimum number of commits of selected type for analysis start
   "merges_part_in_history": 0.005,                    // part of merge commits in first_parents history (see below)
   
-  "languages": ["Java"],                              // interesting languages
+  "languages": ["Java", "Python"],                    // interesting languages
   "task": "name",                                     // current supported task - name extraction
   "granularity": "method",                            // current supported granularity - method
   
@@ -241,7 +241,8 @@ analysis config is .json file with run parameters:
   "max_paths": 1000,                                  // upper bound for number of retrived paths (code2seq) 
   "max_path_width": 10,                               // path max width
   "max_path_length": 10,                              // path max length (number of tokens) 
-  "exclude_nodes": ["Javadoc"],                       // exclude nodes from AST (see AST structure in extracted data)
+  "exclude_nodes": [],                                // exclude AST nodes for code2sec paths generation (not for summary dump)
+  "exclude_doc_node": true,                           // exclude AST documentation node for code2sec paths generation 
   "ast_dot_format": false,                            // ast dump format: dot or our version (dot with identifiers in nodes)
   "code2sec_format_dump": true                        // dump AST in code2sec format 'method|name node,PATH,node'
 }

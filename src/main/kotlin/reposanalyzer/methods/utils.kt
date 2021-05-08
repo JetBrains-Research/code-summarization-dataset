@@ -24,7 +24,7 @@ fun buildNormalizedFullName(label: String, parents: List<Pair<String, String>>? 
 }
 
 fun extractContent(content: String, pos: Int, length: Int): String? {
-    if (length != 0 && pos + length < content.length) {
+    if (length != 0 && pos + length <= content.length) {
         return content.substring(pos, pos + length).trimStart().trimEnd()
     }
     return null

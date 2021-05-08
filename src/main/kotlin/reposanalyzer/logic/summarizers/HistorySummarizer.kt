@@ -1,7 +1,6 @@
 package reposanalyzer.logic.summarizers
 
 import astminer.common.model.Node
-import astminer.common.model.Parser
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.databind.node.ObjectNode
@@ -22,6 +21,7 @@ import reposanalyzer.logic.getFilesByLanguage
 import reposanalyzer.logic.getSupportedFiles
 import reposanalyzer.methods.MethodSummaryStorage
 import reposanalyzer.parsing.MethodParseProvider
+import reposanalyzer.parsing.SafeParser
 import reposanalyzer.utils.CommitsLogger
 import reposanalyzer.utils.WorkLogger
 import reposanalyzer.utils.deleteDirectory
@@ -37,7 +37,7 @@ import java.util.concurrent.ConcurrentHashMap
 class HistorySummarizer(
     private val analysisRepo: AnalysisRepository,
     private val dumpPath: String,
-    private val parsers: ConcurrentHashMap<Language, Parser<out Node>>,
+    private val parsers: ConcurrentHashMap<Language, SafeParser<out Node>>,
     private val config: AnalysisConfig
 ) : Zipper, Summarizer {
 
@@ -260,7 +260,6 @@ class HistorySummarizer(
         }
     }
 
-    @Override
     override fun toString(): String {
         if (analysisRepo.owner != null && analysisRepo.name != null) {
             return "/${analysisRepo.owner}/${analysisRepo.name}"

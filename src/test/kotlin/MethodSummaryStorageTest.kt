@@ -10,6 +10,7 @@ import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
+import kotlin.test.assertNotEquals
 import kotlin.test.assertTrue
 
 internal class MethodSummaryStorageTest {
@@ -78,7 +79,8 @@ internal class MethodSummaryStorageTest {
                     fullName = ms2.fullName,
                     filePath = ms2.filePath,
                     argsTypes = ms2.argsTypes,
-                    returnType = ms2.returnType
+                    returnType = ms2.returnType,
+                    language = Language.JAVA
                 )
             )
         )
@@ -120,7 +122,8 @@ internal class MethodSummaryStorageTest {
                     fullName = ms2.fullName,
                     filePath = ms2.filePath,
                     argsTypes = ms2.argsTypes,
-                    returnType = ms2.returnType
+                    returnType = ms2.returnType,
+                    language = Language.JAVA
                 )
             )
         )

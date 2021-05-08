@@ -1,7 +1,6 @@
 package reposanalyzer.logic.summarizers
 
 import astminer.common.model.Node
-import astminer.common.model.Parser
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.databind.node.ObjectNode
@@ -12,6 +11,7 @@ import reposanalyzer.logic.AnalysisRepository
 import reposanalyzer.logic.getFilesByLanguage
 import reposanalyzer.methods.MethodSummaryStorage
 import reposanalyzer.parsing.MethodParseProvider
+import reposanalyzer.parsing.SafeParser
 import reposanalyzer.utils.WorkLogger
 import reposanalyzer.utils.deleteDirectory
 import reposanalyzer.utils.prettyDate
@@ -24,7 +24,7 @@ class NoHistorySummarizer(
     private val analysisPath: String? = null,
     private val analysisRepo: AnalysisRepository? = null,
     private val dumpPath: String,
-    private val parsers: ConcurrentHashMap<Language, Parser<out Node>>,
+    private val parsers: ConcurrentHashMap<Language, SafeParser<out Node>>,
     private val config: AnalysisConfig
 ) : Zipper, Summarizer {
 

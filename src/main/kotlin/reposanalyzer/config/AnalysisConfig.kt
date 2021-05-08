@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import reposanalyzer.methods.filter.MethodSummaryFilterConfig
+import reposanalyzer.parsing.GumTreeJavaTypeLabels
 import reposanalyzer.utils.AnalysisConfigException
 import java.io.File
 
@@ -44,6 +45,7 @@ class AnalysisConfig(
         const val MAX_PATH_WIDTH = "max_path_width"
         const val MAX_PATH_LENGTH = "max_path_length"
         const val C2S_DUMP_FORMAT = "code2sec_format_dump"
+        const val EXCLUDE_DOC_NODE = "exclude_doc_node"
 
         const val DEFAULT_THREADS_COUNT = 1
         const val DEFAULT_LOG_DUMP_THRESHOLD = 200
@@ -61,7 +63,7 @@ class AnalysisConfig(
     private val boolFields = listOf(
         IS_HISTORY_MODE,
         HIDE_METHODS_NAME, EXCLUDE_CONSTRUCTORS, REMOVE_AFTER,
-        IS_ZIP, REMOVE_AFTER_ZIP, COPY_DETECTION, IS_DOT_FORMAT, C2S_DUMP_FORMAT
+        IS_ZIP, REMOVE_AFTER_ZIP, COPY_DETECTION, IS_DOT_FORMAT, C2S_DUMP_FORMAT, EXCLUDE_DOC_NODE
     )
     private val floatFields = listOf(MERGES_PART)
 
@@ -92,6 +94,7 @@ class AnalysisConfig(
     var removeRepoAfterAnalysis: Boolean = false
     var zipFiles: Boolean = false
     var removeAfterZip: Boolean = false
+    var excludeDocNode = true
 
     var maxPaths: Int = 0
     var maxPathWidth: Int = 0
@@ -216,6 +219,7 @@ class AnalysisConfig(
             REMOVE_AFTER_ZIP -> removeAfterZip = value
             IS_DOT_FORMAT -> isAstDotFormat = value
             C2S_DUMP_FORMAT -> isCode2SeqDump = value
+            EXCLUDE_DOC_NODE -> excludeDocNode = value
         }
     }
 
