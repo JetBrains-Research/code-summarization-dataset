@@ -1,6 +1,6 @@
 import org.junit.Test
-import reposanalyzer.config.Language
-import reposanalyzer.methods.MethodIdentity
+import analysis.config.Language
+import analysis.methods.MethodIdentity
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertNotEquals

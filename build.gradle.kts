@@ -25,7 +25,7 @@ repositories {
     mavenCentral()
 
     // astminer repo
-    maven(url = "https://dl.bintray.com/egor-bogomolov/astminer/")
+    maven(url = uri("https://packages.jetbrains.team/maven/p/astminer/astminer"))
 }
 
 dependencies {
@@ -33,7 +33,7 @@ dependencies {
     // reflect
     implementation("org.jetbrains.kotlin", "kotlin-reflect", "1.4.10")
     // astminer
-    implementation("io.github.vovak.astminer", "astminer-dev", "1.373")
+    implementation("io.github.vovak", "astminer", "0.6.3")
     // fuel - requests
     implementation("com.github.kittinunf.fuel", "fuel", "2.3.0")
     // clikt - cli

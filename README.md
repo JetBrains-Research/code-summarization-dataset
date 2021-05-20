@@ -11,14 +11,14 @@ git clone https://github.com/JetBrains-Research/code-summarization-dataset.git
 ```
 # Tool modules
 
-**I. reposfinder** - filtering input repositories urls with specified filters (config - `repos/search_config.json`)
+**I. search** - filtering input repositories urls with specified filters (config - `repos/search_config.json`)
 
-**II. reposanalyzer** - methods summary extraction from repository or local directory (config - `repos/analysis_config.json`)
+**II. analysis** - methods summary extraction from repository or local directory (config - `repos/analysis_config.json`)
 
-**III. reposprovider** - reposfinder + reposanalyzer = continuous filter end analysis of repositories
+**III. provider** - search + analysis = continuous filter end analysis of repositories
 
 
-## I. Repositories filtering (reposfinder module)
+## I. Repositories filtering (search module)
 
 **Input:** list of urls to existing GitHub repositories in format `.../REPOOWNER/REPONAME` (exactly 2 slashes) and search config
 
@@ -125,7 +125,7 @@ search config is .json file with all search filters and run parameters:
 #### 2.2 as separate module 
 - write own entry point
   ```kotlin
-  import reposfinder.utils.FinderParser
+  import search.utils.FinderParser
 
   fun main(args: Array<String>) = FinderParser().main(args)
   ```
@@ -183,9 +183,12 @@ In `dump_dir_path` appear 4 files and 2 folders:
   https://api.github.com/repos/jetbrains/kotlin
   ```
 
-## II. Repositories analysis (reposanalyzer module)
+## II. Repositories analysis (analysis module)
 
 **Currently supported languages:** Java, Python
+
+- for Python data retrieving you need [pythonparser](https://github.com/JetBrains-Research/pythonparser) in your system PATH
+
 
 **Input:** repository or directory and analysis config
 
@@ -197,7 +200,6 @@ In `dump_dir_path` appear 4 files and 2 folders:
 - function AST
 - function AST paths 
 - metadata (file path, commit info, extraction statistics)
-
 
 ### 1. Analysis config
 
@@ -350,7 +352,7 @@ Two types of history processing depending on the type of commit:
 
 - write own entry point
   ```kotlin
-  import reposanalyzer.utils.AnalyzerParser
+  import analysis.utils.AnalyzerParser
   
   fun main(args: Array<String>) = AnalyzerParser().main(args)
   ```
@@ -380,15 +382,15 @@ In `dump_dir_path` appear 4 files:
   - `work_log.txt` -- log file
 
 
-## III. Repositories filtering and analysis (module reposprovider)
+## III. Repositories filtering and analysis (module provider)
 
-reposfinder + reposanalyzer modules
+search + analysis modules
 
 **Input:** list of urls to existing GitHub repositories, search and analysis configs
 
 **Output:**
 1. lists of 'good' and 'bad' repositories after filters applying with explanation about filters results
-2. for each 'good' repository all summary information extracted with reposanalyzer module
+2. for each 'good' repository all summary information extracted with analysis module
 
 ### 1. Run
 
@@ -422,7 +424,7 @@ reposfinder + reposanalyzer modules
 #### 1.2 as separate module
 - write own entry point
   ```kotlin
-  import reposprovider.utils.ProviderParser
+  import provider.utils.ProviderParser
   
   fun main(args: Array<String>) = ProviderParser().main(args)
   ```
@@ -431,7 +433,7 @@ reposfinder + reposanalyzer modules
 
   ```shell
   #!/bin/bash
-  ./gradlew :reposprovider:run --args="--search-debug --analysis-debug -s repos/search_config.json -a repos/analysis_config.json"
+  ./gradlew :provider:run --args="--search-debug --analysis-debug -s repos/search_config.json -a repos/analysis_config.json"
   ```
 
 - arguments:
@@ -445,5 +447,5 @@ reposfinder + reposanalyzer modules
   ```
 ### 2. Results
 
-- output from reposfinder module
-- for each repository output from reposanalyzer module to folder `dump_folder/data/REPOOWNER__REPONAME`
+- output from search module
+- for each repository output from analysis module to folder `dump_folder/data/REPOOWNER__REPONAME`
