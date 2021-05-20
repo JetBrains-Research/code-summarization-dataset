@@ -1,16 +1,15 @@
 import org.junit.Test
-import reposanalyzer.config.IdentityConfig
-import reposanalyzer.config.IdentityParameters
-import reposanalyzer.config.Language
-import reposanalyzer.methods.MethodIdentity
-import reposanalyzer.methods.MethodSummary
-import reposanalyzer.methods.MethodSummaryStorage
+import analysis.config.IdentityConfig
+import analysis.config.IdentityParameters
+import analysis.config.Language
+import analysis.methods.MethodIdentity
+import analysis.methods.MethodSummary
+import analysis.methods.MethodSummaryStorage
 import java.io.File
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
-import kotlin.test.assertNotEquals
 import kotlin.test.assertTrue
 
 internal class MethodSummaryStorageTest {

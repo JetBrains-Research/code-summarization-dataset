@@ -1,9 +1,9 @@
 
 import org.junit.Test
-import reposanalyzer.config.Language
-import reposanalyzer.methods.MethodSummary
-import reposanalyzer.methods.filter.MethodSummaryFilter
-import reposanalyzer.methods.filter.MethodSummaryFilterConfig
+import analysis.config.Language
+import analysis.methods.MethodSummary
+import analysis.methods.filter.MethodSummaryFilter
+import analysis.methods.filter.MethodSummaryFilterConfig
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
