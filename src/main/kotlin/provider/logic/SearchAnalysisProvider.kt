@@ -2,7 +2,7 @@ package provider.logic
 
 import analysis.config.AnalysisConfig
 import analysis.logic.AnalysisRepository
-import analysis.logic.ReposAnalyzer
+import analysis.logic.Analyzer
 import search.config.SearchConfig
 import search.logic.ReposFinder
 import search.logic.Repository
@@ -17,7 +17,7 @@ class SearchAnalysisProvider(
     }
 
     private val reposFinder: ReposFinder = ReposFinder(config = searchConfig)
-    private val reposAnalyzer: ReposAnalyzer = ReposAnalyzer(config = analysisConfig)
+    private val reposAnalyzer: Analyzer = Analyzer(config = analysisConfig)
 
     private val searchThread: Thread = Thread(reposFinder)
     private val reposQueue = reposFinder.reposStorage.goodReposQueue
@@ -30,12 +30,10 @@ class SearchAnalysisProvider(
             while (reposQueue.isEmpty() && isFinderWorking() && !isInterrupted) { // active waiting
                 Thread.sleep(SLEEP_TIME)
             }
-            reposAnalyzer.processDoneWorkers()
-            reposAnalyzer.submitAllRepos(reposQueue.extractRepoInfos())
+            reposAnalyzer.submitRepos(reposQueue.extractRepoInfos())
         }
-        reposAnalyzer.submitAllRepos(reposQueue.extractRepoInfos())
-        waitWorkers()
-        reposAnalyzer.interrupt()
+        reposAnalyzer.submitRepos(reposQueue.extractRepoInfos())
+        reposAnalyzer.waitUnitAnyRunning()
     }
 
     private fun Queue<Repository>.extractRepoInfos(): List<AnalysisRepository> {
@@ -45,18 +43,6 @@ class SearchAnalysisProvider(
             repos.add(AnalysisRepository("", repo.owner, repo.name, repo.license))
         }
         return repos
-    }
-
-    private fun waitWorkers() {
-        try {
-            while (!isInterrupted && reposAnalyzer.isAnyRunning()) {
-                reposAnalyzer.processDoneWorkers()
-                Thread.sleep(SLEEP_TIME)
-            }
-            reposAnalyzer.processDoneWorkers()
-        } catch (e: InterruptedException) {
-            isInterrupted = true
-        }
     }
 
     private fun isFinderWorking() = listOf(

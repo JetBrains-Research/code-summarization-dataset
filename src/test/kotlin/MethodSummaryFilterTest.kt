@@ -1,9 +1,9 @@
 
 import org.junit.Test
 import analysis.config.Language
-import analysis.methods.MethodSummary
-import analysis.methods.filter.MethodSummaryFilter
-import analysis.methods.filter.MethodSummaryFilterConfig
+import analysis.granularity.method.MethodSummary
+import analysis.granularity.method.filter.MethodSummaryFilter
+import analysis.granularity.method.filter.MethodSummaryFilterConfig
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 

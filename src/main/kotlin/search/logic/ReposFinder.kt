@@ -14,6 +14,7 @@ import java.lang.Integer.max
 class ReposFinder(
     private val config: SearchConfig
 ) : Runnable {
+
     private companion object {
         const val TOKEN_SHOW_LENGTH = 20
         const val RESET_TIME_PAUSE = 30 * 1000L
@@ -95,7 +96,7 @@ class ReposFinder(
                 logger.add("SEARCH WAS INTERRUPTED WITH STATUS $status")
                 break
             }
-            logger.add("> searching /${repo.owner}/${repo.name}")
+            logger.add("> filtering /${repo.owner}/${repo.name}")
             val isCoreGood = repo.loadCore(config, limits, jsonMapper) && repo.isGood(config.coreFilters)
             val isGraphQLGood = repo.loadGraphQL(config, limits, jsonMapper) && repo.isGood(config.graphQLFilters)
             if (isCoreGood && isGraphQLGood) {

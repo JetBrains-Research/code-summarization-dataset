@@ -1,12 +1,22 @@
 package analysis.utils
 
-import org.apache.commons.io.FileUtils
 import analysis.config.Language
+import com.fasterxml.jackson.databind.JsonNode
+import org.apache.commons.io.FileUtils
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
 
 fun File.clearFile() = FileOutputStream(this, false).bufferedWriter()
+
+fun File.createAndClear() {
+    createNewFile()
+    clearFile()
+}
+
+fun List<JsonNode>.appendNodes(file: File) = FileOutputStream(file).bufferedWriter().use { w ->
+    forEach { node -> w.appendLine(node.toString()) }
+}
 
 fun String.readFileToString(): String {
     val file = File(this)
@@ -16,12 +26,11 @@ fun String.readFileToString(): String {
     return file.readText()
 }
 
-fun String.deleteDirectory() =
-    try {
-        FileUtils.deleteDirectory(File(this))
-    } catch (e: IOException) {
-        // ignore
-    }
+fun String.deleteDirectory() = try {
+    FileUtils.deleteDirectory(File(this))
+} catch (e: IOException) {
+    // ignore
+}
 
 fun getNotHiddenNotDirectoryFiles(dirPath: String): List<File> =
     File(dirPath).walkTopDown().filter { !it.isHidden && !it.isDirectory }.toList()

@@ -3,6 +3,12 @@ package analysis.logic
 import analysis.config.Language
 import java.io.File
 
+fun File.getSupportedFiles(languages: List<Language>) = this.walkTopDown()
+    .filter { !it.isHidden && it.isFile }
+    .toList()
+    .getFilesByLanguage(languages)
+    .filter { (_, files) -> files.isNotEmpty() }
+
 fun List<File>.getFilesByLanguage(languages: List<Language>): Map<Language, List<File>> {
     val filesByLang = mutableMapOf<Language, MutableList<File>>()
     languages.forEach { lang ->
@@ -17,6 +23,16 @@ fun List<File>.getFilesByLanguage(languages: List<Language>): Map<Language, List
         }
     }
     return filesByLang
+}
+
+fun String.getFileDumpFolder(id: Int, dumpFolder: String): String =
+    File(dumpFolder).resolve("${id}_" + this.substringAfterLast(File.separator)).absolutePath
+
+fun AnalysisRepository.getRepoDumpFolder(id: Int, dumpFolder: String): String {
+    if (owner == null || name == null) {
+        return path.getFileDumpFolder(id, dumpFolder)
+    }
+    return File(dumpFolder).resolve("${owner}__$name").absolutePath
 }
 
 fun isFileFromLanguage(file: File, language: Language): Boolean = language.extensions.any { ext ->

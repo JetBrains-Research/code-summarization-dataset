@@ -64,7 +64,7 @@ class ProviderParser : CliktCommand() {
         val analysisConfig = AnalysisConfig(
             configPath = analysisConfigPath,
             isDebugAnalyzer = isFullDebug || isAnalyserDebug,
-            isDebugSummarizers = isFullDebug || isSummarizersDebug
+            isDebugWorkers = isFullDebug || isSummarizersDebug
         )
         val provider = SearchAnalysisProvider(searchConfig = searchConfig, analysisConfig = analysisConfig)
         provider.run()

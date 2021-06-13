@@ -1,14 +1,5 @@
 package analysis.logic
 
-import com.fasterxml.jackson.databind.JsonNode
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.databind.SerializationFeature
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import org.apache.commons.io.FileUtils
-import org.eclipse.jgit.api.Git
-import org.eclipse.jgit.lib.Ref
-import org.eclipse.jgit.lib.Repository
-import org.eclipse.jgit.revwalk.RevCommit
 import analysis.git.MergeHistory
 import analysis.git.constructRepoLoadUrl
 import analysis.git.getDefaultBranch
@@ -18,6 +9,15 @@ import analysis.git.isDotGitPresent
 import analysis.git.isRepoCloned
 import analysis.git.openRepositoryByDotGitDir
 import analysis.git.tryCloneRepositoryNTimes
+import com.fasterxml.jackson.databind.JsonNode
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.databind.SerializationFeature
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import org.apache.commons.io.FileUtils
+import org.eclipse.jgit.api.Git
+import org.eclipse.jgit.lib.Ref
+import org.eclipse.jgit.lib.Repository
+import org.eclipse.jgit.revwalk.RevCommit
 import java.io.File
 import java.io.FileOutputStream
 
@@ -95,13 +95,6 @@ class AnalysisRepository(
         }
     }
 
-    fun constructDumpPath(dumpFolder: String): String {
-        var dumpPath = dumpFolder + File.separator
-        dumpPath += if (owner != null) "${owner}__" else ""
-        dumpPath += (name ?: path.substringAfterLast(File.separator))
-        return dumpPath
-    }
-
     fun clear() {
         mergeHistory.history.clear()
         firstParentsCommits.clear()
@@ -130,5 +123,7 @@ class AnalysisRepository(
         return jsonNode
     }
 
-    override fun toString(): String = "[owner: $owner, name: $name, path: $path]"
+    override fun toString(): String = "/$owner/$name path: $path"
+
+    fun toStringNotNull(): String = if (owner == null || name == null) path else "/${owner}/${name}"
 }

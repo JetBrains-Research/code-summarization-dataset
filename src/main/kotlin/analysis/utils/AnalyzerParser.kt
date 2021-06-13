@@ -1,16 +1,16 @@
 package analysis.utils
 
-import com.github.ajalt.clikt.core.CliktCommand
-import com.github.ajalt.clikt.parameters.options.flag
-import com.github.ajalt.clikt.parameters.options.option
-import com.github.ajalt.clikt.parameters.options.required
-import com.github.ajalt.clikt.parameters.options.validate
 import analysis.config.AnalysisConfig
 import analysis.config.loadJSONList
 import analysis.config.loadPaths
 import analysis.config.parseRepoUrls
 import analysis.logic.AnalysisRepository
-import analysis.logic.ReposAnalyzer
+import analysis.logic.Analyzer
+import com.github.ajalt.clikt.core.CliktCommand
+import com.github.ajalt.clikt.parameters.options.flag
+import com.github.ajalt.clikt.parameters.options.option
+import com.github.ajalt.clikt.parameters.options.required
+import com.github.ajalt.clikt.parameters.options.validate
 import java.io.File
 
 class AnalyzerParser : CliktCommand() {
@@ -45,15 +45,15 @@ class AnalyzerParser : CliktCommand() {
         val analysisConfig = AnalysisConfig(
             configPath = analysisConfigPath,
             isDebugAnalyzer = isDebug || isAnalyserDebug,
-            isDebugSummarizers = isDebug || isSummarizersDebug
+            isDebugWorkers = isDebug || isSummarizersDebug
         )
         val reposUrls = loadJSONList(analysisConfig.reposUrlsPath).parseRepoUrls()
-        val dirsPaths = loadPaths(analysisConfig.dirsListPath).map { File(it) }
+        val dirsPaths = loadPaths(analysisConfig.dirsListPath)
 
-        val reposAnalyzer = ReposAnalyzer(config = analysisConfig)
-        reposAnalyzer.submitAllRepos(reposUrls.map { AnalysisRepository(owner = it.first, name = it.second) })
-        reposAnalyzer.submitAllDirs(dirsPaths)
+        val reposAnalyzer = Analyzer(config = analysisConfig)
+        reposAnalyzer.submitRepos(reposUrls.map { AnalysisRepository(owner = it.first, name = it.second) })
+        reposAnalyzer.submitFiles(dirsPaths)
 
-        reposAnalyzer.waitUntilAnyRunning()
+        reposAnalyzer.waitUnitAnyRunning()
     }
 }

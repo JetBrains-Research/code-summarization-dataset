@@ -1,6 +1,6 @@
 import org.junit.Test
 import analysis.config.Language
-import analysis.methods.MethodIdentity
+import analysis.granularity.method.MethodIdentity
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertNotEquals

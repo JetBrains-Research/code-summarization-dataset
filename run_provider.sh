@@ -1,2 +1,2 @@
 #!/bin/bash
-./gradlew :run --args="--search-debug --analysis-debug -s repos/search_config.json -a repos/analysis_config.json"
+./gradlew :run --args="--search-debug --analysis-debug -s config/search_config.json -a config/analysis_config.json"

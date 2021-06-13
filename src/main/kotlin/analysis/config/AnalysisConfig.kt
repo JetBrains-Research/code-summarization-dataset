@@ -1,18 +1,18 @@
 package analysis.config
 
+import analysis.granularity.method.filter.MethodSummaryFilterConfig
+import analysis.utils.AnalysisConfigException
 import astminer.cli.ConstructorFilterPredicate
 import astminer.cli.MethodFilterPredicate
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
-import analysis.methods.filter.MethodSummaryFilterConfig
-import analysis.utils.AnalysisConfigException
 import java.io.File
 
 class AnalysisConfig(
     val configPath: String,
     val isDebugAnalyzer: Boolean = false,
-    val isDebugSummarizers: Boolean = false,
+    val isDebugWorkers: Boolean = false,
 ) {
     private companion object {
         const val IS_HISTORY_MODE = "HISTORY_MODE"
@@ -29,6 +29,7 @@ class AnalysisConfig(
         const val MERGES_PART = "merges_part_in_history"
         const val TASK = "task"
         const val GRANULARITY = "granularity"
+        const val PARSER = "parser"
         const val EXCLUDE_NODES = "exclude_nodes"
         const val THREADS_COUNT = "threads_count"
         const val LOG_DUMP_THRESHOLD = "log_dump_threshold"
@@ -58,7 +59,7 @@ class AnalysisConfig(
         METHODS_DUMP_THRESHOLD, MIN_COMMITS_NUMBER,
         MAX_PATHS, MAX_PATH_LENGTH, MAX_PATH_WIDTH
     )
-    private val stringFields = listOf(COMMITS_TYPE, TASK, GRANULARITY)
+    private val stringFields = listOf(COMMITS_TYPE, TASK, GRANULARITY, PARSER)
     private val boolFields = listOf(
         IS_HISTORY_MODE,
         HIDE_METHODS_NAME, EXCLUDE_CONSTRUCTORS, REMOVE_AFTER,
@@ -81,6 +82,7 @@ class AnalysisConfig(
     var logDumpThreshold: Int = DEFAULT_LOG_DUMP_THRESHOLD
     var summaryDumpThreshold: Int = DEFAULT_METHOD_DUMP_THRESHOLD
     var task: Task = Task.NAME
+    var parser: Parser = Parser.GUMTREE
     var granularity: Granularity = Granularity.METHOD
     var commitsType: CommitsType = CommitsType.FIRST_PARENTS_INCLUDE_MERGES
     var minBodyLinesLength: Int = 0
@@ -202,6 +204,10 @@ class AnalysisConfig(
             TASK -> task = when (value) {
                 Task.NAME.label -> Task.NAME
                 else -> throw AnalysisConfigException("bad value: `$value` for config field `$field`")
+            }
+            PARSER -> parser = when (value) {
+                Parser.GUMTREE.label -> Parser.GUMTREE
+                else -> throw AnalysisConfigException("bad value: `$value~ for config field `$field`")
             }
         }
     }

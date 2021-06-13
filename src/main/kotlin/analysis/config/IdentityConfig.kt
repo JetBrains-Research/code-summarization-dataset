@@ -1,7 +1,7 @@
 package analysis.config
 
-import com.fasterxml.jackson.databind.JsonNode
 import analysis.utils.BadMethodUniquenessConfigParameter
+import com.fasterxml.jackson.databind.JsonNode
 
 enum class IdentityParameters(val label: String) {
     FILE("file"),
@@ -17,7 +17,7 @@ class IdentityConfig(val parameters: List<IdentityParameters>) {
             val params = jsonNode.map { it.asText() }
             params.forEach { param ->
                 if (!IdentityParameters.values().map { it.label }.contains(param)) {
-                    throw BadMethodUniquenessConfigParameter("unknown parameter $param in config list")
+                    throw BadMethodUniquenessConfigParameter("Unknown identity parameter $param in config list")
                 }
             }
             return IdentityConfig(

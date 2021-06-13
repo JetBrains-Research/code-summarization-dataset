@@ -2,9 +2,9 @@ import org.junit.Test
 import analysis.config.IdentityConfig
 import analysis.config.IdentityParameters
 import analysis.config.Language
-import analysis.methods.MethodIdentity
-import analysis.methods.MethodSummary
-import analysis.methods.MethodSummaryStorage
+import analysis.granularity.method.MethodIdentity
+import analysis.granularity.method.MethodSummary
+import analysis.granularity.method.MethodSummaryStorage
 import java.io.File
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
@@ -13,13 +13,25 @@ import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 internal class MethodSummaryStorageTest {
+
     private val testFolder = File(System.getProperty("user.dir")).resolve(".method_summary_storage_test_tmp")
+
+    @BeforeTest
+    fun createFolder() {
+        testFolder.mkdirs()
+    }
+
+    @AfterTest
+    fun removeFolder() {
+        testFolder.deleteRecursively()
+    }
 
     private fun genName(n: Int) = "method$n"
     private fun genPath(n: Int) = "path$n"
     private fun genFullName(n: Int) = "full_name.method$n"
     private fun genArgsTypes(n: Int) = (0 until n).map { "ARG$it" }.toList()
     private fun genReturnType(n: Int) = "T$n"
+
     private fun genIdentityConfig(params: List<IdentityParameters>): IdentityConfig = IdentityConfig(params)
 
     private fun genIdentityConfigWithIds(paramsIds: List<Int>): IdentityConfig {
@@ -43,23 +55,20 @@ internal class MethodSummaryStorageTest {
         return methodSummary
     }
 
-    @BeforeTest
-    fun createFolder() {
-        testFolder.mkdirs()
-    }
-
-    @AfterTest
-    fun removeFolder() {
-        testFolder.deleteRecursively()
-    }
+    private fun getStorage(
+        config: IdentityConfig,
+        isAstDotFormat: Boolean = false,
+        isCode2SeqDump: Boolean = false,
+        dumpThreshold: Int = 200
+    ) = MethodSummaryStorage(
+        testFolder.absolutePath, config, null, isAstDotFormat, isCode2SeqDump, dumpThreshold
+    )
 
     @Test
     fun basicsWithIdentity() {
         val params = listOf(IdentityParameters.FULL_NAME, IdentityParameters.ARGS_TYPES)
         val config = IdentityConfig(params)
-        val mss = MethodSummaryStorage(
-            config, testFolder.absolutePath, isAstDumpDotFormat = false, isCode2SecDump = false
-        )
+        val mss = getStorage(config)
         val ms1 = genMethodSummary(0, 1, 3, 0, config)
         val ms2 = genMethodSummary(0, 1, 3, 0, config)
         val ms3 = genMethodSummary(0, 1, 4, 0, config)
@@ -98,9 +107,7 @@ internal class MethodSummaryStorageTest {
     @Test
     fun basicsNoIdentity() {
         val config = IdentityConfig(emptyList())
-        val mss = MethodSummaryStorage(
-            config, testFolder.absolutePath, isAstDumpDotFormat = false, isCode2SecDump = false
-        )
+        val mss = getStorage(config)
         val ms1 = genMethodSummary(0, 1, 3, 0, config)
         val ms2 = genMethodSummary(0, 1, 3, 0, config)
         val ms3 = genMethodSummary(0, 1, 4, 0, config)
@@ -143,9 +150,7 @@ internal class MethodSummaryStorageTest {
     @Test
     fun noIdentityStress() {
         val config = IdentityConfig(emptyList())
-        val mss = MethodSummaryStorage(
-            config, testFolder.absolutePath, isAstDumpDotFormat = false, isCode2SecDump = false, dumpThreshold = 100000
-        )
+        val mss = getStorage(config, dumpThreshold = 10000)
         val ssAdded = mutableListOf<MethodSummary>()
         for (n in 0..20) {
             for (k in 0 until 20) {
@@ -166,9 +171,7 @@ internal class MethodSummaryStorageTest {
         for (i in 0 until k) {
             val paramsIds = (0..i).toList()
             val identityConfig = genIdentityConfigWithIds(paramsIds)
-            val mss = MethodSummaryStorage(
-                identityConfig, testFolder.absolutePath, isAstDumpDotFormat = false, isCode2SecDump = false
-            )
+            val mss = getStorage(identityConfig)
             val ssAdded = mutableListOf<MethodSummary>()
             for (n in 1..50) {
                 val summary = genMethodSummary(n, n, 5, n, identityConfig)
@@ -201,13 +204,7 @@ internal class MethodSummaryStorageTest {
         val dumpThreshold = 20
         val params = listOf(IdentityParameters.FULL_NAME, IdentityParameters.ARGS_TYPES)
         val config = IdentityConfig(params)
-        val mss = MethodSummaryStorage(
-            config,
-            testFolder.absolutePath,
-            isAstDumpDotFormat = false,
-            isCode2SecDump = false,
-            dumpThreshold = dumpThreshold
-        )
+        val mss = getStorage(config, dumpThreshold = dumpThreshold)
         for (k in 1..dumpThreshold) {
             val summary = genMethodSummary(k, k, 5, k, config)
             assertFalse(mss.contains(summary))
@@ -234,13 +231,7 @@ internal class MethodSummaryStorageTest {
         val dumpThreshold = 20
         val params = listOf(IdentityParameters.FULL_NAME, IdentityParameters.ARGS_TYPES)
         val config = IdentityConfig(params)
-        val mss = MethodSummaryStorage(
-            config,
-            testFolder.absolutePath,
-            isAstDumpDotFormat = false,
-            isCode2SecDump = false,
-            dumpThreshold = dumpThreshold
-        )
+        val mss = getStorage(config, dumpThreshold = dumpThreshold)
         for (k in 1..dumpThreshold) {
             val summary = genMethodSummary(k, k, 5, k, config)
             assertFalse(mss.contains(summary))
