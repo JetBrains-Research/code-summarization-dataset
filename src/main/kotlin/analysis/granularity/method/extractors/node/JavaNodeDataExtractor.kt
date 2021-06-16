@@ -1,10 +1,10 @@
-package analysis.granularity.method.extractors
+package analysis.granularity.method.extractors.node
 
-import astminer.common.model.Node
 import analysis.granularity.method.extractContent
 import analysis.parsing.GumTreeJavaTypeLabels
 import analysis.parsing.getNodeLength
 import analysis.parsing.getNodeStart
+import astminer.common.model.Node
 
 interface JavaNodeDataExtractor : NodeDataExtractor {
 

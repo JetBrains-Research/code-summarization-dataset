@@ -1,10 +1,10 @@
-package analysis.granularity.method.extractors
+package analysis.granularity.method.extractors.node
 
-import astminer.common.model.Node
 import analysis.granularity.method.extractContent
 import analysis.parsing.GumTreePythonTypeLabels
 import analysis.parsing.getNodeLength
 import analysis.parsing.getNodeStart
+import astminer.common.model.Node
 
 interface PythonNodeDataExtractor : NodeDataExtractor {
 
@@ -19,7 +19,7 @@ interface PythonNodeDataExtractor : NodeDataExtractor {
     ): Triple<Int, Int, String?> {
         var pos = this.getNodeStart()
         var length = this.getNodeLength()
-        if (pos == 1) { // strange - if method starts with first character of file => its pos == 1, not 0 
+        if (pos == 1) { // !!! strange - if method starts with first character of file => its pos == 1, not 0 
             pos = 0
             length++
         }

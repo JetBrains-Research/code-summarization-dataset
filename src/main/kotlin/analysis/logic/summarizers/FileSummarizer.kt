@@ -9,13 +9,13 @@ import analysis.logic.ParseEnvironment
 import analysis.logic.ReadyInfo
 import analysis.logic.WorkEnvironment
 import analysis.logic.getSupportedFiles
-import analysis.utils.FileLogger
+import analysis.logic.summarizers.utils.Zipper
 import analysis.utils.prettyCurrentDate
-import analysis.zipper.Zipper
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.databind.node.ObjectNode
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import utils.FileLogger
 import java.io.File
 import java.io.FileOutputStream
 
@@ -74,8 +74,8 @@ class FileSummarizer(
         }
         val workLogPath = File(dumpFolder).resolve(WORK_LOG).absolutePath
         workLogger = FileLogger(workLogPath, config.isDebugWorkers, workEnv.mainLogger)
-        parseProvider = ParseProvider.getProvider(config, parseEnv)
-        summaryStorage = SummaryStorage.getSummaryStorage(dumpFolder, config, workLogger)
+        parseProvider = ParseProvider.get(config, parseEnv)
+        summaryStorage = SummaryStorage.get(dumpFolder, config, workLogger)
         status = SummarizerStatus.LOADED
         return true
     }

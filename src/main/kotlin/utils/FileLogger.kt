@@ -1,5 +1,7 @@
-package analysis.utils
+package utils
 
+import analysis.utils.clearFile
+import analysis.utils.prettyCurrentDate
 import java.io.File
 import java.io.FileOutputStream
 import java.util.concurrent.ConcurrentLinkedQueue

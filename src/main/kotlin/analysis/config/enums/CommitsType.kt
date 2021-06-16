@@ -1,4 +1,4 @@
-package analysis.config
+package analysis.config.enums
 
 enum class CommitsType(val label: String) {
     ONLY_MERGES("merges"),

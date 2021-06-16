@@ -1,21 +1,20 @@
 package analysis.parsing
 
+import analysis.config.enums.Granularity
+import analysis.config.enums.SupportedParser
+import analysis.config.enums.Task
 import astminer.cli.LabelExtractor
 import astminer.cli.MethodFilterPredicate
 import astminer.cli.MethodNameExtractor
-import analysis.config.Granularity
-import analysis.config.Parser
-import analysis.config.Task
 
 interface LabelExtractorFactory {
-
     companion object {
         fun getLabelExtractor(
             task: Task,
             granularity: Granularity,
             hideMethodName: Boolean,
             filterPredicates: List<MethodFilterPredicate>,
-            parser: Parser
+            parser: SupportedParser
         ): LabelExtractor {
             return when (task) {
                 Task.NAME -> when (granularity) {

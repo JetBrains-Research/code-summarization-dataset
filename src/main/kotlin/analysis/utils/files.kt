@@ -1,6 +1,6 @@
 package analysis.utils
 
-import analysis.config.Language
+import analysis.config.enums.SupportedLanguage
 import com.fasterxml.jackson.databind.JsonNode
 import org.apache.commons.io.FileUtils
 import java.io.File
@@ -44,8 +44,8 @@ fun List<String>.getAbsolutePatches(mainPath: String): List<String> =
 fun removePrefixPath(prefix: String, files: List<File>): List<String> =
     files.map { it.absolutePath.removePrefix(prefix) }
 
-fun Map<Language, List<File>>.removePrefixPath(prefix: String): Map<Language, List<String>> {
-    val newMap = mutableMapOf<Language, List<String>>()
+fun Map<SupportedLanguage, List<File>>.removePrefixPath(prefix: String): Map<SupportedLanguage, List<String>> {
+    val newMap = mutableMapOf<SupportedLanguage, List<String>>()
     this.forEach { (lang, files) ->
         newMap[lang] = removePrefixPath(prefix, files)
     }

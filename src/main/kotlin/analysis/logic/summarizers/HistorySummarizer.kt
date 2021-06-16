@@ -1,7 +1,8 @@
 package analysis.logic.summarizers
 
 import analysis.config.AnalysisConfig
-import analysis.config.CommitsType
+import analysis.config.enums.CommitsType
+import analysis.git.AnalysisRepository
 import analysis.git.checkoutCommit
 import analysis.git.checkoutHashOrName
 import analysis.git.getCommitsDiff
@@ -9,26 +10,25 @@ import analysis.git.getDiffFiles
 import analysis.granularity.ParseProvider
 import analysis.granularity.ParseResult
 import analysis.granularity.SummaryStorage
-import analysis.logic.AnalysisRepository
 import analysis.logic.CommonInfo
 import analysis.logic.ParseEnvironment
 import analysis.logic.ReadyInfo
 import analysis.logic.WorkEnvironment
 import analysis.logic.getFilesByLanguage
 import analysis.logic.getSupportedFiles
-import analysis.utils.CommitsLogger
-import analysis.utils.FileLogger
+import analysis.logic.summarizers.utils.CommitsLogger
+import analysis.logic.summarizers.utils.Zipper
 import analysis.utils.deleteDirectory
 import analysis.utils.getAbsolutePatches
 import analysis.utils.getNotHiddenNotDirectoryFiles
 import analysis.utils.prettyCurrentDate
 import analysis.utils.removePrefixPath
-import analysis.zipper.Zipper
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.databind.node.ObjectNode
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import org.eclipse.jgit.revwalk.RevCommit
+import utils.FileLogger
 import java.io.File
 import java.io.FileOutputStream
 
@@ -98,16 +98,7 @@ class HistorySummarizer(
             workLogger?.add("bad reference to head: $repo")
             return false
         }
-        loadHistory()
-        if (status != SummarizerStatus.LOADED) {
-            workLogger?.add("bad history: $status")
-            return false
-        }
-        workLogger?.add("default repo branch: ${repo.defaultBranchHead?.name}")
-        workLogger?.add(
-            "commits count [merge: ${repo.mergeCommitsNumber}, first-parents: ${repo.firstParentsCommitsNumber}]"
-        )
-        return true
+        return loadHistory()
     }
 
     private fun initStorageAndLogs() {
@@ -115,11 +106,11 @@ class HistorySummarizer(
         val commitsLogPath = File(dumpFolder).resolve(COMMITS_LOG).absolutePath
         workLogger = FileLogger(workLogPath, config.isDebugWorkers, workEnv.mainLogger)
         commitsLogger = CommitsLogger(commitsLogPath, config.logDumpThreshold)
-        parseProvider = ParseProvider.getProvider(config, parseEnv)
-        summaryStorage = SummaryStorage.getSummaryStorage(dumpFolder, config, workLogger)
+        parseProvider = ParseProvider.get(config, parseEnv)
+        summaryStorage = SummaryStorage.get(dumpFolder, config, workLogger)
     }
 
-    private fun loadHistory() {
+    private fun loadHistory(): Boolean {
         repo.loadCommitsHistory()
         when (config.commitsType) {
             CommitsType.ONLY_MERGES -> commitsHistory.addAll(repo.mergeHistory.history)
@@ -132,6 +123,15 @@ class HistorySummarizer(
             repo.mergesPart < config.mergesPart -> SummarizerStatus.SMALL_MERGES_PART
             else -> SummarizerStatus.LOADED
         }
+        if (status != SummarizerStatus.LOADED) {
+            workLogger?.add("bad history: $status")
+            return false
+        }
+        workLogger?.add("default repo branch: ${repo.defaultBranchHead?.name}")
+        workLogger?.add(
+            "commits count [merge: ${repo.mergeCommitsNumber}, first-parents: ${repo.firstParentsCommitsNumber}]"
+        )
+        return true
     }
 
     private fun processCommits() {
@@ -146,7 +146,7 @@ class HistorySummarizer(
                 currCommit = commitsHistory[i]
                 val diff = repo.git.getCommitsDiff(repo.repository.newObjectReader(), currCommit, prevCommit)
                 val processedDiff = diff.getDiffFiles(repo.repository, config.copyDetection)
-                val supportedFiles = processedDiff.getSupportedFiles(config.supportedExtensions)
+                val supportedFiles = processedDiff.getSupportedFiles(config.supportedFileExtensions)
                 val filesPaths = supportedFiles.getAbsolutePatches(repo.path) // supported extensions files
                 workLogger?.add(
                     "files diff [${prevCommit?.name?.substring(0, FIRST_HASH)}, " +

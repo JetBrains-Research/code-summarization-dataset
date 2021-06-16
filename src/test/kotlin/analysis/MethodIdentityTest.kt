@@ -1,6 +1,8 @@
-import org.junit.Test
-import analysis.config.Language
+package analysis
+
+import analysis.config.enums.SupportedLanguage
 import analysis.granularity.method.MethodIdentity
+import org.junit.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertNotEquals
@@ -13,8 +15,8 @@ class MethodIdentityTest {
     private val fName1 = "full_name.$mName1"
     private val fName2 = "full_name.$mName2"
     private val path1 = "path1"
-    private val java = Language.JAVA
-    private val python = Language.PYTHON
+    private val java = SupportedLanguage.JAVA
+    private val python = SupportedLanguage.PYTHON
     private val argsTypes1 = listOf("int", "String")
     private val argsTypes2 = listOf("String", "int")
 

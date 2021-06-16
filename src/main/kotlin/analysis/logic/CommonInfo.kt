@@ -1,5 +1,6 @@
 package analysis.logic
 
+import analysis.git.AnalysisRepository
 import org.eclipse.jgit.revwalk.RevCommit
 
 data class CommonInfo(

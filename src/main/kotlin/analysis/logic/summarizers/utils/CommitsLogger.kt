@@ -1,11 +1,12 @@
-package analysis.utils
+package analysis.logic.summarizers.utils
 
+import analysis.config.enums.SupportedLanguage
+import analysis.git.CommitInfo
+import analysis.git.getCommitInfo
+import analysis.utils.clearFile
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import org.eclipse.jgit.revwalk.RevCommit
-import analysis.config.Language
-import analysis.git.CommitInfo
-import analysis.git.getCommitInfo
 import java.io.File
 import java.io.FileOutputStream
 import java.util.Calendar
@@ -19,7 +20,7 @@ class CommitsLogger(
     private val dumpFilePath: String,
     private val dumpThreshold: Int = 500
 ) {
-    private val log = mutableMapOf<Pair<CommitInfo, CommitInfo>, Map<Language, List<String>>>()
+    private val log = mutableMapOf<Pair<CommitInfo, CommitInfo>, Map<SupportedLanguage, List<String>>>()
     private val dumpFile: File = File(dumpFilePath)
     private val calendar = Calendar.getInstance()
     private val objectMapper = jacksonObjectMapper()
@@ -29,7 +30,7 @@ class CommitsLogger(
         dumpFile.clearFile()
     }
 
-    fun add(newCommit: RevCommit?, oldCommit: RevCommit?, filesByLang: Map<Language, List<String>>) {
+    fun add(newCommit: RevCommit?, oldCommit: RevCommit?, filesByLang: Map<SupportedLanguage, List<String>>) {
         if (newCommit == null || oldCommit == null) {
             return
         }

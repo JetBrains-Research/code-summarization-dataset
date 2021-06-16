@@ -1,12 +1,12 @@
 package analysis.granularity.method
 
+import analysis.config.enums.SupportedLanguage
+import analysis.git.toJSONMain
+import analysis.granularity.Summary
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.node.ObjectNode
 import org.eclipse.jgit.revwalk.RevCommit
-import analysis.config.Language
-import analysis.git.toJSONMain
-import analysis.granularity.Summary
 
 /*
  *  name and fullName are normalized names
@@ -16,7 +16,7 @@ data class MethodSummary(
     var fullName: String,
     var filePath: String,
     var splitName: String,
-    var language: Language,
+    var language: SupportedLanguage,
     var argsTypes: List<String> = emptyList(),
     var returnType: String? = null,
     var id: Int? = null,

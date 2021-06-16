@@ -1,10 +1,12 @@
-import org.junit.Test
+package analysis
+
 import analysis.config.IdentityConfig
-import analysis.config.IdentityParameters
-import analysis.config.Language
+import analysis.config.enums.IdentityParameters
+import analysis.config.enums.SupportedLanguage
 import analysis.granularity.method.MethodIdentity
 import analysis.granularity.method.MethodSummary
 import analysis.granularity.method.MethodSummaryStorage
+import org.junit.Test
 import java.io.File
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
@@ -41,7 +43,7 @@ internal class MethodSummaryStorageTest {
 
     private fun genMethodSummary(pathId: Int, nameId: Int, argsId: Int, rtId: Int, config: IdentityConfig): MethodSummary {
         val methodSummary = MethodSummary(
-            filePath = "", name = "", fullName = "", splitName = "", language = Language.JAVA
+            filePath = "", name = "", fullName = "", splitName = "", language = SupportedLanguage.JAVA
         )
         for (param in config.parameters) {
             when (param) {
@@ -88,7 +90,7 @@ internal class MethodSummaryStorageTest {
                     filePath = ms2.filePath,
                     argsTypes = ms2.argsTypes,
                     returnType = ms2.returnType,
-                    language = Language.JAVA
+                    language = SupportedLanguage.JAVA
                 )
             )
         )
@@ -129,7 +131,7 @@ internal class MethodSummaryStorageTest {
                     filePath = ms2.filePath,
                     argsTypes = ms2.argsTypes,
                     returnType = ms2.returnType,
-                    language = Language.JAVA
+                    language = SupportedLanguage.JAVA
                 )
             )
         )

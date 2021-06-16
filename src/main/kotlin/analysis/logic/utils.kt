@@ -1,16 +1,17 @@
 package analysis.logic
 
-import analysis.config.Language
+import analysis.config.enums.SupportedLanguage
+import analysis.git.AnalysisRepository
 import java.io.File
 
-fun File.getSupportedFiles(languages: List<Language>) = this.walkTopDown()
+fun File.getSupportedFiles(languages: List<SupportedLanguage>) = this.walkTopDown()
     .filter { !it.isHidden && it.isFile }
     .toList()
     .getFilesByLanguage(languages)
     .filter { (_, files) -> files.isNotEmpty() }
 
-fun List<File>.getFilesByLanguage(languages: List<Language>): Map<Language, List<File>> {
-    val filesByLang = mutableMapOf<Language, MutableList<File>>()
+fun List<File>.getFilesByLanguage(languages: List<SupportedLanguage>): Map<SupportedLanguage, List<File>> {
+    val filesByLang = mutableMapOf<SupportedLanguage, MutableList<File>>()
     languages.forEach { lang ->
         filesByLang[lang] = mutableListOf()
     }
@@ -35,7 +36,7 @@ fun AnalysisRepository.getRepoDumpFolder(id: Int, dumpFolder: String): String {
     return File(dumpFolder).resolve("${owner}__$name").absolutePath
 }
 
-fun isFileFromLanguage(file: File, language: Language): Boolean = language.extensions.any { ext ->
+fun isFileFromLanguage(file: File, language: SupportedLanguage): Boolean = language.extensions.any { ext ->
     file.absolutePath.endsWith(ext)
 }
 

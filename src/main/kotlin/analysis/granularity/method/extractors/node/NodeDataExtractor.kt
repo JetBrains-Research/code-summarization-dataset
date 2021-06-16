@@ -1,11 +1,11 @@
-package analysis.granularity.method.extractors
+package analysis.granularity.method.extractors.node
 
+import analysis.granularity.method.MethodAST
+import analysis.granularity.method.MethodToken
+import analysis.parsing.getNormalizedToken
 import astminer.common.model.Node
 import astminer.common.preOrder
 import astminer.common.storage.RankedIncrementalIdStorage
-import analysis.granularity.method.MethodAST
-import analysis.granularity.method.MethodToken
-import analysis.parsing.utils.getNormalizedToken
 
 interface NodeDataExtractor {
 

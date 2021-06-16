@@ -4,7 +4,7 @@ import analysis.config.AnalysisConfig
 import analysis.config.loadJSONList
 import analysis.config.loadPaths
 import analysis.config.parseRepoUrls
-import analysis.logic.AnalysisRepository
+import analysis.git.AnalysisRepository
 import analysis.logic.Analyzer
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.parameters.options.flag
@@ -32,11 +32,13 @@ class AnalyzerParser : CliktCommand() {
     ).flag(default = false)
 
     private val isAnalyserDebug by option(
+        "-ad",
         "--analysis-debug",
         help = "Debug mode: analysis log in console"
     ).flag(default = false)
 
     private val isSummarizersDebug by option(
+        "-sd",
         "--summary-debug",
         help = "Debug mode: analysis log in console"
     ).flag(default = false)

@@ -1,14 +1,14 @@
 package analysis.granularity
 
 import analysis.config.AnalysisConfig
-import analysis.config.Task
+import analysis.config.enums.Task
 import analysis.granularity.method.MethodSummaryStorage
-import analysis.utils.FileLogger
 import com.fasterxml.jackson.databind.JsonNode
+import utils.FileLogger
 
 interface SummaryStorage {
     companion object {
-        fun getSummaryStorage(
+        fun get(
             dumpFolder: String,
             config: AnalysisConfig,
             logger: FileLogger? = null

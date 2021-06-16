@@ -30,5 +30,5 @@ fun extractContent(content: String, pos: Int, length: Int): String? {
     return null
 }
 
-fun getObjectMapper(objectMapper: ObjectMapper? = null) =
+fun getObjectMapper(objectMapper: ObjectMapper? = null): ObjectMapper =
     objectMapper ?: jacksonObjectMapper().enable(SerializationFeature.INDENT_OUTPUT)

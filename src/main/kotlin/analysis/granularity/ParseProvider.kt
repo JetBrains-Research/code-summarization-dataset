@@ -1,9 +1,9 @@
 package analysis.granularity
 
 import analysis.config.AnalysisConfig
-import analysis.config.Language
-import analysis.config.Parser
-import analysis.config.Task
+import analysis.config.enums.SupportedLanguage
+import analysis.config.enums.SupportedParser
+import analysis.config.enums.Task
 import analysis.granularity.method.MethodParseProvider
 import analysis.logic.CommonInfo
 import analysis.logic.ParseEnvironment
@@ -13,7 +13,7 @@ import java.io.File
 
 interface ParseProvider {
     companion object {
-        fun getProvider(config: AnalysisConfig, parseEnv: ParseEnvironment): ParseProvider {
+        fun get(config: AnalysisConfig, parseEnv: ParseEnvironment): ParseProvider {
             return when (config.task) {
                 Task.NAME -> MethodParseProvider(config, parseEnv)
             }
@@ -22,14 +22,14 @@ interface ParseProvider {
 
     fun parse(
         files: List<File>,
-        parser: Parser,
-        lang: Language
+        parser: SupportedParser,
+        lang: SupportedLanguage
     ): List<ParseResult>
 
     fun processParseResults(
         parseResults: List<ParseResult>,
         storage: SummaryStorage,
-        lang: Language,
+        lang: SupportedLanguage,
         commonInfo: CommonInfo
     )
 }

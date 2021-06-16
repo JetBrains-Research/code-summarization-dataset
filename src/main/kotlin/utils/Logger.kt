@@ -1,4 +1,4 @@
-package analysis.utils
+package utils
 
 interface Logger {
     fun add(message: String)

@@ -1,20 +1,20 @@
-package analysis.granularity.method.summarizers
+package analysis.granularity.method.extractors
 
-import astminer.common.model.Node
-import astminer.common.splitToSubtokens
-import analysis.config.Language
-import analysis.logic.whichLine
+import analysis.config.enums.SupportedLanguage
 import analysis.granularity.method.MethodSummary
 import analysis.granularity.method.buildNormalizedFullName
-import analysis.granularity.method.extractors.JavaNodeDataExtractor
-import analysis.granularity.method.extractors.getParents
+import analysis.granularity.method.extractors.node.JavaNodeDataExtractor
+import analysis.granularity.method.extractors.node.getParents
 import analysis.granularity.method.normalizeAstLabel
+import analysis.logic.whichLine
+import astminer.common.model.Node
+import astminer.common.splitToSubtokens
 
-class JavaMethodSummarizer : MethodSummarizer, JavaNodeDataExtractor {
+class JavaMethodExtractor : MethodExtractor, JavaNodeDataExtractor {
 
-    override val language = Language.JAVA
+    override val language = SupportedLanguage.JAVA
     override var hideMethodName: Boolean = true
-    override var hiddenMethodName: String = MethodSummarizer.DEFAULT_HIDDEN_NAME
+    override var hiddenMethodName: String = MethodExtractor.DEFAULT_HIDDEN_NAME
 
     override fun <T : Node> summarize(
         root: T,

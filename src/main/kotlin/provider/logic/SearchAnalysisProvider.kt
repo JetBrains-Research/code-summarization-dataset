@@ -1,7 +1,7 @@
 package provider.logic
 
 import analysis.config.AnalysisConfig
-import analysis.logic.AnalysisRepository
+import analysis.git.AnalysisRepository
 import analysis.logic.Analyzer
 import search.config.SearchConfig
 import search.logic.ReposFinder

@@ -1,9 +1,10 @@
+package analysis
 
-import org.junit.Test
-import analysis.config.Language
+import analysis.config.enums.SupportedLanguage
 import analysis.granularity.method.MethodSummary
 import analysis.granularity.method.filter.MethodSummaryFilter
 import analysis.granularity.method.filter.MethodSummaryFilterConfig
+import org.junit.Test
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
@@ -12,7 +13,7 @@ class MethodSummaryFilterTest {
     private companion object {
         fun createMethodSummary(
             name: String,
-            lang: Language,
+            lang: SupportedLanguage,
             body: String? = null,
             startLine: Int = 0,
             endLine: Int = 0
@@ -46,9 +47,9 @@ class MethodSummaryFilterTest {
     fun minBodyLenTest() {
         val filterConfig = initFilterConfig(minBodyLength = 10)
         val methodFilter = MethodSummaryFilter(filterConfig)
-        val ms1 = createMethodSummary("", Language.JAVA, "", 0, 5)
-        val ms2 = createMethodSummary("", Language.JAVA, "", 0, 10)
-        val ms3 = createMethodSummary("", Language.JAVA, "", 0, 150)
+        val ms1 = createMethodSummary("", SupportedLanguage.JAVA, "", 0, 5)
+        val ms2 = createMethodSummary("", SupportedLanguage.JAVA, "", 0, 10)
+        val ms3 = createMethodSummary("", SupportedLanguage.JAVA, "", 0, 150)
         assertFalse(methodFilter.isSummaryGood(ms1))
         assertTrue(methodFilter.isSummaryGood(ms2))
         assertTrue(methodFilter.isSummaryGood(ms3))
@@ -58,9 +59,9 @@ class MethodSummaryFilterTest {
     fun exactNameTest() {
         val filterConfig = initFilterConfig(names = listOf("exactName1", "exactName2"))
         val methodFilter = MethodSummaryFilter(filterConfig)
-        val ms1 = createMethodSummary("exactName1", Language.JAVA, "")
-        val ms2 = createMethodSummary("exactName2", Language.JAVA, "")
-        val ms3 = createMethodSummary("exactName3", Language.JAVA, "")
+        val ms1 = createMethodSummary("exactName1", SupportedLanguage.JAVA, "")
+        val ms2 = createMethodSummary("exactName2", SupportedLanguage.JAVA, "")
+        val ms3 = createMethodSummary("exactName3", SupportedLanguage.JAVA, "")
         assertFalse(methodFilter.isSummaryGood(ms1))
         assertFalse(methodFilter.isSummaryGood(ms2))
         assertTrue(methodFilter.isSummaryGood(ms3))
@@ -70,10 +71,10 @@ class MethodSummaryFilterTest {
     fun namePrefixTest() {
         val filterConfig = initFilterConfig(prefs = listOf("exact", "abra"))
         val methodFilter = MethodSummaryFilter(filterConfig)
-        val ms1 = createMethodSummary("exactName1", Language.JAVA, "")
-        val ms2 = createMethodSummary("exactName2", Language.JAVA, "")
-        val ms3 = createMethodSummary("abra", Language.JAVA, "")
-        val ms4 = createMethodSummary("goodName", Language.JAVA, "")
+        val ms1 = createMethodSummary("exactName1", SupportedLanguage.JAVA, "")
+        val ms2 = createMethodSummary("exactName2", SupportedLanguage.JAVA, "")
+        val ms3 = createMethodSummary("abra", SupportedLanguage.JAVA, "")
+        val ms4 = createMethodSummary("goodName", SupportedLanguage.JAVA, "")
         assertFalse(methodFilter.isSummaryGood(ms1))
         assertFalse(methodFilter.isSummaryGood(ms2))
         assertFalse(methodFilter.isSummaryGood(ms3))
@@ -84,10 +85,10 @@ class MethodSummaryFilterTest {
     fun javaAnnoTest() {
         val filterConfig = initFilterConfig(annos = listOf("@Override"))
         val methodFilter = MethodSummaryFilter(filterConfig)
-        val ms1 = createMethodSummary("", Language.JAVA, "@Override void main() { };")
-        val ms2 = createMethodSummary("", Language.JAVA, "     @Override void main() { };")
-        val ms3 = createMethodSummary("", Language.JAVA, "public static void main(){ @Override something }")
-        val ms4 = createMethodSummary("", Language.JAVA, "no body")
+        val ms1 = createMethodSummary("", SupportedLanguage.JAVA, "@Override void main() { };")
+        val ms2 = createMethodSummary("", SupportedLanguage.JAVA, "     @Override void main() { };")
+        val ms3 = createMethodSummary("", SupportedLanguage.JAVA, "public static void main(){ @Override something }")
+        val ms4 = createMethodSummary("", SupportedLanguage.JAVA, "no body")
         assertFalse(methodFilter.isSummaryGood(ms1))
         assertFalse(methodFilter.isSummaryGood(ms2))
         assertTrue(methodFilter.isSummaryGood(ms3))
@@ -103,14 +104,14 @@ class MethodSummaryFilterTest {
             annos = listOf("@Override")
         )
         val methodFilter = MethodSummaryFilter(filterConfig)
-        val badName = createMethodSummary("exactName", Language.JAVA, "", startLine = 0, endLine = 50)
-        val badPref = createMethodSummary("abraName", Language.JAVA, "", startLine = 0, endLine = 50)
-        val badLength = createMethodSummary("exactNameGood", Language.JAVA, "", startLine = 0, endLine = 5)
+        val badName = createMethodSummary("exactName", SupportedLanguage.JAVA, "", startLine = 0, endLine = 50)
+        val badPref = createMethodSummary("abraName", SupportedLanguage.JAVA, "", startLine = 0, endLine = 50)
+        val badLength = createMethodSummary("exactNameGood", SupportedLanguage.JAVA, "", startLine = 0, endLine = 5)
         val badOverride = createMethodSummary(
-            "exactNameGood", Language.JAVA, "@Override", startLine = 0, endLine = 50
+            "exactNameGood", SupportedLanguage.JAVA, "@Override", startLine = 0, endLine = 50
         )
-        val goodAll = createMethodSummary("exactNameGood", Language.JAVA, "", startLine = 0, endLine = 50)
-        val badAll = createMethodSummary("exactName", Language.JAVA, "@Override")
+        val goodAll = createMethodSummary("exactNameGood", SupportedLanguage.JAVA, "", startLine = 0, endLine = 50)
+        val badAll = createMethodSummary("exactName", SupportedLanguage.JAVA, "@Override")
         assertFalse(methodFilter.isSummaryGood(badName))
         assertFalse(methodFilter.isSummaryGood(badPref))
         assertFalse(methodFilter.isSummaryGood(badLength))

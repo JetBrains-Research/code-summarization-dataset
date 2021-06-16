@@ -1,11 +1,11 @@
 package analysis.granularity.method.filter
 
-import com.fasterxml.jackson.databind.JsonNode
 import analysis.granularity.method.MethodSummary
 import analysis.granularity.method.filter.predicates.excludeExactNamePredicate
 import analysis.granularity.method.filter.predicates.excludeWithAnnotations
 import analysis.granularity.method.filter.predicates.excludeWithNamePrefixPredicate
 import analysis.granularity.method.filter.predicates.minBodyLinesLengthPredicate
+import com.fasterxml.jackson.databind.JsonNode
 import java.util.function.Predicate
 
 class MethodSummaryFilterConfig {
@@ -35,27 +35,6 @@ class MethodSummaryFilterConfig {
     // Java
     var javaExcludeWithAnnotation = mutableListOf<String>()
 
-    fun JsonNode.parseFields() {
-        this.parseIntFields()
-        this.parseStringFields()
-    }
-
-    fun JsonNode.parseIntFields() = INT_FIELDS.forEach { field ->
-        val value = this.get(field)?.asInt() ?: return@forEach
-        when (field) {
-            MIN_BODY_LINES_LEN -> minBodyLinesLength = value
-        }
-    }
-
-    fun JsonNode.parseStringFields() = STRING_FIELDS.forEach { field ->
-        val values = this.get(field)?.map { it.asText() }?.toList() ?: return@forEach
-        when (field) {
-            EXCL_NAME_PREF -> excludeWithNamePrefix.addAll(values)
-            EXCL_EXACT_NAME -> excludeWithExactName.addAll(values)
-            JAVA_EXCL_ANNOS -> javaExcludeWithAnnotation.addAll(values)
-        }
-    }
-
     fun getCommonPredicates(): List<Predicate<MethodSummary>> {
         val ps = mutableListOf<Predicate<MethodSummary>>()
         // method body length
@@ -80,5 +59,26 @@ class MethodSummaryFilterConfig {
             ps.add(excludeWithAnnotations(javaExcludeWithAnnotation))
         }
         return ps
+    }
+
+    fun JsonNode.parseFields() {
+        this.parseIntFields()
+        this.parseStringFields()
+    }
+
+    private fun JsonNode.parseIntFields() = INT_FIELDS.forEach { field ->
+        val value = this.get(field)?.asInt() ?: return@forEach
+        when (field) {
+            MIN_BODY_LINES_LEN -> minBodyLinesLength = value
+        }
+    }
+
+    private fun JsonNode.parseStringFields() = STRING_FIELDS.forEach { field ->
+        val values = this.get(field)?.map { it.asText() }?.toList() ?: return@forEach
+        when (field) {
+            EXCL_NAME_PREF -> excludeWithNamePrefix.addAll(values)
+            EXCL_EXACT_NAME -> excludeWithExactName.addAll(values)
+            JAVA_EXCL_ANNOS -> javaExcludeWithAnnotation.addAll(values)
+        }
     }
 }

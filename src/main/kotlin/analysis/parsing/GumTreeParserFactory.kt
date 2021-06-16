@@ -1,17 +1,17 @@
 package analysis.parsing
 
+import analysis.config.enums.SupportedLanguage
 import astminer.common.model.Node
+import astminer.common.model.Parser
 import astminer.parse.gumtree.java.GumTreeJavaParser
 import astminer.parse.gumtree.python.GumTreePythonParser
-import analysis.config.Language
 
 interface GumTreeParserFactory {
-
     companion object {
-        fun getParser(language: Language): SafeParser<out Node> {
+        fun getParser(language: SupportedLanguage): Parser<out Node> {
             return when (language) {
-                Language.JAVA -> SafeParser(GumTreeJavaParser())
-                Language.PYTHON -> SafeParser(GumTreePythonParser())
+                SupportedLanguage.JAVA -> GumTreeJavaParser()
+                SupportedLanguage.PYTHON -> GumTreePythonParser()
             }
         }
     }

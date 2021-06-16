@@ -1,14 +1,14 @@
-package analysis.granularity.method.extractors
+package analysis.granularity.method.extractors.node
 
-import astminer.common.model.Node
-import astminer.parse.gumtree.GumTreeNode
-import analysis.config.Language
+import analysis.config.enums.SupportedLanguage
 import analysis.granularity.method.buildNormalizedFullName
 import analysis.parsing.GumTreeJavaTypeLabels
 import analysis.parsing.GumTreePythonTypeLabels
 import analysis.parsing.getNodeLabel
+import astminer.common.model.Node
+import astminer.parse.gumtree.GumTreeNode
 
-fun <T : Node> T.getMethodFullName(label: String, language: Language): String =
+fun <T : Node> T.getMethodFullName(label: String, language: SupportedLanguage): String =
     buildNormalizedFullName(label, this.getParents(language))
 
 fun <T : Node> T.getChildByTypeLabel(typeLabel: String): Node? {
@@ -25,9 +25,9 @@ fun <T : Node> T.getFirstChildByTypeLabelOrNull(typeLabel: String): Node? {
     return if (child.getTypeLabel() == typeLabel) return child else null
 }
 
-fun <T : Node> T.getParents(language: Language): List<Pair<String, String>> = when (language) {
-    Language.JAVA -> (this as GumTreeNode).getJavaParents()
-    Language.PYTHON -> (this as GumTreeNode).getPythonParents()
+fun <T : Node> T.getParents(language: SupportedLanguage): List<Pair<String, String>> = when (language) {
+    SupportedLanguage.JAVA -> (this as GumTreeNode).getJavaParents()
+    SupportedLanguage.PYTHON -> (this as GumTreeNode).getPythonParents()
 }
 
 fun GumTreeNode.getJavaParents(): List<Pair<String, String>> {

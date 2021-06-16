@@ -1,8 +1,8 @@
 package analysis.granularity.method
 
 import analysis.config.IdentityConfig
-import analysis.config.IdentityParameters
-import analysis.config.Language
+import analysis.config.enums.IdentityParameters
+import analysis.config.enums.SupportedLanguage
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 
@@ -12,10 +12,11 @@ data class MethodIdentity(
     var returnType: String? = null,
     var argsTypes: List<String> = listOf(),
     var filePath: String? = null,
-    val language: Language
+    val language: SupportedLanguage
 ) {
 
     companion object {
+        // without checking identity parameters => all method parameters
         fun fullIdentity(summary: MethodSummary): MethodIdentity {
             val id = MethodIdentity(
                 filePath = summary.filePath,
@@ -30,6 +31,7 @@ data class MethodIdentity(
             return id
         }
 
+        // with checking identity parameters => chosen method parameters
         fun configIdentity(summary: MethodSummary, config: IdentityConfig): MethodIdentity {
             val id = MethodIdentity(language = summary.language)
             id.config = config
@@ -47,6 +49,7 @@ data class MethodIdentity(
             return id
         }
 
+        // with checking identity parameters => chosen method parameters
         fun configIdentity(fullIdentity: MethodIdentity, config: IdentityConfig): MethodIdentity {
             val id = MethodIdentity(language = fullIdentity.language)
             id.config = config

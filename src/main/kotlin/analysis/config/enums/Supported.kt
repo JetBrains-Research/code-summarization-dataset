@@ -1,6 +1,6 @@
-package analysis.config
+package analysis.config.enums
 
-enum class Language(
+enum class SupportedLanguage(
     val label: String,
     val extensions: List<String>
 ) {
@@ -14,12 +14,12 @@ enum class Language(
     )
 }
 
-enum class Parser(
+enum class SupportedParser(
     val label: String,
-    val languages: List<Language>
+    val languages: List<SupportedLanguage>
 ) {
     GUMTREE(
         "gumtree",
-        listOf(Language.JAVA, Language.PYTHON)
+        listOf(SupportedLanguage.JAVA, SupportedLanguage.PYTHON)
     )
 }

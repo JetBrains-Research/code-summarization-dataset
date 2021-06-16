@@ -1,17 +1,17 @@
 package analysis.granularity.method
 
 import analysis.config.AnalysisConfig
-import analysis.config.Granularity
-import analysis.config.Language
-import analysis.config.Parser
+import analysis.config.enums.Granularity
+import analysis.config.enums.SupportedLanguage
+import analysis.config.enums.SupportedParser
 import analysis.granularity.ParseProvider
 import analysis.granularity.ParseResult
 import analysis.granularity.SummaryStorage
-import analysis.granularity.method.extractors.getMethodFullName
+import analysis.granularity.method.extractors.node.getMethodFullName
 import analysis.granularity.method.filter.MethodSummaryFilter
-import analysis.granularity.method.summarizers.JavaMethodSummarizer
-import analysis.granularity.method.summarizers.MethodSummarizersFactory
-import analysis.granularity.method.summarizers.PythonMethodSummarizer
+import analysis.granularity.method.extractors.JavaMethodExtractor
+import analysis.granularity.method.extractors.MethodExtractor
+import analysis.granularity.method.extractors.PythonMethodExtractor
 import analysis.logic.CommonInfo
 import analysis.logic.ParseEnvironment
 import analysis.logic.calculateLinesStarts
@@ -19,8 +19,8 @@ import analysis.logic.getFileLinesLength
 import analysis.logic.splitToParents
 import analysis.parsing.LabelExtractorFactory
 import analysis.parsing.excludeNodes
+import analysis.parsing.normalizeParseResult
 import analysis.parsing.retrievePaths
-import analysis.parsing.utils.normalizeParseResult
 import analysis.utils.readFileToString
 import astminer.cli.LabeledResult
 import astminer.common.model.Node
@@ -41,8 +41,8 @@ class MethodParseProvider(
 
     override fun parse(
         files: List<File>,
-        parser: Parser,
-        lang: Language
+        parser: SupportedParser,
+        lang: SupportedLanguage
     ): List<ParseResult> {
         if (files.isEmpty()) {
             return emptyList()
@@ -79,17 +79,17 @@ class MethodParseProvider(
     override fun processParseResults(
         parseResults: List<ParseResult>,
         storage: SummaryStorage,
-        lang: Language,
+        lang: SupportedLanguage,
         commonInfo: CommonInfo
     ) = parseResults.forEach { parseResult -> parseResult.processParseResult(storage, lang, commonInfo) }
 
     private fun ParseResult.processParseResult(
         storage: SummaryStorage,
-        lang: Language,
+        lang: SupportedLanguage,
         info: CommonInfo
     ) {
         storage as MethodSummaryStorage
-        val summarizer = getMethodSummarizer(lang)
+        val summarizer = MethodExtractor.get(lang, config.hideMethodName)
         val fileContent = filePath.readFileToString()
         val fileLinesStarts = filePath.getFileLinesLength().calculateLinesStarts()
         val relativePath = filePath.removePrefix(info.rootPath + File.separator)
@@ -136,23 +136,19 @@ class MethodParseProvider(
         }
     }
 
-    private fun LabeledResult<out Node>.buildIdentity(fileContent: String, lang: Language): MethodIdentity {
+    private fun LabeledResult<out Node>.buildIdentity(fileContent: String, lang: SupportedLanguage): MethodIdentity {
         val methodName = normalizeAstLabel(label)
         val methodFullName = root.getMethodFullName(label, lang)
         val (returnType, argsTypes) = when (lang) {
-            Language.JAVA -> JavaMethodSummarizer().extractReturnTypeAndArgs(root)
-            Language.PYTHON -> PythonMethodSummarizer().extractReturnTypeAndArgs(root, fileContent)
+            SupportedLanguage.JAVA -> JavaMethodExtractor().extractReturnTypeAndArgs(root)
+            SupportedLanguage.PYTHON -> PythonMethodExtractor().extractReturnTypeAndArgs(root, fileContent)
         }
         return MethodIdentity(
             methodName, methodFullName, returnType, argsTypes, filePath, lang
         )
     }
 
-    private fun getLabelExtractor(parser: Parser) = LabelExtractorFactory.getLabelExtractor(
+    private fun getLabelExtractor(parser: SupportedParser) = LabelExtractorFactory.getLabelExtractor(
         config.task, Granularity.METHOD, config.hideMethodName, config.filterPredicates, parser
-    )
-
-    private fun getMethodSummarizer(lang: Language) = MethodSummarizersFactory.getMethodSummarizer(
-        lang, config.hideMethodName
     )
 }

@@ -1,23 +1,23 @@
 package analysis.logic.summarizers
 
 import analysis.config.AnalysisConfig
-import analysis.logic.AnalysisRepository
-import analysis.logic.CommonInfo
-import analysis.logic.ParseEnvironment
+import analysis.git.AnalysisRepository
 import analysis.granularity.ParseProvider
 import analysis.granularity.ParseResult
+import analysis.granularity.SummaryStorage
+import analysis.logic.CommonInfo
+import analysis.logic.ParseEnvironment
 import analysis.logic.ReadyInfo
 import analysis.logic.WorkEnvironment
 import analysis.logic.getSupportedFiles
-import analysis.granularity.SummaryStorage
-import analysis.utils.FileLogger
+import analysis.logic.summarizers.utils.Zipper
 import analysis.utils.deleteDirectory
 import analysis.utils.prettyCurrentDate
-import analysis.zipper.Zipper
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.databind.node.ObjectNode
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import utils.FileLogger
 import java.io.File
 import java.io.FileOutputStream
 
@@ -76,8 +76,8 @@ class RepoSummarizer(
         status = SummarizerStatus.LOADED
         val workLogPath = File(dumpFolder).resolve(WORK_LOG).absolutePath
         workLogger = FileLogger(workLogPath, config.isDebugWorkers, workEnv.mainLogger)
-        parseProvider = ParseProvider.getProvider(config, parseEnv)
-        summaryStorage = SummaryStorage.getSummaryStorage(dumpFolder, config, workLogger)
+        parseProvider = ParseProvider.get(config, parseEnv)
+        summaryStorage = SummaryStorage.get(dumpFolder, config, workLogger)
         return true
     }
 

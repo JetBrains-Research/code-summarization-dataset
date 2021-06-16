@@ -1,9 +1,8 @@
 package analysis.parsing
 
-import analysis.config.Language
-import analysis.granularity.method.extractors.getChildByTypeLabel
-import analysis.granularity.method.extractors.getFirstChildByTypeLabelOrNull
-import analysis.parsing.utils.toPathContextNormalizedToken
+import analysis.config.enums.SupportedLanguage
+import analysis.granularity.method.extractors.node.getChildByTypeLabel
+import analysis.granularity.method.extractors.node.getFirstChildByTypeLabelOrNull
 import astminer.common.model.Node
 import astminer.common.preOrder
 import astminer.parse.gumtree.GumTreeNode
@@ -42,15 +41,15 @@ fun <T : Node> T.retrievePaths(pathMiner: PathMiner, maxPaths: Int): List<String
     }
 }
 
-fun <T : Node> T.excludeNodes(lang: Language, excludeNodes: List<String>, excludeDocNode: Boolean) {
+fun <T : Node> T.excludeNodes(lang: SupportedLanguage, excludeNodes: List<String>, excludeDocNode: Boolean) {
     when (lang) {
-        Language.PYTHON -> {
+        SupportedLanguage.PYTHON -> {
             this.excludeNodes(excludeNodes)
             if (excludeDocNode) {
                 this.excludePythonDocNode()
             }
         }
-        Language.JAVA -> if (excludeDocNode) {
+        SupportedLanguage.JAVA -> if (excludeDocNode) {
             this.excludeNodes(listOf(GumTreeJavaTypeLabels.JAVA_DOC) + excludeNodes)
         } else {
             this.excludeNodes(excludeNodes)

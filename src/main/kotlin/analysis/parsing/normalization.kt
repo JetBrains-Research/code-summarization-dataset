@@ -1,4 +1,4 @@
-package analysis.parsing.utils
+package analysis.parsing
 
 import astminer.common.DEFAULT_TOKEN
 import astminer.common.model.ASTPath

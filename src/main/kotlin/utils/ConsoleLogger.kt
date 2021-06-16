@@ -1,6 +1,8 @@
-package analysis.utils
+package utils
 
-class SoutLogger(
+import analysis.utils.prettyCurrentDate
+
+class ConsoleLogger(
     private val isParent: Boolean = false,
     private val parentLogger: Logger? = null
 ) : Logger {

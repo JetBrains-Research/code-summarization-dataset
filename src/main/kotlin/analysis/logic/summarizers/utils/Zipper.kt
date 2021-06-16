@@ -1,4 +1,4 @@
-package analysis.zipper
+package analysis.logic.summarizers.utils
 
 import org.apache.commons.compress.compressors.gzip.GzipCompressorOutputStream
 import java.io.BufferedOutputStream

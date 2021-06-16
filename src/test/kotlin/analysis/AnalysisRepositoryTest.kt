@@ -1,7 +1,9 @@
-import org.junit.Test
-import analysis.git.isRepoCloned
-import analysis.logic.AnalysisRepository
+package analysis
+
+import analysis.git.AnalysisRepository
 import analysis.git.isDotGitPresent
+import analysis.git.isRepoCloned
+import org.junit.Test
 import java.io.File
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest

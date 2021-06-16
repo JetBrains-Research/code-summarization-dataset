@@ -1,11 +1,12 @@
 package analysis.logic
 
 import analysis.config.AnalysisConfig
+import analysis.git.AnalysisRepository
 import analysis.logic.summarizers.FileSummarizer
 import analysis.logic.summarizers.HistorySummarizer
 import analysis.logic.summarizers.RepoSummarizer
-import analysis.utils.FileLogger
-import analysis.utils.SoutLogger
+import utils.FileLogger
+import utils.ConsoleLogger
 import analysis.utils.prettyCurrentDate
 import analysis.utils.prettyDate
 import java.io.File
@@ -18,7 +19,7 @@ class Analyzer(
         const val DONE_LOG_FILE_NAME = "done_log.txt"
     }
 
-    private val soutLogger: SoutLogger
+    private val soutLogger: ConsoleLogger
     private val workLogger: FileLogger
     private val doneLogger: FileLogger
 
@@ -30,7 +31,7 @@ class Analyzer(
 
     init {
         File(config.dataDumpFolder).mkdirs()
-        soutLogger = SoutLogger()
+        soutLogger = ConsoleLogger()
         workLogger = FileLogger(
             File(config.dumpFolder).resolve(LOG_FILE_NAME).absolutePath,
             isParent = config.isDebugAnalyzer,

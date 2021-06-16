@@ -1,22 +1,16 @@
 package analysis.git
 
+import analysis.utils.NoDotGitFolder
+import analysis.utils.getDateByMilliseconds
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import org.eclipse.jgit.api.Git
+import org.eclipse.jgit.lib.Repository
 import org.eclipse.jgit.revwalk.RevCommit
-import analysis.utils.getDateByMilliseconds
+import org.eclipse.jgit.storage.file.FileRepositoryBuilder
 import java.io.File
 import java.util.Calendar
-
-fun RevCommit.getCommitInfo(): CommitInfo = CommitInfo(
-    this.parentCount,
-    this.shortMessage,
-    this.authorIdent.getWhen().time, // milliseconds
-    this.authorIdent.name,
-    this.authorIdent.emailAddress,
-    this.name // hash
-)
 
 fun RevCommit.toJSONMain(objectMapper: ObjectMapper? = null, outerCalendar: Calendar? = null): JsonNode {
     val mapper = objectMapper ?: jacksonObjectMapper()
@@ -74,3 +68,14 @@ fun tryCloneRepository(url: String, cloneDir: File): Git? =
     } catch (e: Exception) {
         null
     }
+
+fun String.openRepositoryByDotGitDir(): Repository {
+    val dir = File(this)
+    if (!dir.exists()) {
+        throw NoDotGitFolder("no .git folder in path: $this")
+    }
+    return FileRepositoryBuilder()
+        .readEnvironment()
+        .setGitDir(dir)
+        .build()
+}

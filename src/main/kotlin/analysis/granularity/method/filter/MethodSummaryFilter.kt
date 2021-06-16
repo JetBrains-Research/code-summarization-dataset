@@ -1,17 +1,17 @@
 package analysis.granularity.method.filter
 
-import analysis.config.Language
+import analysis.config.enums.SupportedLanguage
 import analysis.granularity.method.MethodSummary
 import java.util.function.Predicate
 
 class MethodSummaryFilter(val config: MethodSummaryFilterConfig) {
 
-    val commonPredicates: MutableList<Predicate<MethodSummary>> = mutableListOf()
-    val langPredicates: MutableMap<Language, MutableList<Predicate<MethodSummary>>> = mutableMapOf()
+    private val commonPredicates: MutableList<Predicate<MethodSummary>> = mutableListOf()
+    private val langPredicates: MutableMap<SupportedLanguage, MutableList<Predicate<MethodSummary>>> = mutableMapOf()
 
     init {
         commonPredicates.addAll(config.getCommonPredicates())
-        langPredicates[Language.JAVA] = config.getJavaPredicates() as MutableList<Predicate<MethodSummary>>
+        langPredicates[SupportedLanguage.JAVA] = config.getJavaPredicates() as MutableList<Predicate<MethodSummary>>
     }
 
     fun isSummaryGood(summary: MethodSummary): Boolean {

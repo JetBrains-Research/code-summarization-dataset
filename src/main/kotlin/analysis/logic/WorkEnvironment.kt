@@ -2,7 +2,7 @@ package analysis.logic
 
 import analysis.logic.summarizers.Summarizer
 import analysis.logic.summarizers.SummarizerStatus
-import analysis.utils.Logger
+import utils.Logger
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit

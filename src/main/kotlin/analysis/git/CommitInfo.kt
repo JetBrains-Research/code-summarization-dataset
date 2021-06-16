@@ -1,9 +1,10 @@
 package analysis.git
 
+import analysis.utils.getDateByMilliseconds
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import analysis.utils.getDateByMilliseconds
+import org.eclipse.jgit.revwalk.RevCommit
 import java.util.Calendar
 
 data class CommitInfo(
@@ -30,3 +31,12 @@ data class CommitInfo(
         return jsonNode
     }
 }
+
+fun RevCommit.getCommitInfo(): CommitInfo = CommitInfo(
+    this.parentCount,
+    this.shortMessage,
+    this.authorIdent.getWhen().time, // milliseconds
+    this.authorIdent.name,
+    this.authorIdent.emailAddress,
+    this.name // hash
+)

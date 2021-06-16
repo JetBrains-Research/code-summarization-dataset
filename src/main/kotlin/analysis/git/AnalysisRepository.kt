@@ -1,14 +1,5 @@
-package analysis.logic
+package analysis.git
 
-import analysis.git.MergeHistory
-import analysis.git.constructRepoLoadUrl
-import analysis.git.getDefaultBranch
-import analysis.git.getFirstParentHistory
-import analysis.git.getMergeCommitsHistory
-import analysis.git.isDotGitPresent
-import analysis.git.isRepoCloned
-import analysis.git.openRepositoryByDotGitDir
-import analysis.git.tryCloneRepositoryNTimes
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.SerializationFeature
@@ -125,5 +116,5 @@ class AnalysisRepository(
 
     override fun toString(): String = "/$owner/$name path: $path"
 
-    fun toStringNotNull(): String = if (owner == null || name == null) path else "/${owner}/${name}"
+    fun toStringNotNull(): String = if (owner == null || name == null) path else "/$owner/$name"
 }

@@ -3,10 +3,10 @@ package analysis.granularity.method
 import analysis.config.IdentityConfig
 import analysis.granularity.Summary
 import analysis.granularity.SummaryStorage
-import analysis.utils.FileLogger
 import analysis.utils.createAndClear
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import utils.FileLogger
 import java.io.File
 import java.io.FileOutputStream
 
