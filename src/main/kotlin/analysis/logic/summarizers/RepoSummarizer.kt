@@ -58,6 +58,7 @@ class RepoSummarizer(
             try {
                 dump()
                 dumpInfo()
+                end()
             } catch (e: Exception) {
                 logWithStatusAndException(e, SummarizerStatus.DUMP_EXCEPTION)
             }
@@ -73,11 +74,12 @@ class RepoSummarizer(
             workEnv.addMessage("$type WORKER $id -- repo doesn't exist / wasn't cloned: $repo")
             return false
         }
-        status = SummarizerStatus.LOADED
         val workLogPath = File(dumpFolder).resolve(WORK_LOG).absolutePath
         workLogger = FileLogger(workLogPath, config.isDebugWorkers, workEnv.mainLogger)
         parseProvider = ParseProvider.get(config, parseEnv)
         summaryStorage = SummaryStorage.get(dumpFolder, config, workLogger)
+        status = SummarizerStatus.LOADED
+        workLogger?.add("$type WORKER $id LOADED ${prettyCurrentDate()} ${repo.toStringNotNull()}")
         return true
     }
 
@@ -106,8 +108,24 @@ class RepoSummarizer(
 
     private fun dump() {
         summaryStorage.dump()
-        summaryStorage.clear()
         workLogger?.dump()
+    }
+
+    private fun dumpInfo() {
+        val mapper = jacksonObjectMapper().enable(SerializationFeature.INDENT_OUTPUT)
+        val infoNode = mapper.createObjectNode()
+        infoNode.set<JsonNode>("type", mapper.valueToTree(type.label))
+        infoNode.set<JsonNode>("source", mapper.valueToTree("/${repo.owner}/${repo.name}"))
+        infoNode.set<JsonNode>("process_end_status", mapper.valueToTree(status))
+        infoNode.set<JsonNode>("seconds_spent", mapper.valueToTree((analysisEnd - analysisStart) / 1000L))
+        val statsNode = summaryStorage.stats() as ObjectNode
+        val merged = mapper.readerForUpdating(infoNode)
+            .readValue<JsonNode>(statsNode) as ObjectNode
+        mapper.writeValue(FileOutputStream(File(dumpFolder).resolve(INFO), false), merged)
+    }
+
+    private fun end() {
+        summaryStorage.clear()
         repo.git.close()
         if (config.removeRepoAfterAnalysis) {
             repo.path.deleteDirectory()
@@ -115,17 +133,6 @@ class RepoSummarizer(
         if (config.zipFiles) {
             compressFolder(File(dumpFolder), listOf(INFO, WORK_LOG), config.removeAfterZip)
         }
-    }
-
-    private fun dumpInfo() {
-        val mapper = jacksonObjectMapper().enable(SerializationFeature.INDENT_OUTPUT)
-        val node = summaryStorage.stats() as ObjectNode
-        node.set<JsonNode>("type", mapper.valueToTree(type.label))
-        node.set<JsonNode>("source", mapper.valueToTree("/${repo.owner}/${repo.name}"))
-        node.set<JsonNode>("analysis_languages", mapper.valueToTree(config.languages))
-        node.set<JsonNode>("process_end_status", mapper.valueToTree(status))
-        node.set<JsonNode>("seconds_spent", mapper.valueToTree((analysisEnd - analysisStart) / 1000L))
-        mapper.writeValue(FileOutputStream(File(dumpFolder).resolve(INFO), false), node)
     }
 
     private fun logWithStatusAndException(exception: Exception, status: SummarizerStatus) {

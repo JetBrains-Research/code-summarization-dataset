@@ -1,7 +1,7 @@
 {
   "HISTORY_MODE": false,
 
-  "repos_urls_path": "config/urls.json",
+  "repos_urls_path": "config/py10.json",
   "dirs_list_path": "config/dirs.json",
   "dump_dir_path" : "repos/analysis_results",
 
@@ -18,15 +18,15 @@
   "merges_part_in_history": 0.0,
 
   "task": "name",
+  "parser": "gumtree",
+  "languages": ["java", "python"],
   "granularity": "method",
   "method_uniqueness": ["full_name", "name", "file", "return_type", "args_types"],
-  "parser": "gumtree",
-  "languages": ["Java", "Python"],
 
   "hide_methods_names": true,
   "exclude_constructors": true,
 
-  "min_body_lines_length": 3,
+  "min_body_lines_length": 0,
   "exclude_with_exact_name": ["exactName1", "exactName2"],
   "exclude_with_name_prefix": ["test"],
 

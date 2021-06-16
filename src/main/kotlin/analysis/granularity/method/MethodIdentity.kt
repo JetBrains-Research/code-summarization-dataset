@@ -79,6 +79,7 @@ data class MethodIdentity(
         node.set<JsonNode>("full_name", mapper.valueToTree(fullName))
         node.set<JsonNode>("return_type", mapper.valueToTree(returnType))
         node.set<JsonNode>("args_types", mapper.valueToTree(argsTypes))
+        node.set<JsonNode>("lang", mapper.valueToTree(language.label))
         node.set<JsonNode>("file", mapper.valueToTree(filePath))
         return node
     }

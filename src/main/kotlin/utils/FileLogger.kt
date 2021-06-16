@@ -23,7 +23,6 @@ class FileLogger(
     init {
         logFile.createNewFile()
         logFile.clearFile()
-        add("FILE logger loaded ${prettyCurrentDate()}")
     }
 
     override fun add(message: String) {

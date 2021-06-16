@@ -10,6 +10,7 @@ import analysis.logic.ReadyInfo
 import analysis.logic.WorkEnvironment
 import analysis.logic.getSupportedFiles
 import analysis.logic.summarizers.utils.Zipper
+import analysis.utils.deleteDirectory
 import analysis.utils.prettyCurrentDate
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.SerializationFeature
@@ -57,6 +58,7 @@ class FileSummarizer(
             try {
                 dump()
                 dumpInfo()
+                end()
             } catch (e: Exception) {
                 logWithStatusAndException(e, SummarizerStatus.DUMP_EXCEPTION)
             }
@@ -77,6 +79,7 @@ class FileSummarizer(
         parseProvider = ParseProvider.get(config, parseEnv)
         summaryStorage = SummaryStorage.get(dumpFolder, config, workLogger)
         status = SummarizerStatus.LOADED
+        workLogger?.add("$type WORKER $id LOADED ${prettyCurrentDate()} $dataPath")
         return true
     }
 
@@ -105,22 +108,27 @@ class FileSummarizer(
 
     private fun dump() {
         summaryStorage.dump()
-        summaryStorage.clear()
         workLogger?.dump()
-        if (config.zipFiles) {
-            compressFolder(File(dumpFolder), listOf(INFO, WORK_LOG), config.removeAfterZip)
-        }
     }
 
     private fun dumpInfo() {
         val mapper = jacksonObjectMapper().enable(SerializationFeature.INDENT_OUTPUT)
-        val node = summaryStorage.stats() as ObjectNode
-        node.set<JsonNode>("type", mapper.valueToTree(type.label))
-        node.set<JsonNode>("source", mapper.valueToTree(dataPath))
-        node.set<JsonNode>("analysis_languages", mapper.valueToTree(config.languages))
-        node.set<JsonNode>("process_end_status", mapper.valueToTree(status))
-        node.set<JsonNode>("seconds_spent", mapper.valueToTree((analysisEnd - analysisStart) / 1000L))
-        mapper.writeValue(FileOutputStream(File(dumpFolder).resolve(INFO), false), node)
+        val infoNode = mapper.createObjectNode()
+        infoNode.set<JsonNode>("type", mapper.valueToTree(type.label))
+        infoNode.set<JsonNode>("source", mapper.valueToTree(dataPath))
+        infoNode.set<JsonNode>("process_end_status", mapper.valueToTree(status))
+        infoNode.set<JsonNode>("seconds_spent", mapper.valueToTree((analysisEnd - analysisStart) / 1000L))
+        val statsNode = summaryStorage.stats() as ObjectNode
+        val merged = mapper.readerForUpdating(infoNode)
+            .readValue<JsonNode>(statsNode) as ObjectNode
+        mapper.writeValue(FileOutputStream(File(dumpFolder).resolve(INFO), false), merged)
+    }
+
+    private fun end() {
+        summaryStorage.clear()
+        if (config.zipFiles) {
+            compressFolder(File(dumpFolder), listOf(INFO, WORK_LOG), config.removeAfterZip)
+        }
     }
 
     private fun logWithStatusAndException(exception: Exception, status: SummarizerStatus) {

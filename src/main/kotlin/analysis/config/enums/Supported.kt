@@ -5,7 +5,7 @@ enum class SupportedLanguage(
     val extensions: List<String>
 ) {
     JAVA(
-        "Java",
+        "java",
         listOf(".java")
     ),
     PYTHON(
@@ -21,5 +21,9 @@ enum class SupportedParser(
     GUMTREE(
         "gumtree",
         listOf(SupportedLanguage.JAVA, SupportedLanguage.PYTHON)
-    )
+    );
+
+    fun pretty(): String {
+        return "${this.label} : ${this.languages.map { it.label }}"
+    }
 }

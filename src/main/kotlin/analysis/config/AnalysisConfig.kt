@@ -113,7 +113,7 @@ class AnalysisConfig(
     private val intFields = listOf(
         THREADS_COUNT, LOG_DUMP_THRESHOLD,
         METHODS_DUMP_THRESHOLD, MIN_COMMITS_NUMBER,
-        MAX_PATHS, MAX_PATH_LENGTH, MAX_PATH_WIDTH, MIN_BODY_LINES_LENGTH
+        MAX_PATHS, MAX_PATH_LENGTH, MAX_PATH_WIDTH
     )
     var threadsCount: Int = DEFAULT_THREADS_COUNT
     var logDumpThreshold: Int = DEFAULT_LOG_DUMP_THRESHOLD
@@ -189,11 +189,12 @@ class AnalysisConfig(
             }
         }
     }
+
     private fun JsonNode.processLanguages() {
         val langLabels = SupportedLanguage.values().map { it.label.toLowerCase() }.toSet()
         this.forEach { maybeLangNode ->
             val maybeLang = maybeLangNode.asText()
-            if (!langLabels.contains(maybeLang)) {
+            if (!langLabels.contains(maybeLang.toLowerCase())) {
                 throw UnsupportedLanguage("unsupported language in field `$LANGUAGES`: $maybeLang")
             }
             for (realLang in SupportedLanguage.values()) {

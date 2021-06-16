@@ -81,7 +81,7 @@ data class MethodSummary(
         jsonNode.set<JsonNode>("name", mapper.valueToTree(name))
         jsonNode.set<JsonNode>("spl_name", mapper.valueToTree(splitName))
         jsonNode.set<JsonNode>("full_name", mapper.valueToTree(fullName))
-        jsonNode.set<JsonNode>("language", mapper.valueToTree(language.label))
+        jsonNode.set<JsonNode>("lang", mapper.valueToTree(language.label))
         jsonNode.set<JsonNode>("args_types", mapper.valueToTree(argsTypes))
         jsonNode.set<JsonNode>("return_type", mapper.valueToTree(returnType))
         jsonNode.set<JsonNode>("file", mapper.valueToTree(filePath))

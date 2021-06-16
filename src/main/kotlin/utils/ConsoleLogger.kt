@@ -1,15 +1,9 @@
 package utils
 
-import analysis.utils.prettyCurrentDate
-
 class ConsoleLogger(
     private val isParent: Boolean = false,
     private val parentLogger: Logger? = null
 ) : Logger {
-
-    init {
-        add("CONSOLE logger loaded ${prettyCurrentDate()}")
-    }
 
     override fun add(message: String) {
         println("> $message")

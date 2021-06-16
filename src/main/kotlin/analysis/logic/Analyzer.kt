@@ -5,10 +5,10 @@ import analysis.git.AnalysisRepository
 import analysis.logic.summarizers.FileSummarizer
 import analysis.logic.summarizers.HistorySummarizer
 import analysis.logic.summarizers.RepoSummarizer
-import utils.FileLogger
-import utils.ConsoleLogger
 import analysis.utils.prettyCurrentDate
 import analysis.utils.prettyDate
+import utils.ConsoleLogger
+import utils.FileLogger
 import java.io.File
 
 class Analyzer(
@@ -44,9 +44,9 @@ class Analyzer(
         )
         workEnv = WorkEnvironment.construct(config.threadsCount, soutLogger, doneLogger)
         parseEnv = ParseEnvironment.construct(config.threadsCount, config.parser, config.languages)
-        workLogger.add("ANALYZER LOADED AT ${prettyDate(System.currentTimeMillis())}")
+        workLogger.add("ANALYZER LOADED ${prettyDate(System.currentTimeMillis())}")
         workLogger.add("ANALYZER THREADS=${config.threadsCount}")
-        workLogger.add("ANALYZER PARSERS=${parseEnv.parsers}")
+        workLogger.add("ANALYZER PARSERS=${parseEnv.parsers.map { it.key.pretty() }}")
         workLogger.add("ANALYZER DUMP FOLDER ${config.dataDumpFolder}")
     }
 

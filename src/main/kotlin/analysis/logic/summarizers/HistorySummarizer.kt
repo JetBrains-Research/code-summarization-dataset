@@ -77,6 +77,7 @@ class HistorySummarizer(
             try {
                 dump()
                 dumpInfo()
+                end()
             } catch (e: Exception) {
                 logWithStatusAndException(e, SummarizerStatus.DUMP_EXCEPTION)
             }
@@ -108,6 +109,7 @@ class HistorySummarizer(
         commitsLogger = CommitsLogger(commitsLogPath, config.logDumpThreshold)
         parseProvider = ParseProvider.get(config, parseEnv)
         summaryStorage = SummaryStorage.get(dumpFolder, config, workLogger)
+        workLogger?.add("$type WORKER $id LOADED ${prettyCurrentDate()} ${repo.toStringNotNull()}")
     }
 
     private fun loadHistory(): Boolean {
@@ -196,10 +198,30 @@ class HistorySummarizer(
 
     private fun dump() {
         summaryStorage.dump()
-        summaryStorage.clear()
         commitsLogger?.dump()
-        commitsLogger?.clear()
         workLogger?.dump()
+    }
+
+    private fun dumpInfo() {
+        val mapper = jacksonObjectMapper().enable(SerializationFeature.INDENT_OUTPUT)
+        val infoNode = mapper.createObjectNode()
+        infoNode.set<JsonNode>("type", mapper.valueToTree(type.label))
+        infoNode.set<JsonNode>("source", mapper.valueToTree("/${repo.owner}/${repo.name}"))
+        infoNode.set<JsonNode>("process_end_status", mapper.valueToTree(status))
+        infoNode.set<JsonNode>("seconds_spent", mapper.valueToTree((analysisEnd - analysisStart) / 1000L))
+        val statsNode = summaryStorage.stats() as ObjectNode
+        var merged = mapper.readerForUpdating(infoNode)
+            .readValue<JsonNode>(statsNode) as ObjectNode
+        val repoNode = repo.toJSON(mapper) as ObjectNode
+        repoNode.set<JsonNode>("processed_commits", mapper.valueToTree(commitsHistory.size))
+        merged = mapper.readerForUpdating(merged)
+            .readValue<JsonNode>(repoNode) as ObjectNode
+        mapper.writeValue(FileOutputStream(File(dumpFolder).resolve(INFO), false), merged)
+    }
+
+    private fun end() {
+        summaryStorage.clear()
+        commitsLogger?.clear()
         repo.git.close()
         if (config.removeRepoAfterAnalysis) {
             repo.path.deleteDirectory()
@@ -207,21 +229,6 @@ class HistorySummarizer(
         if (config.zipFiles) {
             compressFolder(File(dumpFolder), listOf(INFO, WORK_LOG), config.removeAfterZip)
         }
-    }
-
-    private fun dumpInfo() {
-        val mapper = jacksonObjectMapper().enable(SerializationFeature.INDENT_OUTPUT)
-        val statsNode = summaryStorage.stats() as ObjectNode
-        val repoNode = repo.toJSON(mapper) as ObjectNode
-        repoNode.set<JsonNode>("processed_commits", mapper.valueToTree(commitsHistory.size))
-        val merged = mapper.readerForUpdating(repoNode)
-            .readValue<JsonNode>(statsNode) as ObjectNode
-        merged.set<JsonNode>("type", mapper.valueToTree(type.label))
-        merged.set<JsonNode>("source", mapper.valueToTree("/${repo.owner}/${repo.name}"))
-        merged.set<JsonNode>("analysis_languages", mapper.valueToTree(config.languages))
-        merged.set<JsonNode>("process_end_status", mapper.valueToTree(status))
-        merged.set<JsonNode>("seconds_spent", mapper.valueToTree((analysisEnd - analysisStart) / 1000L))
-        mapper.writeValue(FileOutputStream(File(dumpFolder).resolve(INFO), false), merged)
     }
 
     private fun logWithStatusAndException(exception: Exception, status: SummarizerStatus) {
