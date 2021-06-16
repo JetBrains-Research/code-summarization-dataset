@@ -38,7 +38,7 @@ class AnalysisConfig(
         const val PARSER = "parser"
 
         // bool
-        const val IS_HISTORY_MODE = "history_mode"
+        const val IS_HISTORY_MODE = "HISTORY_MODE"
         const val HIDE_METHODS_NAME = "hide_methods_names"
         const val EXCLUDE_CONSTRUCTORS = "exclude_constructors"
         const val IS_GZIP = "gzip_files"

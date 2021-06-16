@@ -1,5 +1,5 @@
 {
-  "history_mode": false,
+  "HISTORY_MODE": false,
 
   "repos_urls_path": "config/urls.json",
   "dirs_list_path": "config/dirs.json",
