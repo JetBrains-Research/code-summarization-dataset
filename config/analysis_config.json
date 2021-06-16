@@ -1,7 +1,7 @@
 {
   "HISTORY_MODE": false,
 
-  "repos_urls_path": "config/py10.json",
+  "repos_urls_path": "config/urls.json",
   "dirs_list_path": "config/dirs.json",
   "dump_dir_path" : "repos/analysis_results",
 
