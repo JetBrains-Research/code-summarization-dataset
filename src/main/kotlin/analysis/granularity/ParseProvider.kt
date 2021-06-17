@@ -9,6 +9,7 @@ import analysis.logic.CommonInfo
 import analysis.logic.ParseEnvironment
 import astminer.cli.LabeledResult
 import astminer.common.model.Node
+import utils.Logger
 import java.io.File
 
 interface ParseProvider {
@@ -38,4 +39,9 @@ data class ParseResult(
     val filePath: String,
     val result: List<LabeledResult<out Node>> = emptyList(),
     val exception: Exception? = null
-)
+) {
+    fun logException(logger: Logger?) = exception?.let {
+        logger?.add("parse exception for file: $filePath")
+        logger?.add(it.stackTraceToString())
+    }
+}

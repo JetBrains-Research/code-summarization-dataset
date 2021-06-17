@@ -13,6 +13,7 @@ import analysis.utils.UnsupportedLanguage
 import astminer.cli.ConstructorFilterPredicate
 import astminer.cli.MethodFilterPredicate
 import com.fasterxml.jackson.databind.JsonNode
+import utils.loadJSON
 import java.io.File
 
 class AnalysisConfig(
@@ -50,7 +51,7 @@ class AnalysisConfig(
 
         // int
         const val MIN_COMMITS_NUMBER = "min_commits_number"
-        const val THREADS_COUNT = "threads_count"
+        const val WORKERS_COUNT = "workers_count"
         const val LOG_DUMP_THRESHOLD = "log_dump_threshold"
         const val METHODS_DUMP_THRESHOLD = "summary_dump_threshold"
         const val MAX_PATHS = "max_paths"
@@ -111,11 +112,11 @@ class AnalysisConfig(
 
     // int fields
     private val intFields = listOf(
-        THREADS_COUNT, LOG_DUMP_THRESHOLD,
+        WORKERS_COUNT, LOG_DUMP_THRESHOLD,
         METHODS_DUMP_THRESHOLD, MIN_COMMITS_NUMBER,
         MAX_PATHS, MAX_PATH_LENGTH, MAX_PATH_WIDTH
     )
-    var threadsCount: Int = DEFAULT_THREADS_COUNT
+    var workersCount: Int = DEFAULT_THREADS_COUNT
     var logDumpThreshold: Int = DEFAULT_LOG_DUMP_THRESHOLD
     var summaryDumpThreshold: Int = DEFAULT_METHOD_DUMP_THRESHOLD
     var minCommitsNumber: Int = 0
@@ -261,7 +262,7 @@ class AnalysisConfig(
             throw AnalysisConfigException("incorrect value for field `$field`: $value")
         }
         when (field) {
-            THREADS_COUNT -> threadsCount = value
+            WORKERS_COUNT -> workersCount = value
             LOG_DUMP_THRESHOLD -> logDumpThreshold = value
             METHODS_DUMP_THRESHOLD -> summaryDumpThreshold = value
             MIN_COMMITS_NUMBER -> minCommitsNumber = value

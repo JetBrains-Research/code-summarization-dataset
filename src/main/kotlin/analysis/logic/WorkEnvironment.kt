@@ -75,7 +75,7 @@ class WorkEnvironment(
                     readyCond.await(awaitSleepSeconds, TimeUnit.SECONDS)
                 }
             } catch (e: InterruptedException) {
-                println(e.printStackTrace())
+                // ignore
             } finally {
                 lock.unlock()
             }

@@ -1,14 +1,8 @@
 package analysis.config
 
 import analysis.utils.BadPathException
-import com.fasterxml.jackson.databind.JsonNode
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import com.fasterxml.jackson.module.kotlin.readValue
+import utils.loadJSONList
 import java.io.File
-
-fun loadJSON(path: String): JsonNode = jacksonObjectMapper().readValue(File(path))
-
-fun loadJSONList(path: String): List<String> = jacksonObjectMapper().readValue(File(path))
 
 fun loadPaths(pathToPathsList: String): List<String> {
     if (!File(pathToPathsList).exists()) {

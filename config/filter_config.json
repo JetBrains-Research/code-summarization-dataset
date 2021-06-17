@@ -1,0 +1,22 @@
+{
+    "token_path" : "config/token.txt",
+    "repos_urls_path": "config/urls.json",
+    "dump_dir_path" : "repos/filter_results",
+    "dump_threshold": 10,
+    "languages": ["Java", "Python"],
+    "stars_count": [">=", 0],
+    "is_fork": [false],
+    "is_license": [true],
+    "licenses": ["gpl-3.0", "apache-2.0", "mit"],
+    "commits_count": [0, 90000],
+    "contributors_count": [">=", 0],
+    "anon_contributors": [false],
+    "watchers_count": [],
+    "forks_count": [0, 10000],
+    "open_issues_count": [0, 1000],
+    "subscribers_count": [],
+    "size_KB": ["<=", 9000000],
+    "created_at": [">=","2010-01-01"],
+    "updated_at": [],
+    "pushed_at": []
+}

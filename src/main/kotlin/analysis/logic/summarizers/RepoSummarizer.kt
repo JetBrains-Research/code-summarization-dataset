@@ -91,7 +91,7 @@ class RepoSummarizer(
             filesByLang.forEach { (lang, files) ->
                 val parseResults = parseProvider.parse(files, config.parser, lang)
                 // exceptions
-                parseResults.filter { it.exception != null }.forEach { it.logExceptionInParseResult() }
+                parseResults.filter { it.exception != null }.forEach { it.logException(workLogger) }
                 // results
                 parseProvider.processParseResults(
                     parseResults.filter { it.exception == null },
@@ -139,10 +139,5 @@ class RepoSummarizer(
         workEnv.addMessage("========= DEAD $type WORKER $id $status exception for ${repo.path} =========")
         workEnv.addMessage(exception.stackTraceToString())
         this.status = status
-    }
-
-    private fun ParseResult.logExceptionInParseResult() = exception?.let {
-        workLogger?.add("parse exception for file: $filePath")
-        workLogger?.add(it.stackTraceToString())
     }
 }

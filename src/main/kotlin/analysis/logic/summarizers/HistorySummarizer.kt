@@ -184,7 +184,7 @@ class HistorySummarizer(
         filesByLang.forEach { (lang, files) ->
             val parseResults = parseProvider.parse(files, config.parser, lang)
             // exceptions
-            parseResults.filter { it.exception != null }.forEach { it.logExceptionInParseResult() }
+            parseResults.filter { it.exception != null }.forEach { it.logException(workLogger) }
             // results
             parseProvider.processParseResults(
                 parseResults.filter { it.exception == null && it.result.isNotEmpty() },
@@ -235,10 +235,5 @@ class HistorySummarizer(
         workEnv.addMessage("========= DEAD $type WORKER $id $status exception for $repo =========")
         workEnv.addMessage(exception.stackTraceToString())
         this.status = status
-    }
-
-    private fun ParseResult.logExceptionInParseResult() = exception?.let {
-        workLogger?.add("parse exception for file: $filePath")
-        workLogger?.add(it.stackTraceToString())
     }
 }

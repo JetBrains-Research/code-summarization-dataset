@@ -42,10 +42,10 @@ class Analyzer(
             isParent = config.isDebugAnalyzer,
             parentLogger = if (config.isDebugAnalyzer) workLogger else null
         )
-        workEnv = WorkEnvironment.construct(config.threadsCount, soutLogger, doneLogger)
-        parseEnv = ParseEnvironment.construct(config.threadsCount, config.parser, config.languages)
+        workEnv = WorkEnvironment.construct(config.workersCount, soutLogger, doneLogger)
+        parseEnv = ParseEnvironment.construct(config.workersCount, config.parser, config.languages)
         workLogger.add("ANALYZER LOADED ${prettyDate(System.currentTimeMillis())}")
-        workLogger.add("ANALYZER THREADS=${config.threadsCount}")
+        workLogger.add("ANALYZER THREADS=${config.workersCount}")
         workLogger.add("ANALYZER PARSERS=${parseEnv.parsers.map { it.key.pretty() }}")
         workLogger.add("ANALYZER DUMP FOLDER ${config.dataDumpFolder}")
     }
