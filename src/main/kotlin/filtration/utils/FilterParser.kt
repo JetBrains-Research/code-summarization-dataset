@@ -33,8 +33,8 @@ class FilterParser : CliktCommand(treatUnknownOptionsAsArgs = true) {
     ).flag(default = false)
 
     override fun run() {
-        val searchConfig = FilterConfig(configPath = filterConfigPath, isDebug = isDebug)
-        val reposFinder = ReposFilter(config = searchConfig)
+        val filterConfig = FilterConfig(configPath = filterConfigPath, isDebug = isDebug)
+        val reposFinder = ReposFilter(config = filterConfig)
         reposFinder.run()
     }
 }
