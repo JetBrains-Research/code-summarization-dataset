@@ -7,11 +7,11 @@ import analysis.config.enums.SupportedParser
 import analysis.granularity.ParseProvider
 import analysis.granularity.ParseResult
 import analysis.granularity.SummaryStorage
-import analysis.granularity.method.extractors.node.getMethodFullName
-import analysis.granularity.method.filter.MethodSummaryFilter
 import analysis.granularity.method.extractors.JavaMethodExtractor
 import analysis.granularity.method.extractors.MethodExtractor
 import analysis.granularity.method.extractors.PythonMethodExtractor
+import analysis.granularity.method.extractors.node.getMethodFullName
+import analysis.granularity.method.filter.MethodSummaryFilter
 import analysis.logic.CommonInfo
 import analysis.logic.ParseEnvironment
 import analysis.logic.calculateLinesStarts
@@ -35,6 +35,8 @@ class MethodParseProvider(
     private val config: AnalysisConfig,
     private val parseEnv: ParseEnvironment
 ) : ParseProvider {
+
+    data class FilteredMethodSummary(val methodSummary: MethodSummary, val isGood: Boolean)
 
     private val methodsFilter = MethodSummaryFilter(config.summaryFilterConfig)
     private val pathMiner = PathMiner(PathRetrievalSettings(config.maxPathLength, config.maxPathWidth))
@@ -96,31 +98,45 @@ class MethodParseProvider(
             .splitToParents()
             .joinToString("/")
 
-        result.forEach { labeledResult ->
-            // 0. checking method was added before
+        // 0. checking method wasn't added before
+        val newResult = result.filter { labeledResult ->
             val methodIdentity = labeledResult.buildIdentity(fileContent, lang)
-            if (storage.contains(methodIdentity)) {
-                return@forEach
+            !storage.contains(methodIdentity) // storage isn't thread safe
+        }
+
+        val deferredMethodSummaries = mutableListOf<Deferred<FilteredMethodSummary>>()
+        runBlocking {
+            // data extraction
+            newResult.forEach { labeledResult ->
+                val deferredSummary = async(parseEnv.dispatcher) {
+                    // 1. summarizing method data
+                    val methodSummary = summarizer.summarize(
+                        labeledResult.root,
+                        labeledResult.label,
+                        fileContent,
+                        relativePath,
+                        fileLinesStarts
+                    )
+                    // 2. excluding nodes from ast
+                    labeledResult.root.excludeNodes(lang, config.excludeNodes, config.excludeDocNode)
+                    // 3. retrieving paths
+                    if (config.isPathMining) {
+                        methodSummary.paths = labeledResult.root.retrievePaths(pathMiner, config.maxPaths)
+                    }
+                    // 4. adding common info if present
+                    methodSummary.addCommonInfo(info)
+                    // 5. methods filtering
+                    FilteredMethodSummary(methodSummary, methodsFilter.isSummaryGood(methodSummary))
+                }
+                deferredMethodSummaries.add(deferredSummary)
             }
-            // 1. summarizing method data
-            val methodSummary = summarizer.summarize(
-                labeledResult.root,
-                labeledResult.label,
-                fileContent,
-                relativePath,
-                fileLinesStarts
-            )
-            // 2. excluding nodes from ast
-            labeledResult.root.excludeNodes(lang, config.excludeNodes, config.excludeDocNode)
-            // 3. retrieving paths
-            if (config.isPathMining) {
-                methodSummary.paths = labeledResult.root.retrievePaths(pathMiner, config.maxPaths)
-            }
-            // 4. adding common info if present
-            methodSummary.addCommonInfo(info)
-            // 5. methods filtering
-            if (methodsFilter.isSummaryGood(methodSummary)) {
-                storage.add(methodSummary)
+            // await all deferred summaries
+            deferredMethodSummaries.forEach { deferredSummary ->
+                val summary = deferredSummary.await() // if exception -> go up to worker
+                // 5. methods filtering
+                if (summary.isGood) {
+                    storage.add(summary.methodSummary) // storage isn't thread safe
+                }
             }
         }
     }
