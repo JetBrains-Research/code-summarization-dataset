@@ -54,7 +54,7 @@ class AnalyzerParser : CliktCommand(treatUnknownOptionsAsArgs = true) {
             isDebugWorkers = isDebug || isWorkersDebug
         )
         val reposUrls = loadJSONList(analysisConfig.reposUrlsPath).parseRepoUrls()
-        val dirsPaths = loadPaths(analysisConfig.dirsListPath)
+        val dirsPaths = loadPaths(analysisConfig.filesListPath)
 
         val reposAnalyzer = Analyzer(config = analysisConfig)
         reposAnalyzer.submitRepos(reposUrls.map { AnalysisRepository(owner = it.first, name = it.second) })

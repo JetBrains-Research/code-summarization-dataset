@@ -24,8 +24,8 @@ class AnalysisConfig(
     private companion object {
         // paths
         const val REPOS_URLS_PATH = "repos_urls_path"
-        const val DIRS_LIST_PATH = "dirs_list_path"
-        const val DUMP_DIR_PATH = "files_list_path"
+        const val FILES_LIST_PATH = "files_list_path"
+        const val DUMP_DIR_PATH = "dump_dir_path"
 
         // list
         const val LANGUAGES = "languages"
@@ -70,8 +70,8 @@ class AnalysisConfig(
     }
 
     // path fields
-    private val pathFields = listOf(REPOS_URLS_PATH, DIRS_LIST_PATH, DUMP_DIR_PATH)
-    lateinit var dirsListPath: String
+    private val pathFields = listOf(REPOS_URLS_PATH, FILES_LIST_PATH, DUMP_DIR_PATH)
+    lateinit var filesListPath: String
     lateinit var reposUrlsPath: String
     lateinit var dumpFolder: String
     lateinit var dataDumpFolder: String
@@ -167,7 +167,7 @@ class AnalysisConfig(
             val value = this.get(field).asText()
             when (field) {
                 REPOS_URLS_PATH -> reposUrlsPath = value
-                DIRS_LIST_PATH -> dirsListPath = value
+                FILES_LIST_PATH -> filesListPath = value
                 DUMP_DIR_PATH -> {
                     dumpFolder = value
                     dataDumpFolder = File(dumpFolder).resolve(DEFAULT_DATA_DUMP_FOLDER).absolutePath
@@ -175,7 +175,7 @@ class AnalysisConfig(
             }
         }
         reposUrlsPath.checkPathsExist(REPOS_URLS_PATH)
-        dirsListPath.checkPathsExist(DIRS_LIST_PATH)
+        filesListPath.checkPathsExist(FILES_LIST_PATH)
         if (dumpFolder.isEmpty()) {
             throw BadPathException("no dump folder `$DUMP_DIR_PATH` specified")
         }
