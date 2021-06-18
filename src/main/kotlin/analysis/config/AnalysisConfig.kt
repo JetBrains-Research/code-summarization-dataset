@@ -25,7 +25,7 @@ class AnalysisConfig(
         // paths
         const val REPOS_URLS_PATH = "repos_urls_path"
         const val DIRS_LIST_PATH = "dirs_list_path"
-        const val DUMP_DIR_PATH = "dump_dir_path"
+        const val DUMP_DIR_PATH = "files_list_path"
 
         // list
         const val LANGUAGES = "languages"

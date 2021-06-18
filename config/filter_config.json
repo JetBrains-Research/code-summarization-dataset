@@ -1,6 +1,6 @@
 {
     "token_path" : "config/token.txt",
-    "repos_urls_path": "config/urls.json",
+    "repos_urls_path": "config/repos.json",
     "dump_dir_path" : "repos/filter_results",
     "dump_threshold": 10,
     "languages": ["Java", "Python"],

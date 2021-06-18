@@ -12,11 +12,11 @@ git clone https://github.com/JetBrains-Research/code-summarization-dataset.git
 
 # Tool modules
 
-**I. Filtration** - filtering input GitHub repositories urls with specified filters (config - `config/filter_config.json`)
+**I. Filtration**: filtering input GitHub repositories urls with specified filters (config: `config/filter_config.json`)
 
-**II. Analysis** - methods summary extraction from repository or local directory (config - `config/analysis_config.json`)
+**II. Analysis**: methods summary extraction from repository or local directory / file (config: `config/analysis_config.json`)
 
-**III. Provider** - filtration + analysis = continuous filtration end analysis of repositories
+**III. Provider**: filtration + analysis = continuous filtration end analysis of repositories
 
 ## I. Repositories filtering (filtration module)
 
@@ -30,8 +30,8 @@ filtration config is .json file with all repo filters and run parameters:
 ```
 {
     "token_path" : "config/token.txt",           // path to GitHub token
+    "repos_urls_path": "config/repos.json",      // path to repos URLs
     "dump_dir_path" : "config/filter_results",   // dump directory path
-    "repos_urls_path": "config/urls.json",       // path to repos URLs
     "languages": ["Java", "Python"],             // list of languages
     "stars_count": [">=", 10],                   // relations with integers
     "is_fork": [false],                          // boolean flag
@@ -51,7 +51,8 @@ filtration config is .json file with all repo filters and run parameters:
 }
 ```
 
-**GitHub token**:
+**GitHub token**
+
 - filtration requires a [GitHub API personal access token](https://docs.github.com/en/free-pro-team@latest/github/authenticating-to-github/creating-a-personal-access-token) without any special permissions
 - token is 40 symbols code that must be located in a separate file on the first line without additional data
 - file with path `token_path` must contain this token
@@ -68,7 +69,8 @@ filtration config is .json file with all repo filters and run parameters:
   496**********************************4cf
   ```
 
-**Rules**:
+**Filtration config rules**
+
 - each parameter must be specified in brackets **[params, ...]**
 - dates in ```"YYYY-MM-DD"``` format with quotes
 - all integer filters support relation (>, <, <=, >=, =) in quotes **["<", N]**
@@ -85,7 +87,7 @@ filtration config is .json file with all repo filters and run parameters:
 - licenses not bound in the code
 - licenses filter running by `keyword` from [GitHub licenses list](https://docs.github.com/en/free-pro-team@latest/github/creating-cloning-and-archiving-repositories/licensing-a-repository#searching-github-by-license-type) provided by `license/key` path in GitHub API v3 summary `https://api.github.com/repos/REPOOWNER/REPONAME` for each repository        
 
-**Examples**:
+**Examples**
 - ```"languages": ["Kotlin", "C++", "Haskell"] --> repository main language is Kotlin OR C++ OR Haskell```
 - ```"[param]_count": [42] --> repository [param]_count == 42 ```
 - ```"[param]_count": ["<=", 42] --> repository [param]_count <= 42 ```
@@ -102,11 +104,11 @@ filtration config is .json file with all repo filters and run parameters:
   file: filter_config.json
   
   ...
-  "repos_urls_path": urls.json
+  "repos_urls_path": repos.json
   ...
   ```
   ```json
-  file: urls.json
+  file: repos.json
   
   [ "/JetBrains/Kotlin", "/JetBrains/intellij-community"] 
   or 
@@ -125,7 +127,7 @@ filtration config is .json file with all repo filters and run parameters:
 #### 2.2 as separate module 
 - write own entry point
   ```kotlin
-  import filtration.utils.FinderParser
+  import filtration.utils.FilterParser
 
   fun main(args: Array<String>) = FilterParser().main(args)
   ```
@@ -210,9 +212,9 @@ analysis config is .json file with run parameters:
 {
   "HISTORY_MODE": true,                               // main feature of tool (see below) 
 
-  "repos_urls_path": "repos/repos.json",              // path to .json list with urls (in format /{OWNER}/{NAME}) to GitHub repos 
-  "dirs_list_path": "repos/dirs.json",                // path to .json list with paths to local directories
-  "dump_dir_path" : "repos/analysis_results",         // path to tool dump directory
+  "repos_urls_path": "config/repos.json",             // path to .json list with urls (in format /{OWNER}/{NAME}) to GitHub repos 
+  "files_list_path": "config/files.json",             // path to .json list with paths to local directories or files
+  "dump_dir_path" : "config/analysis_results",        // path to tool dump directory
 
   "workers_count": 3,                                 // how many workers in parallel (thread pool size)  
   "log_dump_threshold": 200,                          // log messages dump to file threshold
@@ -255,7 +257,7 @@ analysis config is .json file with run parameters:
 
 If `"HISTORY_MODE": false`:
 - data from repositories is extracted without git-history
-- data from directories is always extracted without git-history 
+- data from directories / files is always extracted without git-history 
 
 If `"HISTORY_MODE": true` - data extraction based on git-history, analyzer:
 - loads commit history from default branch of repository
@@ -294,7 +296,8 @@ Two types of history processing depending on the type of commit:
 #### 2.1 as code in project
 - import `AnalysisConfig`, `Analyzer` and `AnalysisRepository` classes
 - provide a path to `analysis_config.json`, initialize config and analyser
-- `submitRepo` (or `submitAllRepos`) any number of repositories for analysis
+- `submitRepo` (or `submitRepos`) any number of repositories for analysis
+- `submitFile` (or `submitFiles`) any number of directories / files for analysis
   
   ```kotlin  
   // config for analysis
@@ -331,22 +334,22 @@ Two types of history processing depending on the type of commit:
   file: analysis_config.json
 
   ...
-  "repos_urls_path": urls.json
-  "dirs_list_path": dirs.json
+  "repos_urls_path": repos.json
+  "files_list_path": files.json
   ...
   ```
   - `repos_urls_path` path to .json GitHub repositories list in format `.../REPOOWNER/REPONAME` (**exactly 2 slashes**)
     ```json
-    file: urls.json
+    file: repos.json
     
     [ "/JetBrains/Kotlin", "/JetBrains/intellij-community"] 
     or
     ["https://github.com/JetBrains/Kotlin", "https://github.com/JetBrains/intellij-community"] 
     ```
-  - `dirs_list_path` - path to .json list with local directories paths
+  - `files_list_path` - path to .json list with local directories or files paths
 
     ```json
-    file: dirs.json
+    file: files.json
     
     [ "local/directory", "local/SomeClass.java" ]
     ```
@@ -400,7 +403,7 @@ Filtration + analysis modules
 - prepare two .json configs `filter_config.json` and `analysis_config.json`
 - prepare list of GitHub repositories `repos_urls_path` in `filter_config.json` **(see I, 2)**
 - files with repositories and directories paths lists from `analysis_config.json` 
-  in `repos_urls_path` and `dirs_list_path` will be ignored
+  in `repos_urls_path` and `files_list_path` will be ignored
   
 ##### Workflow
 - tool takes repository from file provided in `repos_urls_path` from `filter_config.json`

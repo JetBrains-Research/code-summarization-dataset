@@ -1,8 +1,8 @@
 {
   "HISTORY_MODE": false,
 
-  "repos_urls_path": "config/urls.json",
-  "dirs_list_path": "config/dirs.json",
+  "repos_urls_path": "config/repos.json",
+  "files_list_path": "config/files.json",
   "dump_dir_path" : "repos/analysis_results",
 
   "workers_count": 5,
