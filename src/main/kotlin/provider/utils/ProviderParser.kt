@@ -1,40 +1,44 @@
 package provider.utils
 
+import analysis.config.AnalysisConfig
 import com.github.ajalt.clikt.core.CliktCommand
+import com.github.ajalt.clikt.parameters.arguments.argument
+import com.github.ajalt.clikt.parameters.arguments.multiple
 import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.required
 import com.github.ajalt.clikt.parameters.options.validate
-import analysis.config.AnalysisConfig
-import search.config.SearchConfig
-import provider.logic.SearchAnalysisProvider
+import filtration.config.FilterConfig
+import provider.logic.FilterAnalyserProvider
 import java.io.File
 
-class ProviderParser : CliktCommand() {
+class ProviderParser : CliktCommand(treatUnknownOptionsAsArgs = true) {
 
-    private val searchConfigPath: String by option(
-        "-s",
-        "--search",
-        help = "Search config path"
+    private val arguments by argument().multiple()
+
+    private val filtrationConfigPath: String by option(
+        "--fc",
+        "--filter-config",
+        help = "Filter config path"
     ).required().validate {
         require(File(it).exists()) {
-            fail("search config file doesn't exist $it")
+            fail("filtration config file doesn't exist $it")
         }
         require(it != analysisConfigPath) {
-            fail("analysis and search config path must be different")
+            fail("analysis and filtration config path must be different")
         }
     }
 
     private val analysisConfigPath: String by option(
-        "-a",
-        "--analysis",
+        "--ac",
+        "--analysis-config",
         help = "Analysis config path"
     ).required().validate {
         require(File(it).exists()) {
             fail("analysis config file doesn't exist $it")
         }
-        require(it != searchConfigPath) {
-            fail("analysis and search config path must be different")
+        require(it != filtrationConfigPath) {
+            fail("analysis and filtration config path must be different")
         }
     }
 
@@ -45,28 +49,31 @@ class ProviderParser : CliktCommand() {
     ).flag(default = false)
 
     private val isAnalyserDebug by option(
+        "--ad",
         "--analysis-debug",
         help = "Debug mode: analysis log in console"
     ).flag(default = false)
 
-    private val isSummarizersDebug by option(
-        "--summary-debug",
-        help = "Debug mode: analysis log in console"
+    private val isWorkersDebug by option(
+        "--wd",
+        "--workers-debug",
+        help = "Debug mode: analysis workers log in console"
     ).flag(default = false)
 
     private val isSearchDebug by option(
-        "--search-debug",
-        help = "Debug mode: search log in console"
+        "--fd",
+        "--filter-debug",
+        help = "Debug mode: filtration log in console"
     ).flag(default = false)
 
     override fun run() {
-        val searchConfig = SearchConfig(configPath = searchConfigPath, isDebug = isFullDebug || isSearchDebug)
+        val filterConfig = FilterConfig(configPath = filtrationConfigPath, isDebug = isFullDebug || isSearchDebug)
         val analysisConfig = AnalysisConfig(
             configPath = analysisConfigPath,
             isDebugAnalyzer = isFullDebug || isAnalyserDebug,
-            isDebugSummarizers = isFullDebug || isSummarizersDebug
+            isDebugWorkers = isFullDebug || isWorkersDebug
         )
-        val provider = SearchAnalysisProvider(searchConfig = searchConfig, analysisConfig = analysisConfig)
+        val provider = FilterAnalyserProvider(filterConfig = filterConfig, analysisConfig = analysisConfig)
         provider.run()
     }
 }

@@ -14,5 +14,6 @@ enum class SummarizerStatus {
     INIT_BAD_DEF_BRANCH_ERROR,
     WORK_ERROR,
     BAD_DIR,
-    NO_PATHS_TO_ANALYSE
+    NO_PATHS_TO_ANALYSE,
+    DUMP_EXCEPTION
 }

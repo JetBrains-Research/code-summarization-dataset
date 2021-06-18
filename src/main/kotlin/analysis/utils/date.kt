@@ -5,6 +5,8 @@ import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.util.Calendar
 
+fun prettyCurrentDate() = prettyDate(System.currentTimeMillis())
+
 fun prettyDate(millis: Long): String {
     val date = Instant.ofEpochMilli(millis)
         .atZone(ZoneId.systemDefault())

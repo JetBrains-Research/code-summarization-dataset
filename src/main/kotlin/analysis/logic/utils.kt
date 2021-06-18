@@ -1,10 +1,17 @@
 package analysis.logic
 
-import analysis.config.Language
+import analysis.config.enums.SupportedLanguage
+import analysis.git.AnalysisRepository
 import java.io.File
 
-fun List<File>.getFilesByLanguage(languages: List<Language>): Map<Language, List<File>> {
-    val filesByLang = mutableMapOf<Language, MutableList<File>>()
+fun File.getSupportedFiles(languages: List<SupportedLanguage>) = this.walkTopDown()
+    .filter { !it.isHidden && it.isFile }
+    .toList()
+    .getFilesByLanguage(languages)
+    .filter { (_, files) -> files.isNotEmpty() }
+
+fun List<File>.getFilesByLanguage(languages: List<SupportedLanguage>): Map<SupportedLanguage, List<File>> {
+    val filesByLang = mutableMapOf<SupportedLanguage, MutableList<File>>()
     languages.forEach { lang ->
         filesByLang[lang] = mutableListOf()
     }
@@ -19,7 +26,17 @@ fun List<File>.getFilesByLanguage(languages: List<Language>): Map<Language, List
     return filesByLang
 }
 
-fun isFileFromLanguage(file: File, language: Language): Boolean = language.extensions.any { ext ->
+fun String.getFileDumpFolder(id: Int, dumpFolder: String): String =
+    File(dumpFolder).resolve("${id}_" + this.substringAfterLast(File.separator)).absolutePath
+
+fun AnalysisRepository.getRepoDumpFolder(id: Int, dumpFolder: String): String {
+    if (owner == null || name == null) {
+        return path.getFileDumpFolder(id, dumpFolder)
+    }
+    return File(dumpFolder).resolve("${owner}__$name").absolutePath
+}
+
+fun isFileFromLanguage(file: File, language: SupportedLanguage): Boolean = language.extensions.any { ext ->
     file.absolutePath.endsWith(ext)
 }
 

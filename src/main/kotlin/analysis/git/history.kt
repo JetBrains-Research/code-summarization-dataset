@@ -76,7 +76,3 @@ fun Repository.getMergeCommitsHistory(startObjectId: ObjectId, includeYoungest: 
 fun Git.getBranchesList(listMode: ListMode = ListMode.ALL): MutableList<Ref>? = this.branchList()
     .setListMode(listMode)
     .call()
-
-fun Repository.getShortBranchName(): String? = this.branch
-
-fun Repository.getFullCurrBranchName(): String? = this.fullBranch

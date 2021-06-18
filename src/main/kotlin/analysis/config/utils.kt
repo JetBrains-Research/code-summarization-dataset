@@ -1,14 +1,8 @@
 package analysis.config
 
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import com.fasterxml.jackson.module.kotlin.readValue
-import analysis.utils.AnalysisConfigException
+import analysis.utils.BadPathException
+import utils.loadJSONList
 import java.io.File
-
-fun loadJSONList(path: String): List<String> {
-    val objectMapper = jacksonObjectMapper()
-    return objectMapper.readValue(File(path))
-}
 
 fun loadPaths(pathToPathsList: String): List<String> {
     if (!File(pathToPathsList).exists()) {
@@ -39,17 +33,8 @@ fun List<String>.parseRepoUrls(splitSize: Int = 2, ownerPos: Int = 2, namePos: I
     return urls
 }
 
-fun checkFileExists(path: String, isFile: Boolean = true, message: String? = null) {
-    val file = File(path)
-    var errMsg: String? = null
-    if (!file.exists()) {
-        errMsg = (if (message != null) "$message: " else "") + "file doesn't exist: $path"
-    } else if (isFile && !file.isFile) {
-        errMsg = (if (message != null) "$message: " else "") + "not file: $path"
-    } else if (!isFile && !file.isDirectory) {
-        errMsg = (if (message != null) "$message: " else "") + "not directory: $path"
-    }
-    errMsg?.let {
-        throw AnalysisConfigException(errMsg)
+fun String.checkPathsExist(field: String) {
+    if (isEmpty() || !File(this).exists()) {
+        throw BadPathException("path for field `$field` doesn't exist $this")
     }
 }

@@ -1,0 +1,42 @@
+{
+  "HISTORY_MODE": false,
+
+  "repos_urls_path": "config/repos.json",
+  "files_list_path": "config/files.json",
+  "dump_dir_path" : "repos/analysis_results",
+
+  "workers_count": 5,
+  "log_dump_threshold": 200,
+  "summary_dump_threshold": 200,
+
+  "gzip_files": true,
+  "remove_files_after_gzip": false,
+  "remove_repo_after_analysis": true,
+
+  "commits_type": "merges",
+  "min_commits_number": 0,
+  "merges_part_in_history": 0.0,
+
+  "task": "name",
+  "parser": "gumtree",
+  "languages": ["java", "python"],
+  "granularity": "method",
+  "method_uniqueness": ["full_name", "name", "file", "return_type", "args_types"],
+
+  "hide_methods_names": true,
+  "exclude_constructors": true,
+
+  "min_body_lines_length": 0,
+  "exclude_with_exact_name": ["exactName1", "exactName2"],
+  "exclude_with_name_prefix": ["test"],
+
+  "JAVA_exclude_with_annotations": ["@Override"],
+
+  "max_paths": 1000,
+  "max_path_width": 2,
+  "max_path_length": 9,
+  "exclude_nodes": [],
+  "exclude_doc_node": false,
+  "ast_dot_format": false,
+  "code2sec_format_dump": true
+}

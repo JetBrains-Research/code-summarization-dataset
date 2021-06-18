@@ -5,7 +5,7 @@ version = "0.0"
 
 plugins {
     application
-    kotlin("jvm") version "1.4.10"
+    kotlin("jvm") version "1.4.21"
     id("io.gitlab.arturbosch.detekt") version "1.14.2"
     id("com.github.johnrengelman.shadow") version "5.2.0"
 }
@@ -18,6 +18,7 @@ tasks.withType<ShadowJar>() {
     manifest {
         attributes["Main-Class"] = "MainKt"
     }
+    archiveFileName.set("cs_dataset.jar")
 }
 
 repositories {
@@ -31,7 +32,9 @@ repositories {
 dependencies {
     testImplementation(kotlin("test-junit"))
     // reflect
-    implementation("org.jetbrains.kotlin", "kotlin-reflect", "1.4.10")
+    implementation("org.jetbrains.kotlin", "kotlin-reflect", "1.4.20")
+    // co
+    implementation("org.jetbrains.kotlinx", "kotlinx-coroutines-core", "1.4.2")
     // astminer
     implementation("io.github.vovak", "astminer", "0.6.3")
     // fuel - requests

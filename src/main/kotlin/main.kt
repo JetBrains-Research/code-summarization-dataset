@@ -1,3 +1,3 @@
-import provider.utils.ProviderParser
+import utils.AllModesParser
 
-fun main(args: Array<String>) = ProviderParser().main(args)
+fun main(args: Array<String>) = AllModesParser(args).main(args)
