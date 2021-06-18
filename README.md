@@ -307,7 +307,7 @@ Two types of history processing depending on the type of commit:
       isDebugWorkers = isWorkersDebug    // log in console all workers messages
   )
   val reposUrls = loadJSONList(analysisConfig.reposUrlsPath).parseRepoUrls()
-  val dirsPaths = loadPaths(analysisConfig.dirsListPath)
+  val filesPaths = loadPaths(analysisConfig.filesListPaths)
 
   val reposAnalyzer = Analyzer(config = analysisConfig)
 
@@ -322,7 +322,7 @@ Two types of history processing depending on the type of commit:
   // submit directory
   reposAnalyzer.submitFile("my/python/files")
   // submit any files or directories  
-  reposAnalyzer.submitFiles(dirsPaths)
+  reposAnalyzer.submitFiles(filesPaths)
 
   // blocking waiting until any worker running  
   reposAnalyzer.waitUnitAnyRunning()
